@@ -15,7 +15,7 @@ const Navbar = () => {
 
   const navItems = [
     { path: '/', label: 'Admin', icon: Lock },
-    { path: '/new-report', label: 'New Report', icon: ClipboardCheck }
+    { path: '/new-quotation', label: 'New Quotation', icon: ClipboardCheck }
   ];
 
   const isActive = (path) => location.pathname === path;

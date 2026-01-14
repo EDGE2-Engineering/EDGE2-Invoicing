@@ -13,7 +13,8 @@ import TestDetailPage from '@/pages/TestDetailPage.jsx';
 
 
 import AdminPage from '@/pages/AdminPage';
-import NewReportPage from '@/pages/NewReportPage';
+import NewQuotationPage from '@/pages/NewQuotationPage.jsx';
+
 
 
 
@@ -32,10 +33,10 @@ function App() {
               <Routes>
                 <Route path="/" element={<AdminPage />} />
                 <Route
-                  path="/new-report"
+                  path="/new-quotation"
                   element={
                     <ProtectedRoute>
-                      <NewReportPage />
+                      <NewQuotationPage />
                     </ProtectedRoute>
                   }
                 />
