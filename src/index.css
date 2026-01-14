@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 20 20% 96%;
+    --foreground: 20 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 10% 10%;
+    --primary: 153 38% 18%; /* Dark Forest Green #1A4332 */
+    --primary-foreground: 35 30% 95%;
+    --secondary: 40 10% 90%;
+    --secondary-foreground: 20 10% 10%;
+    --muted: 40 10% 90%;
+    --muted-foreground: 20 10% 40%;
+    --accent: 40 10% 90%;
+    --accent-foreground: 20 10% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 20 10% 85%;
+    --input: 20 10% 85%;
+    --ring: 153 38% 18%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-[#F5F1ED] text-gray-900;
+    font-family: 'Poppins', 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-maroon, .text-primary {
+    color: #1A4332;
+  }
+  .bg-maroon, .bg-primary {
+    background-color: #1A4332;
+  }
+  .border-maroon, .border-primary {
+    border-color: #1A4332;
+  }
+  .hover\:bg-maroon-dark:hover, .hover\:bg-primary-dark:hover {
+    background-color: #133225;
+  }
+}
