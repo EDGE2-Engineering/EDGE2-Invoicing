@@ -517,30 +517,28 @@ const NewQuotationPage = () => {
                                                                 <p className="font-medium pr-4 text-sm">{item.description}</p>
                                                                 <p className="text-xs text-gray-500 capitalize">{item.type}</p>
                                                                 {item.type === 'service' && (
-    (() => {
-        const values = [
-            item.methodOfSampling && item.methodOfSampling !== 'NA'
-                ? `Method: ${item.methodOfSampling}`
-                : null,
+                                                                    (() => {
+                                                                        const values = [
+                                                                            item.methodOfSampling && item.methodOfSampling !== 'NA'
+                                                                                ? `Method: ${item.methodOfSampling}`
+                                                                                : null,
 
-            typeof item.numBHs === 'number' && item.numBHs > 0
-                ? `BHs: ${item.numBHs}`
-                : null,
+                                                                            typeof item.numBHs === 'number' && item.numBHs > 0
+                                                                                ? `BHs: ${item.numBHs}`
+                                                                                : null,
 
-            item.measure && item.measure !== 'NA'
-                ? `Measure: ${item.measure}`
-                : null
-        ].filter(Boolean);
+                                                                            item.measure && item.measure !== 'NA'
+                                                                                ? `Measure: ${item.measure}`
+                                                                                : null
+                                                                        ].filter(Boolean);
 
-        return values.length ? (
-            <p className="mt-1 text-xs text-gray-400">
-                {values.join('   |   ')}
-            </p>
-        ) : null;
-    })()
-)}
-
-
+                                                                        return values.length ? (
+                                                                            <p className="mt-1 text-xs text-gray-400">
+                                                                                {values.join('   |   ')}
+                                                                            </p>
+                                                                        ) : null;
+                                                                    })()
+                                                                )}
                                                             </td>
                                                             <td className="py-2 text-right text-gray-600 pr-4 font-medium text-xs">₹{item.price}</td>
                                                             <td className="py-2 px-2 text-right text-gray-600 pr-4 font-medium text-xs">{item.qty} {item.unit}</td>
