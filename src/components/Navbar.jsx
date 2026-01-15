@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Lock, ClipboardCheck } from 'lucide-react';
+import { Menu, X, Lock, ClipboardCheck, Settings } from 'lucide-react';
 import { initialSiteContent } from '@/data/siteContent';
 
 
@@ -14,8 +14,8 @@ const Navbar = () => {
 
 
   const navItems = [
-    { path: '/', label: 'Admin', icon: Lock },
-    { path: '/new-quotation', label: 'Create', icon: ClipboardCheck }
+    { path: '/new-quotation', label: 'Create New', icon: ClipboardCheck },
+    { path: '/', label: 'Configure', icon: Settings }
   ];
 
   const isActive = (path) => location.pathname === path;

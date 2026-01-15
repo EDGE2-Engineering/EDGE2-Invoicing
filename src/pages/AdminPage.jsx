@@ -100,7 +100,7 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Helmet>
-        <title>Admin Dashboard | EDGE2 Invoicing</title>
+        <title>Configure | EDGE2 Invoicing</title>
       </Helmet>
 
       <Navbar />
@@ -108,8 +108,8 @@ const AdminPage = () => {
       <main className="flex-grow container mx-auto px-4 py-12 relative">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-500 mt-1">Manage all aspects of your website</p>
+            <h1 className="text-xl font-bold text-gray-900">Configure</h1>
+            <p className="text-gray-500 mt-1">Manage services and tests</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center hidden md:flex">
