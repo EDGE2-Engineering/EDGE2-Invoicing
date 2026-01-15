@@ -543,7 +543,7 @@ const NewQuotationPage = () => {
                                                                 </p>
                                                             </div>
                                                             <img
-                                                                src="/edge2-logo.png"
+                                                                src={`${import.meta.env.BASE_URL}edge2-logo.png`}
                                                                 alt="EDGE2 Logo"
                                                                 className="w-20 h-20 object-contain"
                                                             />
