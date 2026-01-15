@@ -407,26 +407,29 @@ const NewQuotationPage = () => {
                                             {page.isFirstPage && (
                                                 <>
                                                     <div className="flex justify-between items-start border-b pb-4 mb-2">
-                                                        <div className="w-[40%]">
-                                                            <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                                                        <div className="w-[30%]">
+                                                            <h3 className="text-lg font-bold text-gray-900 tracking-tight">
                                                                 {documentType.toUpperCase()}
                                                             </h3>
-                                                            <p className="text-gray-500 mt-1 text-xs break-all font-bold">
+                                                            <p className="text-gray-500 mt-1 text-xs break-all">
                                                                 #{quoteDetails.quoteNumber}
                                                             </p>
-                                                            <p className="text-gray-500 mt-1 text-xs font-bold">
+                                                            <p className="text-gray-500 mt-1 text-xs">
                                                                 Date: {format(new Date(quoteDetails.date), 'dd MMM yyyy')}
                                                             </p>
                                                         </div>
 
-                                                        <div className="w-[60%] flex items-center gap-4 text-right">
+                                                        <div className="w-[70%] flex items-center gap-4 text-right">
                                                             <div className="text-right">
-                                                                <h2 className="font-bold text-xl">
+                                                                <h2 className="font-bold text-lg">
                                                                     EDGE2 Engineering Solutions India Pvt. Ltd.
                                                                 </h2>
                                                                 <p className="text-gray-600 text-xs">
                                                                     Shivaganga Arcade, B35/130, 6th Cross, 6th Block,
-                                                                    Vishweshwaraiah Layout, Ullal Upanagar. Bangalore - 560056, Karnataka
+                                                                    Vishweshwaraiah Layout, Ullal Upanagar,
+                                                                </p>
+                                                                <p className="text-gray-600 text-xs">
+                                                                     Bangalore - 560056, Karnataka
                                                                 </p>
                                                                 <p className="text-gray-600 text-xs">
                                                                     <span className="font-bold">PAN:</span> AACCE1702A, <span className="font-bold">GSTIN:</span> 29AACCE1702A1ZD
@@ -448,16 +451,16 @@ const NewQuotationPage = () => {
                                                     </div>
 
                                                     {/* Client, Contractor, Project Details - 3 Columns */}
-                                                    <div className="grid grid-cols-3 gap-6 mb-2 text-sm py-0 border-b">
+                                                    <div className="grid grid-cols-3 gap-6 mb-2 text-sm py-1 border-b">
                                                         {/* Column 1: Client */}
                                                         <div className="space-y-1">
                                                             <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
                                                                 Client
                                                             </h3>
-                                                            <p className="font-bold text-gray-900">{quoteDetails.clientName || 'Client Name'}</p>
-                                                            <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.clientAddress}</p>
-                                                            <p className="text-gray-600 italic mt-1">{quoteDetails.email}</p>
-                                                            <p className="text-gray-600 italic">{quoteDetails.phone}</p>
+                                                            <p className="font-bold text-gray-900 text-xs">{quoteDetails.clientName || 'Client Name'}</p>
+                                                            <p className="text-gray-600 whitespace-pre-wrap text-xs">{quoteDetails.clientAddress}</p>
+                                                            <p className="text-gray-600 italic mt-1 text-xs">{quoteDetails.email}</p>
+                                                            <p className="text-gray-600 italic text-xs">{quoteDetails.phone}</p>
                                                         </div>
 
                                                         {/* Column 2: Contractor */}
@@ -465,8 +468,8 @@ const NewQuotationPage = () => {
                                                             <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
                                                                 Contractor
                                                             </h3>
-                                                            <p className="font-bold text-gray-900">{quoteDetails.contractorName || 'Contractor Name'}</p>
-                                                            <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.contractorAddress}</p>
+                                                            <p className="font-bold text-gray-900 text-xs">{quoteDetails.contractorName || 'Contractor Name'}</p>
+                                                            <p className="text-gray-600 whitespace-pre-wrap text-xs">{quoteDetails.contractorAddress}</p>
                                                         </div>
 
                                                         {/* Column 3: Project */}
@@ -474,8 +477,8 @@ const NewQuotationPage = () => {
                                                             <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
                                                                 Project Details
                                                             </h3>
-                                                            <p className="font-bold text-gray-900">{quoteDetails.projectName || 'Project Name'}</p>
-                                                            <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.projectAddress}</p>
+                                                            <p className="font-bold text-gray-900 text-xs">{quoteDetails.projectName || 'Project Name'}</p>
+                                                            <p className="text-gray-600 whitespace-pre-wrap text-xs">{quoteDetails.projectAddress}</p>
                                                         </div>
                                                     </div>
                                                 </>
@@ -576,7 +579,7 @@ const NewQuotationPage = () => {
                                     <div className="a4-page-content">
                                         <div className="text-center text-gray-500 text-sm">
                                             <div className="text-left text-xs">
-                                                <div className="mt-12 pt-2 text-center text-gray-500 text-sm">
+                                                <div className="mt-0 pt-2 text-center text-gray-500 text-sm">
                                                     <h2 className="font-semibold text-left">Bank Details:</h2>
                                                     <p className="text-left">
                                                         <br />

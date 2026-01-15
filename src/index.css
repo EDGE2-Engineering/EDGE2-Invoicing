@@ -69,7 +69,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  gap: 3rem;
+  /* Increased gap for better page separation */
   min-height: calc(100vh - 200px);
 }
 
@@ -79,7 +80,7 @@
   max-height: 297mm;
   padding: 10mm;
   /* Reduced from 20mm */
-  margin: 0 auto;
+  margin: 0 auto 3rem auto;
   background: white;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   position: relative;
@@ -87,6 +88,8 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: 2px solid #e1e4e8;
+  /* Visual page separator in preview */
 }
 
 .a4-page-content {
@@ -147,6 +150,7 @@
   .a4-container {
     box-shadow: none;
     margin: 0;
+    /* Remove margin in print */
     width: 210mm;
     min-height: 297mm;
     max-height: 297mm;
@@ -158,6 +162,8 @@
     page-break-inside: avoid;
     float: none;
     overflow: hidden;
+    border: none;
+    /* Remove visual separator in print */
   }
 
   .a4-container:last-child {
