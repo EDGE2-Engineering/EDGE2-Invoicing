@@ -190,7 +190,7 @@ const AdminServicesManager = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Qty (Default)</Label>
+                        <Label>Quantity (Default)</Label>
                         <Input
                             type="number"
                             value={editingService.qty}
