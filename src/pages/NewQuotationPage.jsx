@@ -62,6 +62,7 @@ const NewQuotationPage = () => {
     const componentRef = useRef();
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
+        documentTitle: `Quotation_${quoteDetails.quoteNumber}`,
     });
 
     const handleAddItem = () => {
@@ -113,6 +114,64 @@ const NewQuotationPage = () => {
     const calculateTotal = () => {
         return items.reduce((sum, item) => sum + item.total, 0);
     };
+
+    // Dynamic pagination: Split items across pages
+    const ITEMS_PER_FIRST_PAGE = 8; // Conservative estimate for first page with header, client details, totals, bank details, payment terms
+    const ITEMS_PER_CONTINUATION_PAGE = 20; // More items fit on continuation pages (just header + table)
+
+    const paginateItems = () => {
+        const pages = [];
+
+        if (items.length === 0) {
+            // No items, just show the main page
+            pages.push({
+                items: [],
+                pageNumber: 1,
+                isFirstPage: true,
+                isContinuation: false
+            });
+        } else if (items.length <= ITEMS_PER_FIRST_PAGE) {
+            // All items fit on first page
+            pages.push({
+                items: items,
+                pageNumber: 1,
+                isFirstPage: true,
+                isContinuation: false
+            });
+        } else {
+            // Need multiple pages
+            // First page
+            pages.push({
+                items: items.slice(0, ITEMS_PER_FIRST_PAGE),
+                pageNumber: 1,
+                isFirstPage: true,
+                isContinuation: false
+            });
+
+            // Continuation pages
+            let remainingItems = items.slice(ITEMS_PER_FIRST_PAGE);
+            let pageNum = 2;
+
+            while (remainingItems.length > 0) {
+                const pageItems = remainingItems.slice(0, ITEMS_PER_CONTINUATION_PAGE);
+                pages.push({
+                    items: pageItems,
+                    pageNumber: pageNum,
+                    isFirstPage: false,
+                    isContinuation: true
+                });
+                remainingItems = remainingItems.slice(ITEMS_PER_CONTINUATION_PAGE);
+                pageNum++;
+            }
+        }
+
+        return pages;
+    };
+
+    const itemPages = paginateItems();
+    const totalQuotationPages = itemPages.length;
+    const STATIC_PAGES_COUNT = 2; // Terms & Conditions + Technicals
+    const totalPages = totalQuotationPages + STATIC_PAGES_COUNT;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -337,250 +396,295 @@ const NewQuotationPage = () => {
 
                     {/* Right Column: Preview */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 min-h-[600px] print-container">
+                        <div className="a4-preview-wrapper rounded-xl border border-gray-100 min-h-[600px] print-container shadow-inner">
+                            {/* Printable Area Root */}
+                            <div ref={componentRef} id="printable-quote-root">
+                                {/* Dynamically render quotation pages based on items */}
+                                {itemPages.map((page, pageIndex) => (
+                                    <div key={`quote-page-${page.pageNumber}`} className="a4-container" id={pageIndex === 0 ? "printable-quote" : undefined}>
+                                        <div className="a4-page-content">
+                                            {/* Header - only on first page */}
+                                            {page.isFirstPage && (
+                                                <>
+                                                    <div className="flex justify-between items-start border-b pb-4 mb-2">
+                                                        <div className="w-[40%]">
+                                                            <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                                                                {documentType.toUpperCase()}
+                                                            </h3>
+                                                            <p className="text-gray-500 mt-1 text-xs break-all font-bold">
+                                                                #{quoteDetails.quoteNumber}
+                                                            </p>
+                                                            <p className="text-gray-500 mt-1 text-xs font-bold">
+                                                                Date: {format(new Date(quoteDetails.date), 'dd MMM yyyy')}
+                                                            </p>
+                                                        </div>
 
-                            {/* Printable Area */}
-                            <div ref={componentRef} className="p-8 bg-white" id="printable-quote">
-                                {/* Header */}
-                                <div className="flex justify-between items-start border-b pb-4 mb-2">
-                                    <div className="w-[40%]">
-                                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">
-                                            {documentType.toUpperCase()}
-                                        </h3>
-                                        <p className="text-gray-500 mt-1 text-xs break-all font-bold">
-                                            #{quoteDetails.quoteNumber}
-                                        </p>
-                                        <p className="text-gray-500 mt-1 text-xs font-bold">
-                                            Date: {format(new Date(quoteDetails.date), 'dd MMM yyyy')}
-                                        </p>
+                                                        <div className="w-[60%] flex items-center gap-4 text-right">
+                                                            <div className="text-right">
+                                                                <h2 className="font-bold text-xl">
+                                                                    EDGE2 Engineering Solutions India Pvt. Ltd.
+                                                                </h2>
+                                                                <p className="text-gray-600 text-xs">
+                                                                    Shivaganga Arcade, B35/130, 6th Cross, 6th Block,
+                                                                    Vishweshwaraiah Layout, Ullal Upanagar. Bangalore - 560056, Karnataka
+                                                                </p>
+                                                                <p className="text-gray-600 text-xs">
+                                                                    <span className="font-bold">PAN:</span> AACCE1702A, <span className="font-bold">GSTIN:</span> 29AACCE1702A1ZD
+                                                                </p>
+                                                                <p className="text-gray-600 text-xs">
+                                                                    <span className="font-bold">Phone:</span> 09448377127 / 09880973810 / 080-50056086
+                                                                </p>
+                                                                <p className="text-gray-600 text-xs flex justify-end gap-4">
+                                                                    <span><span className="font-bold">Email:</span> info@edge2.in</span>
+                                                                    <span><span className="font-bold">Website:</span> https://edge2.in</span>
+                                                                </p>
+                                                            </div>
+                                                            <img
+                                                                src="/edge2-logo.png"
+                                                                alt="EDGE2 Logo"
+                                                                className="w-20 h-20 object-contain"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Client, Contractor, Project Details - 3 Columns */}
+                                                    <div className="grid grid-cols-3 gap-6 mb-2 text-sm py-0 border-b">
+                                                        {/* Column 1: Client */}
+                                                        <div className="space-y-1">
+                                                            <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
+                                                                Client
+                                                            </h3>
+                                                            <p className="font-bold text-gray-900">{quoteDetails.clientName || 'Client Name'}</p>
+                                                            <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.clientAddress}</p>
+                                                            <p className="text-gray-600 italic mt-1">{quoteDetails.email}</p>
+                                                            <p className="text-gray-600 italic">{quoteDetails.phone}</p>
+                                                        </div>
+
+                                                        {/* Column 2: Contractor */}
+                                                        <div className="space-y-1 border-l pl-6">
+                                                            <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
+                                                                Contractor
+                                                            </h3>
+                                                            <p className="font-bold text-gray-900">{quoteDetails.contractorName || 'Contractor Name'}</p>
+                                                            <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.contractorAddress}</p>
+                                                        </div>
+
+                                                        {/* Column 3: Project */}
+                                                        <div className="space-y-1 border-l pl-6">
+                                                            <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
+                                                                Project Details
+                                                            </h3>
+                                                            <p className="font-bold text-gray-900">{quoteDetails.projectName || 'Project Name'}</p>
+                                                            <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.projectAddress}</p>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* Continuation page header */}
+                                            {page.isContinuation && (
+                                                <div className="border-b pb-3 mb-4">
+                                                    <h3 className="text-lg font-bold text-gray-900">
+                                                        {documentType} #{quoteDetails.quoteNumber} (Continued)
+                                                    </h3>
+                                                </div>
+                                            )}
+
+                                            {/* Table */}
+                                            <table className="w-full mb-8">
+                                                <thead>
+                                                    <tr className="border-b-2 border-gray-100">
+                                                        <th className="text-left py-3 font-semibold text-gray-600 pr-4 text-sm">Description</th>
+                                                        <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Price</th>
+                                                        <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Qty</th>
+                                                        <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Total</th>
+                                                        <th className="w-10 print:hidden"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {page.items.map((item) => (
+                                                        <tr key={item.id} className="border-b border-gray-50">
+                                                            <td className="py-2 text-gray-900">
+                                                                <p className="font-medium pr-4 text-sm">{item.description}</p>
+                                                                <p className="text-xs text-gray-500 capitalize">{item.type}</p>
+                                                            </td>
+                                                            <td className="py-2 text-right text-gray-600 pr-4 font-medium text-xs">₹{item.price}</td>
+                                                            <td className="py-2 px-2 text-right text-gray-600 pr-4 font-medium text-xs">{item.qty} {item.unit}</td>
+                                                            <td className="py-2 text-right text-gray-900 pr-4 font-bold text-xs">₹{item.total.toLocaleString()}</td>
+                                                            <td className="text-right print:hidden">
+                                                                <button
+                                                                    onClick={() => handleDeleteItem(item.id)}
+                                                                    className="text-red-400 hover:text-red-600 p-1"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    {page.items.length === 0 && (
+                                                        <tr>
+                                                            <td colSpan="5" className="py-8 text-center text-gray-400 italic">
+                                                                No items added yet.
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </tbody>
+                                            </table>
+
+                                            {/* Footer Totals, Bank Details, Payment Terms - only on last quotation page */}
+                                            {pageIndex === itemPages.length - 1 && (
+                                                <>
+                                                    {/* Footer Totals */}
+                                                    <div className="flex justify-end">
+                                                        <div className="w-64 space-y-3">
+                                                            <div className="flex justify-between text-gray-600 text-sm">
+                                                                <span>Subtotal</span>
+                                                                <span>₹{calculateTotal().toLocaleString()}</span>
+                                                            </div>
+                                                            {discount > 0 && (
+                                                                <div className="flex justify-between text-green-600 text-sm">
+                                                                    <span>Discount ({discount}%)</span>
+                                                                    <span>- ₹{(calculateTotal() * (discount / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                                </div>
+                                                            )}
+                                                            <div className="flex justify-between text-gray-600 text-sm">
+                                                                <span>Tax (18%)</span>
+                                                                <span>₹{((calculateTotal() * (1 - discount / 100)) * 0.18).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                            </div>
+                                                            <div className="flex justify-between text-l font-bold text-gray-900 pt-4 border-t border-gray-100">
+                                                                <span>Total</span>
+                                                                <span>₹{((calculateTotal() * (1 - discount / 100)) * 1.18).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    
+                                                </>
+                                            )}
+
+                                        </div>
+                                        {/* Page Footer */}
+                                        <div className="a4-page-footer">
+                                            <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
+                                            <span>{documentType} #{quoteDetails.quoteNumber} | Page {page.pageNumber} of {totalPages}</span>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* Page 2: Bank */}
+                                <div className="a4-container">
+                                    <div className="a4-page-content">
+                                        <div className="text-center text-gray-500 text-sm">
+                                            <div className="text-left text-xs">
+                                                        <h2 className="font-semibold text-left">Bank Details:</h2>
+                                                        <p className="text-left">
+                                                            <br />
+                                                            Name: Edge2 Engineering Solutions India Pvt. Ltd.
+                                                            <br />
+                                                            A/c. No: 560321000022687
+                                                            <br />
+                                                            IFSC Code: UBIN0907634
+                                                            <br />
+                                                            Branch: Bangalore - Peenya
+                                                            <br />
+                                                            Bank: Union Bank of India	</p>
+                                                    </div>
+
+                                                    <div className="mt-6 pt-2 border-t text-center text-gray-500 text-sm">
+                                                        <h2 className="font-semibold text-left mb-4"> Payment Terms:	</h2>
+                                                        <div className="text-left text-xs">
+                                                            <ul className="list-disc">
+                                                                <li>Advance Payment of 60% + GST(18%) along with Work order as mobilization advance.</li>
+                                                                <li>Mobilization of Men and Machines shall be done in 3-5 days after the confirmation of Advance Payment.</li>
+                                                                <li>Balance Payment to be done after completion of field work.</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                        </div>
                                     </div>
 
-                                    <div className="w-[60%] flex items-center gap-4 text-right">
-                                        <div className="text-right">
-                                            <h2 className="font-bold text-xl">
-                                                EDGE2 Engineering Solutions India Pvt. Ltd.
-                                            </h2>
-                                            <p className="text-gray-600 text-xs">
-                                                Shivaganga Arcade, B35/130, 6th Cross, 6th Block,
-                                                Vishweshwaraiah Layout, Ullal Upanagar. Bangalore - 560056, Karnataka
-                                            </p>
-                                            <p className="text-gray-600 text-xs">
-                                                <span className="font-bold">PAN:</span> AACCE1702A, <span className="font-bold">GSTIN:</span> 29AACCE1702A1ZD
-                                            </p>
-                                            <p className="text-gray-600 text-xs">
-                                                <span className="font-bold">Phone:</span> 09448377127 / 09880973810 / 080-50056086
-                                            </p>
-                                            <p className="text-gray-600 text-xs flex justify-end gap-4">
-                                                <span><span className="font-bold">Email:</span> info@edge2.in</span>
-                                                <span><span className="font-bold">Website:</span> https://edge2.in</span>
-                                            </p>
-                                        </div>
-                                        <img
-                                            src="/edge2-logo.png"
-                                            alt="EDGE2 Logo"
-                                            className="w-20 h-20 object-contain"
-                                        />
+                                    {/* Page Footer */}
+                                    <div className="a4-page-footer">
+                                        <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
+                                        <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalQuotationPages + 1} of {totalPages}</span>
                                     </div>
                                 </div>
 
-                                {/* Client, Contractor, Project Details - 3 Columns */}
-                                <div className="grid grid-cols-3 gap-6 mb-2 text-sm py-0 border-b">
-                                    {/* Column 1: Client */}
-                                    <div className="space-y-1">
-                                        <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
-                                            Client
-                                        </h3>
-                                        <p className="font-bold text-gray-900">{quoteDetails.clientName || 'Client Name'}</p>
-                                        <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.clientAddress}</p>
-                                        <p className="text-gray-600 italic mt-1">{quoteDetails.email}</p>
-                                        <p className="text-gray-600 italic">{quoteDetails.phone}</p>
-                                    </div>
-
-                                    {/* Column 2: Contractor */}
-                                    <div className="space-y-1 border-l pl-6">
-                                        <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
-                                            Contractor
-                                        </h3>
-                                        <p className="font-bold text-gray-900">{quoteDetails.contractorName || 'Contractor Name'}</p>
-                                        <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.contractorAddress}</p>
-                                    </div>
-
-                                    {/* Column 3: Project */}
-                                    <div className="space-y-1 border-l pl-6">
-                                        <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
-                                            Project Details
-                                        </h3>
-                                        <p className="font-bold text-gray-900">{quoteDetails.projectName || 'Project Name'}</p>
-                                        <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.projectAddress}</p>
-                                    </div>
-                                </div>
-
-                                {/* Table */}
-                                <table className="w-full mb-8">
-                                    <thead>
-                                        <tr className="border-b-2 border-gray-100">
-                                            <th className="text-left py-3 font-semibold text-gray-600 pr-4 text-sm">Description</th>
-                                            <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Price</th>
-                                            <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Qty</th>
-                                            <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Total</th>
-                                            <th className="w-10 print:hidden"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {items.map((item) => (
-                                            <tr key={item.id} className="border-b border-gray-50">
-                                                <td className="py-2 text-gray-900">
-                                                    <p className="font-medium pr-4 text-sm">{item.description}</p>
-                                                    <p className="text-xs text-gray-500 capitalize">{item.type}</p>
-                                                </td>
-                                                <td className="py-2 text-right text-gray-600 pr-4 font-medium text-xs">₹{item.price}</td>
-                                                <td className="py-2 px-2 text-right text-gray-600 pr-4 font-medium text-xs">{item.qty} {item.unit}</td>
-                                                <td className="py-2 text-right text-gray-900 pr-4 font-bold text-xs">₹{item.total.toLocaleString()}</td>
-                                                <td className="text-right print:hidden">
-                                                    <button
-                                                        onClick={() => handleDeleteItem(item.id)}
-                                                        className="text-red-400 hover:text-red-600 p-1"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {items.length === 0 && (
-                                            <tr>
-                                                <td colSpan="5" className="py-8 text-center text-gray-400 italic">
-                                                    No items added yet.
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-
-                                {/* Footer Totals */}
-                                <div className="flex justify-end">
-                                    <div className="w-64 space-y-3">
-                                        <div className="flex justify-between text-gray-600 text-sm">
-                                            <span>Subtotal</span>
-                                            <span>₹{calculateTotal().toLocaleString()}</span>
-                                        </div>
-                                        {discount > 0 && (
-                                            <div className="flex justify-between text-green-600 text-sm">
-                                                <span>Discount ({discount}%)</span>
-                                                <span>- ₹{(calculateTotal() * (discount / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                {/* Page 2: Terms & Conditions */}
+                                <div className="a4-container">
+                                    <div className="a4-page-content">
+                                        <div className="text-center text-gray-500 text-sm">
+                                            <h2 className="font-semibold text-left text-lg mb-4">Terms & Conditions</h2>
+                                            <div className="text-left text-xs">
+                                                <ul className="list-disc space-y-2">
+                                                    <li>You will give free access to our Engineer / Technicians/Machines for carrying out assigned job at your site.</li>
+                                                    <li>Borehole location free from underground services shall be provided by you. We are not responsible for any damage to underground services.</li>
+                                                    <li>You will provide water for drilling and demostic purpose at site, free of cost.</li>
+                                                    <li>We require measurable site layout drawing for Borehole location drawing.</li>
+                                                    <li>UDS sampling will be done at every 1.0 m interval below EGL wherever possible, SPT Test will be conducted at every 1.5 m interval, thereafter or change in soil strata. Further sampling and testing will be performed based on the geotechnical attributes of the subsoil with an engineer's judgment appointed from Edge2.</li>
+                                                    <li>Drilling in Granite, boulders or gravels will be charged 3000.00 Rs per meter if it occurs at Ground Level. Such strata are challenging to drill and drilling may have to be terminated in some cases, in such scenarios if drilling stops and client wants another borehole to be drilled, It will be charged extra.</li>
+                                                    <li>Any quantities exceeding the quantities mentioned above will be subject to additional charges.</li>
+                                                    <li>These rates are excluding all bentonite charges &  Steel Casing required for drilling. For the cases of excessive seepage, or borehole collapse the required bentonite and casing will be charged Extra.</li>
+                                                    <li>Billing will be made based on actual items involved in drilling and testing as per site conditions.</li>
+                                                    <li>The rates quoted in this offer are valid only for the quantum of this scope of quotation. If there is any reduction in the quantity, the rates are subject to an increase accordingly and present quotation stands invalid.</li>
+                                                    <li>All the underground utility services shall be checked and marked by the client prior to start of the testing. We shall not be responsible for any damage caused to them during field activity.</li>
+                                                    <li>If our men and equipment are idle for want of test location clearance, delays in appropriate permissions, delays in providing execution requisites, delays in payments or delays in providing the requisites in clients scope etc. an idling charge, delay in on ground location of all points etc. of Rs 6500.00 shall pay extra per day per machine.</li>
+                                                    <li>Client's site representative shall receive our Engineer at nearest Bus Station so as to avoid delays in search of site location.</li>
+                                                    <li>After submission of draft report client will comment on report within 3 days & give confirmation of final report within 5 days of submission of draft report.</li>
+                                                    <li>Above quotation is valid for 15 days from date of submission.</li>
+                                                    <li>Rates given above will be subjected to appropriate taxes as applicable.</li>
+                                                    <li>Above quotation refers to the expenses for the assigned work only. All the other requirements such as entry passes, registrations, barricades, traffic safety cone etc. for our mens to work at site shall be in client scope.  If there are any special safety norms beyond gloves, shoes, and helmets, the client should inform the team in advance.</li>
+                                                    <li>We need proper access to site (for mobilization), proper permissions from the authorities for drilling at site, complete locations of drilling on ground as well as on plan well before the commencement of the work and sufficient working space before the commencement of the work.</li>
+                                                    <li>If any work at the factory then all the safety norms related documents are arranged by the client.</li>
+                                                    <li>Any specific terms or requirements pertaining to COVID 19 shall be readily mentioned in the scope of the work before accepting the quotations. If such requirements are raised after finalization/ at commencement/ during execution of work additional expenses attributed to those will be charged extra.</li>
+                                                    <li>Responsibilities pertaining to underground utilities will be borne by the client, and locations of execution shall be chosen by the client accordingly.</li>
+                                                    <li>If any objections occur through public or social activities or illegal matters during execution of the work, Edge2 Engineering Solutions India  Pvt. Ltd.  will not be responsible, all the responsibility will be taken by the Client. At the same time similar possibilities shall also be clearly mentioned by the client well before the commencement of work to  Edge2 Engineering Solutions India  Pvt. Ltd., failing to which the client will be responsible for all the losses incurred to men and equipment of Edge2.</li>
+                                                </ul>
                                             </div>
-                                        )}
-                                        <div className="flex justify-between text-gray-600 text-sm">
-                                            <span>Tax (18%)</span>
-                                            <span>₹{((calculateTotal() * (1 - discount / 100)) * 0.18).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                                        </div>
-                                        <div className="flex justify-between text-l font-bold text-gray-900 pt-4 border-t border-gray-100">
-                                            <span>Total</span>
-                                            <span>₹{((calculateTotal() * (1 - discount / 100)) * 1.18).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="mt-12 pt-2 border-t text-center text-gray-500 text-sm">
-                                    <h2 className="font-semibold text-left">Bank Details:</h2>
-                                    <p className="text-left">
-                                        <br />
-                                        Name: Edge2 Engineering Solutions India Pvt. Ltd.
-                                        <br />
-                                        A/c. No: 560321000022687
-                                        <br />
-                                        IFSC Code: UBIN0907634
-                                        <br />
-                                        Branch: Bangalore - Peenya
-                                        <br />
-                                        Bank: Union Bank of India	</p>
-                                </div>
-
-                                <div className="mt-4 pt-2 border-t text-center text-gray-500 text-sm">
-                                    <h2 className="font-semibold text-left"> Payment Terms:	</h2>
-                                    <div className="text-left text-xs">
-                                        <ul className="list-disc">
-                                            <li>Advance Payment of 60% + GST(18%) along with Work order as mobilization advance.</li>
-                                            <li>Mobilization of Men and Machines shall be done in 3-5 days after the confirmation of Advance Payment.</li>
-                                            <li>Balance Payment to be done after completion of field work.</li>
-                                        </ul>
+                                    {/* Page Footer */}
+                                    <div className="a4-page-footer">
+                                        <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
+                                        <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalQuotationPages + 1} of {totalPages}</span>
                                     </div>
                                 </div>
 
-
-                                <div className="mt-4 pt-2 border-t text-center text-gray-500 text-sm">
-                                    <h2 className="font-semibold text-left"> Terms & Conditions:	</h2>
-                                    <div className="text-left text-xs">
-                                        <ul className="list-disc">
-                                            <li>     You will give free access to our Engineer / Technicians/Machines for carrying out assigned job at your site.		</li>
-                                            <li> Borehole location free from underground services shall be provided by you. We are not responsible for any damage to underground services.
-                                            </li>
-                                            <li> You will provide water for drilling and demostic purpose at site, free of cost.
-                                            </li>
-                                            <li> We require measurable site layout drawing for Borehole location drawing.
-                                            </li>
-                                            <li>UDS sampling will be done at every 1.0 m interval below EGL wherever possible, SPT Test will be conducted at every 1.5 m interval, thereafter or change in soil strata. Further sampling and testing will be performed based on the geotechnical attributes of the subsoil with an engineer's judgment appointed from Edge2.
-                                            </li>
-                                            <li>Drilling in Granite, boulders or gravels will be charged 3000.00 Rs per meter if it occurs at Ground Level. Such strata are challenging to drill and drilling may have to be terminated in some cases, in such scenarios if drilling stops and client wants another borehole to be drilled, It will be charged extra.
-                                            </li>
-                                            <li>Any quantities exceeding the quantities mentioned above will be subject to additional charges.
-                                            </li>
-                                            <li>These rates are excluding all bentonite charges &  Steel Casing required for drilling. For the cases of excessive seepage, or borehole collapse the required bentonite and casing will be charged Extra.
-                                            </li>
-                                            <li>Billing will be made based on actual items involved in drilling and testing as per site conditions.
-                                            </li>
-                                            <li>The rates quoted in this offer are valid only for the quantum of this scope of quotation. If there is any reduction in the quantity, the rates are subject to an increase accordingly and present quotation stands invalid.
-                                            </li>
-                                            <li>All the underground utility services shall be checked and marked by the client prior to start of the testing. We shall not be responsible for any damage caused to them during field activity.
-                                            </li>
-                                            <li>If our men and equipment are idle for want of test location clearance, delays in appropriate permissions, delays in providing execution requisites, delays in payments or delays in providing the requisites in clients scope etc. an idling charge, delay in on ground location of all points etc. of Rs 6500.00 shall pay extra per day per machine.
-                                            </li>
-                                            <li>Client’s site representative shall receive our Engineer at nearest Bus Station so as to avoid delays in search of site location.
-                                            </li>
-                                            <li>After submission of draft report client will comment on report within 3 days & give confirmation of final report within 5 days of submission of draft report.
-                                            </li>
-                                            <li>Above quotation is valid for 15 days from date of submission.
-                                            </li>
-                                            <li>Rates given above will be subjected to appropriate taxes as applicable.
-                                            </li>
-                                            <li>Above quotation refers to the expenses for the assigned work only. All the other requirements such as entry passes, registrations, barricades, traffic safety cone etc. for our mens to work at site shall be in client scope.  If there are any special safety norms beyond gloves, shoes, and helmets, the client should inform the team in advance.
-                                            </li>
-                                            <li>We need proper access to site (for mobilization), proper permissions from the authorities for drilling at site, complete locations of drilling on ground as well as on plan well before the commencement of the work and sufficient working space before the commencement of the work.
-                                            </li>
-                                            <li>If any work at the factory then all the safety norms related documents are arranged by the client.
-                                            </li>
-                                            <li>Any specific terms or requirements pertaining to COVID 19 shall be readily mentioned in the scope of the work before accepting the quotations. If such requirements are raised after finalization/ at commencement/ during execution of work additional expenses attributed to those will be charged extra.
-                                            </li>
-                                            <li>Responsibilities pertaining to underground utilities will be borne by the client, and locations of execution shall be chosen by the client accordingly.
-                                            </li>
-                                            <li>If any objections occur through public or social activities or illegal matters during execution of the work, Edge2 Engineering Solutions India  Pvt. Ltd.  will not be responsible, all the responsibility will be taken by the Client. At the same time similar possibilities shall also be clearly mentioned by the client well before the commencement of work to  Edge2 Engineering Solutions India  Pvt. Ltd., failing to which the client will be responsible for all the losses incurred to men and equipment of Edge2.
-                                            </li>
-                                        </ul>
+                                {/* Page 3: Technicals */}
+                                <div className="a4-container">
+                                    <div className="a4-page-content">
+                                        <div className="text-center text-gray-500 text-sm">
+                                            <h2 className="font-semibold text-left text-lg mb-4">Technicals</h2>
+                                            <div className="text-left text-xs">
+                                                <ul className="list-disc space-y-2">
+                                                    <li>All the field investigation work will be carried out as per IS1892:1979 and relevant Indian Standards.</li>
+                                                    <li>Boring / drilling in all kinds of soils will be carried out , the diameter of borehole shall be min 150/100 mm.</li>
+                                                    <li>The standard penetrations tests will be conducted as per IS 2131-1981 at depths 1.0/1.5 intervals</li>
+                                                    <li>The Undisturbed / Disturebed soil will be taken at every 1.0/1.5m or at wherever strata changes by using 100 mm diameter, 400 mm long thin walled Shellby tubes.  The ends of the tubes shall be sealed with wax  and marked properly.  If UDS is not obtained due to hard strata or sandy strata, the same is  replaced by SPT.  The depth at which UDS collected and nos. of samples collected shall be recorded in borelogs.</li>
+                                                    <li>Bulk disturbed samples will be collected wherever UDS cannot be taken at every 1.0 m/1.5m intervals or wherever change of strata is encountered.</li>
+                                                    <li>The standing water table level (if encountered) and location cordinates will be recorded during field investigations in  the bore logs.</li>
+                                                    <li>The laboratory tests will be carried out as per relevant IS codes.</li>
+                                                    <li>Submission of technical report: The technical report will be submitted including detailed borelogs, discussions, recommendations regarding Safe Bearing capacity as per IS 6403 – 1982, IS 8009 Part I – 1980, IS 12070 - 1987</li>
+                                                </ul>
+                                            </div>
+                                            <h2 className="font-semibold text-left text-base mt-6 mb-3">Auger:</h2>
+                                            <div className="text-left text-xs">
+                                                <ul className="list-disc space-y-2">
+                                                    <li>The Undisturbed / Disturebed soil will be taken at every 1.0/1.5m or at wherever strata changes by using 100 mm diameter, 400 mm long thin walled Shellby tubes.  The ends of the tubes shall be sealed with wax  and marked properly.  If UDS is not obtained due to hard strata or sandy strata,the same is  replaced by SPT.  The depth at which UDS collected and nos. of samples collected shall be recorded in borelogs.</li>
+                                                    <li>Bulk disturbed samples will be collected wherever UDS cannot be taken at every 1m/1.5m intervals or wherever change of strata is encountered.</li>
+                                                    <li>The standing water table level (if encountered) and location cordinates will be recorded during field investigations in the bore logs.</li>
+                                                    <li>The laboratory tests will be carried out as per relevant IS codes.</li>
+                                                    <li>Submission of technical report.The technical report will be submitted including detailed borelogs, discussions, recommendations regarding Safe Bearing capacity as per IS 6403 – 1982, IS 8009 Part I – 1980, IS 12070 - 1987.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="mt-4 pt-2 border-t text-center text-gray-500 text-sm">
-                                    <h2 className="font-semibold text-left py-2">Technicals:</h2>
-                                    <div className="text-left text-xs">
-                                        <ul className="list-disc">
-                                            <li> All the field investigation work will be carried out as per IS1892:1979 and relevant Indian Standards.</li>
-                                            <li> Boring / drilling in all kinds of soils will be carried out , the diameter of borehole shall be min 150/100 mm.</li>
-                                            <li> The standard penetrations tests will be conducted as per IS 2131-1981 at depths 1.0/1.5 intervals </li>
-                                            <li> The Undisturbed / Disturebed soil will be taken at every 1.0/1.5m or at wherever strata changes by using 100 mm diameter, 400 mm long thin walled Shellby tubes.  The ends of the tubes shall be sealed with wax  and marked properly.  If UDS is not obtained due to hard strata or sandy strata, the same is  replaced by SPT.  The depth at which UDS collected and nos. of samples collected shall be recorded in borelogs.	</li>
-                                            <li> Bulk disturbed samples will be collected wherever UDS cannot be taken at every 1.0 m/1.5m intervals or wherever change of strata is encountered.		</li>
-                                            <li> The standing water table level (if encountered) and location cordinates will be recorded during field investigations in  the bore logs.</li>
-                                            <li> The laboratory tests will be carried out as per relevant IS codes.				</li>
-                                            <li> Submission of technical report: The technical report will be submitted including detailed borelogs, discussions, recommendations regarding Safe Bearing capacity as per IS 6403 – 1982, IS 8009 Part I – 1980, IS 12070 - 1987				</li>
-                                        </ul>
-                                    </div>
-                                    <h2 className="font-semibold text-left py-2">Auger:</h2>
-                                    <div className="text-left text-xs">
-                                        <ul className="list-disc">
-                                            <li>The Undisturbed / Disturebed soil will be taken at every 1.0/1.5m or at wherever strata changes by using 100 mm diameter, 400 mm long thin walled Shellby tubes.  The ends of the tubes shall be sealed with wax  and marked properly.  If UDS is not obtained due to hard strata or sandy strata,the same is  replaced by SPT.  The depth at which UDS collected and nos. of samples collected shall be recorded in borelogs.</li>
-                                            <li>Bulk disturbed samples will be collected wherever UDS cannot be taken at every 1m/1.5m intervals or wherever change of strata is encountered.</li>
-                                            <li>The standing water table level (if encountered) and location cordinates will be recorded during field investigations in the bore logs.</li>
-                                            <li>The laboratory tests will be carried out as per relevant IS codes.</li>
-                                            <li>Submission of technical report.The technical report will be submitted including detailed borelogs, discussions, recommendations regarding Safe Bearing capacity as per IS 6403 – 1982, IS 8009 Part I – 1980, IS 12070 - 1987.</li>
-                                        </ul>
+                                    {/* Page Footer */}
+                                    <div className="a4-page-footer">
+                                        <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
+                                        <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalQuotationPages + 2} of {totalPages}</span>
                                     </div>
                                 </div>
                             </div>
@@ -589,7 +693,7 @@ const NewQuotationPage = () => {
                 </div>
             </div>
             <Footer />
-        </div >
+        </div>
     );
 };
 
