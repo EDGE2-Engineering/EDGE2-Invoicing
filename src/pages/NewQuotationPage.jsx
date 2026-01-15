@@ -31,14 +31,17 @@ const NewQuotationPage = () => {
     const { services } = useServices();
     const { tests } = useTests();
 
-    const [clientDetails, setClientDetails] = useState({
-        name: '',
-        company: '',
-        address: '',
+    const [quoteDetails, setQuoteDetails] = useState({
+        clientName: '',
+        clientAddress: '',
+        contractorName: '',
+        contractorAddress: '',
+        projectName: '',
+        projectAddress: '',
         email: '',
         phone: '',
         date: format(new Date(), 'yyyy-MM-dd'),
-        quoteNumber: `EDGE2-${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
+        quoteNumber: `EESPIL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
     });
 
     const [items, setItems] = useState([]);
@@ -141,65 +144,111 @@ const NewQuotationPage = () => {
                                 <div>
                                     <Label>Client Name</Label>
                                     <Input
-                                        value={clientDetails.name}
-                                        onChange={e => setClientDetails({ ...clientDetails, name: e.target.value })}
+                                        value={quoteDetails.clientName}
+                                        onChange={e => setQuoteDetails({ ...quoteDetails, clientName: e.target.value })}
                                         placeholder="Enter client name"
                                     />
                                 </div>
                                 <div>
-                                    <Label>Company Name</Label>
+                                    <Label>Client Address</Label>
                                     <Input
-                                        value={clientDetails.company}
-                                        onChange={e => setClientDetails({ ...clientDetails, company: e.target.value })}
-                                        placeholder="Enter company name"
+                                        value={quoteDetails.clientAddress}
+                                        onChange={e => setQuoteDetails({ ...quoteDetails, clientAddress: e.target.value })}
+                                        placeholder="Enter client address"
+                                    />
+                                </div>
+                                <div className="pt-2 border-t">
+                                    <Label>Contractor Name</Label>
+                                    <Input
+                                        value={quoteDetails.contractorName}
+                                        onChange={e => setQuoteDetails({ ...quoteDetails, contractorName: e.target.value })}
+                                        placeholder="Enter contractor name"
                                     />
                                 </div>
                                 <div>
-                                    <Label>Email</Label>
+                                    <Label>Contractor Address</Label>
                                     <Input
-                                        value={clientDetails.email}
-                                        onChange={e => setClientDetails({ ...clientDetails, email: e.target.value })}
-                                        placeholder="client@example.com"
+                                        value={quoteDetails.contractorAddress}
+                                        onChange={e => setQuoteDetails({ ...quoteDetails, contractorAddress: e.target.value })}
+                                        placeholder="Enter contractor address"
+                                    />
+                                </div>
+                                <div className="pt-2 border-t">
+                                    <Label>Project Name</Label>
+                                    <Input
+                                        value={quoteDetails.projectName}
+                                        onChange={e => setQuoteDetails({ ...quoteDetails, projectName: e.target.value })}
+                                        placeholder="Enter project name"
                                     />
                                 </div>
                                 <div>
-                                    <Label>{documentType} Number</Label>
+                                    <Label>Project Address</Label>
                                     <Input
-                                        value={clientDetails.quoteNumber}
-                                        onChange={e => setClientDetails({ ...clientDetails, quoteNumber: e.target.value })}
-                                        placeholder="Enter number"
+                                        value={quoteDetails.projectAddress}
+                                        onChange={e => setQuoteDetails({ ...quoteDetails, projectAddress: e.target.value })}
+                                        placeholder="Enter project address"
                                     />
                                 </div>
-                                <div>
-                                    <Label>Date</Label>
-                                    <Input
-                                        type="date"
-                                        value={clientDetails.date}
-                                        onChange={e => setClientDetails({ ...clientDetails, date: e.target.value })}
-                                    />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Email</Label>
+                                        <Input
+                                            value={quoteDetails.email}
+                                            onChange={e => setQuoteDetails({ ...quoteDetails, email: e.target.value })}
+                                            placeholder="client@example.com"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Phone</Label>
+                                        <Input
+                                            value={quoteDetails.phone}
+                                            onChange={e => setQuoteDetails({ ...quoteDetails, phone: e.target.value })}
+                                            placeholder="Enter phone"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <Label>Document Type</Label>
-                                    <Select value={documentType} onValueChange={setDocumentType}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Invoice">Invoice</SelectItem>
-                                            <SelectItem value="Quotation">Quotation</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>{documentType} Number</Label>
+                                        <Input
+                                            value={quoteDetails.quoteNumber}
+                                            onChange={e => setQuoteDetails({ ...quoteDetails, quoteNumber: e.target.value })}
+                                            placeholder="Enter number"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Date</Label>
+                                        <Input
+                                            type="date"
+                                            value={quoteDetails.date}
+                                            onChange={e => setQuoteDetails({ ...quoteDetails, date: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <Label>Discount (%)</Label>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        value={discount}
-                                        onChange={e => setDiscount(Number(e.target.value))}
-                                        placeholder="Enter discount %"
-                                    />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Document Type</Label>
+                                        <Select value={documentType} onValueChange={setDocumentType}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Invoice">Invoice</SelectItem>
+                                                <SelectItem value="Quotation">Quotation</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <Label>Discount (%)</Label>
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            value={discount}
+                                            onChange={e => setDiscount(Number(e.target.value))}
+                                            placeholder="Enter discount %"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -293,32 +342,35 @@ const NewQuotationPage = () => {
                             {/* Printable Area */}
                             <div ref={componentRef} className="p-8 bg-white" id="printable-quote">
                                 {/* Header */}
-                                <div className="flex justify-between items-start border-b pb-4 mb-4">
-                                    <div className="w-[20%]">
-                                        <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
+                                <div className="flex justify-between items-start border-b pb-4 mb-2">
+                                    <div className="w-[40%]">
+                                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">
                                             {documentType.toUpperCase()}
                                         </h3>
-                                        <p className="text-gray-500 mt-1 text-sm">
-                                            #{clientDetails.quoteNumber}
+                                        <p className="text-gray-500 mt-1 text-xs break-all font-bold">
+                                            #{quoteDetails.quoteNumber}
+                                        </p>
+                                        <p className="text-gray-500 mt-1 text-xs font-bold">
+                                            Date: {format(new Date(quoteDetails.date), 'dd MMM yyyy')}
                                         </p>
                                     </div>
 
-                                    <div className="w-[80%] flex items-center gap-4 text-right">
+                                    <div className="w-[60%] flex items-center gap-4 text-right">
                                         <div className="text-right">
                                             <h2 className="font-bold text-xl">
                                                 EDGE2 Engineering Solutions India Pvt. Ltd.
                                             </h2>
-                                            <p className="text-gray-600 text-sm">
+                                            <p className="text-gray-600 text-xs">
                                                 Shivaganga Arcade, B35/130, 6th Cross, 6th Block,
                                                 Vishweshwaraiah Layout, Ullal Upanagar. Bangalore - 560056, Karnataka
                                             </p>
-                                            <p className="text-gray-600 text-sm">
+                                            <p className="text-gray-600 text-xs">
                                                 <span className="font-bold">PAN:</span> AACCE1702A, <span className="font-bold">GSTIN:</span> 29AACCE1702A1ZD
                                             </p>
-                                            <p className="text-gray-600 text-sm">
+                                            <p className="text-gray-600 text-xs">
                                                 <span className="font-bold">Phone:</span> 09448377127 / 09880973810 / 080-50056086
                                             </p>
-                                            <p className="text-gray-600 text-sm flex justify-end gap-4">
+                                            <p className="text-gray-600 text-xs flex justify-end gap-4">
                                                 <span><span className="font-bold">Email:</span> info@edge2.in</span>
                                                 <span><span className="font-bold">Website:</span> https://edge2.in</span>
                                             </p>
@@ -331,14 +383,35 @@ const NewQuotationPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Bill To */}
-                                <div className="mb-8">
-                                    <h3 className="text-gray-500 font-semibold text-sm uppercase tracking-wide mb-2">Bill To</h3>
-                                    <div className="text-gray-900">
-                                        <p className="font-bold text-lg">{clientDetails.name || 'Client Name'}</p>
-                                        <p>{clientDetails.company}</p>
-                                        <p>{clientDetails.email}</p>
-                                        <p className="mt-2 text-sm text-gray-500">Date: {format(new Date(clientDetails.date), 'dd MMM yyyy')}</p>
+                                {/* Client, Contractor, Project Details - 3 Columns */}
+                                <div className="grid grid-cols-3 gap-6 mb-2 text-sm py-0 border-b">
+                                    {/* Column 1: Client */}
+                                    <div className="space-y-1">
+                                        <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
+                                            Client
+                                        </h3>
+                                        <p className="font-bold text-gray-900">{quoteDetails.clientName || 'Client Name'}</p>
+                                        <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.clientAddress}</p>
+                                        <p className="text-gray-600 italic mt-1">{quoteDetails.email}</p>
+                                        <p className="text-gray-600 italic">{quoteDetails.phone}</p>
+                                    </div>
+
+                                    {/* Column 2: Contractor */}
+                                    <div className="space-y-1 border-l pl-6">
+                                        <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
+                                            Contractor
+                                        </h3>
+                                        <p className="font-bold text-gray-900">{quoteDetails.contractorName || 'Contractor Name'}</p>
+                                        <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.contractorAddress}</p>
+                                    </div>
+
+                                    {/* Column 3: Project */}
+                                    <div className="space-y-1 border-l pl-6">
+                                        <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
+                                            Project Details
+                                        </h3>
+                                        <p className="font-bold text-gray-900">{quoteDetails.projectName || 'Project Name'}</p>
+                                        <p className="text-gray-600 whitespace-pre-wrap">{quoteDetails.projectAddress}</p>
                                     </div>
                                 </div>
 
@@ -346,10 +419,10 @@ const NewQuotationPage = () => {
                                 <table className="w-full mb-8">
                                     <thead>
                                         <tr className="border-b-2 border-gray-100">
-                                            <th className="text-left py-3 font-semibold text-gray-600 pr-4">Description</th>
-                                            <th className="text-right py-3 font-semibold text-gray-600 pr-4">Price</th>
-                                            <th className="text-right py-3 font-semibold text-gray-600 pr-4">Qty</th>
-                                            <th className="text-right py-3 font-semibold text-gray-600 pr-4">Total</th>
+                                            <th className="text-left py-3 font-semibold text-gray-600 pr-4 text-sm">Description</th>
+                                            <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Price</th>
+                                            <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Qty</th>
+                                            <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Total</th>
                                             <th className="w-10 print:hidden"></th>
                                         </tr>
                                     </thead>
@@ -357,12 +430,12 @@ const NewQuotationPage = () => {
                                         {items.map((item) => (
                                             <tr key={item.id} className="border-b border-gray-50">
                                                 <td className="py-2 text-gray-900">
-                                                    <p className="font-medium pr-4">{item.description}</p>
+                                                    <p className="font-medium pr-4 text-sm">{item.description}</p>
                                                     <p className="text-xs text-gray-500 capitalize">{item.type}</p>
                                                 </td>
-                                                <td className="py-2 text-right text-gray-600 pr-4">₹{item.price}</td>
-                                                <td className="py-2 px-2 text-right text-gray-600 text-xs pr-4">{item.qty} {item.unit}</td>
-                                                <td className="py-2 text-right font-medium text-gray-900 pr-4">₹{item.total.toLocaleString()}</td>
+                                                <td className="py-2 text-right text-gray-600 pr-4 font-medium text-xs">₹{item.price}</td>
+                                                <td className="py-2 px-2 text-right text-gray-600 pr-4 font-medium text-xs">{item.qty} {item.unit}</td>
+                                                <td className="py-2 text-right text-gray-900 pr-4 font-bold text-xs">₹{item.total.toLocaleString()}</td>
                                                 <td className="text-right print:hidden">
                                                     <button
                                                         onClick={() => handleDeleteItem(item.id)}
@@ -386,21 +459,21 @@ const NewQuotationPage = () => {
                                 {/* Footer Totals */}
                                 <div className="flex justify-end">
                                     <div className="w-64 space-y-3">
-                                        <div className="flex justify-between text-gray-600">
+                                        <div className="flex justify-between text-gray-600 text-sm">
                                             <span>Subtotal</span>
                                             <span>₹{calculateTotal().toLocaleString()}</span>
                                         </div>
                                         {discount > 0 && (
-                                            <div className="flex justify-between text-green-600 font-medium">
+                                            <div className="flex justify-between text-green-600 text-sm">
                                                 <span>Discount ({discount}%)</span>
                                                 <span>- ₹{(calculateTotal() * (discount / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                             </div>
                                         )}
-                                        <div className="flex justify-between text-gray-600">
+                                        <div className="flex justify-between text-gray-600 text-sm">
                                             <span>Tax (18%)</span>
                                             <span>₹{((calculateTotal() * (1 - discount / 100)) * 0.18).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                         </div>
-                                        <div className="flex justify-between text-2xl font-bold text-gray-900 pt-4 border-t border-gray-100">
+                                        <div className="flex justify-between text-l font-bold text-gray-900 pt-4 border-t border-gray-100">
                                             <span>Total</span>
                                             <span>₹{((calculateTotal() * (1 - discount / 100)) * 1.18).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                         </div>
@@ -417,7 +490,7 @@ const NewQuotationPage = () => {
                                         <br />
                                         IFSC Code: UBIN0907634
                                         <br />
-                                        Branch: Bangalore- Peenya
+                                        Branch: Bangalore - Peenya
                                         <br />
                                         Bank: Union Bank of India	</p>
                                 </div>
@@ -439,7 +512,7 @@ const NewQuotationPage = () => {
                                     <div className="text-left text-xs">
                                         <ul className="list-disc">
                                             <li>     You will give free access to our Engineer / Technicians/Machines for carrying out assigned job at your site.		</li>
-                                            <li> Borehole location free from underground services shall be provided by you. We are not responsible for any   damage to underground services.
+                                            <li> Borehole location free from underground services shall be provided by you. We are not responsible for any damage to underground services.
                                             </li>
                                             <li> You will provide water for drilling and demostic purpose at site, free of cost.
                                             </li>
