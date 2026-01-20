@@ -227,7 +227,7 @@ const NewQuotationPage = () => {
 
     // Dynamic pagination: Split items across pages
     const ITEMS_PER_FIRST_PAGE = 5; // Very conservative - first page has header, client details, totals, bank details, payment terms
-    const ITEMS_PER_CONTINUATION_PAGE = 10; // Continuation pages have more space (just header + table)
+    const ITEMS_PER_CONTINUATION_PAGE = 6; // Continuation pages have more space (just header + table)
 
     const paginateItems = () => {
         const pages = [];
