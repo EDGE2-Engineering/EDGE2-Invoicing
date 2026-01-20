@@ -20,6 +20,7 @@ export const TestsProvider = ({ children }) => {
             testMethodSpecification: t.test_method_specification || t.testMethodSpecification || '',
             numDays: Number(t.num_days || t.numDays) || 0,
             price: Number(t.price) || 0,
+            hsnCode: t.hsn_code || t.hsnCode || '',
             createdAt: t.created_at || new Date().toISOString()
         };
     }, []);
@@ -31,7 +32,8 @@ export const TestsProvider = ({ children }) => {
         group: t.group,
         test_method_specification: t.testMethodSpecification,
         num_days: t.numDays,
-        price: t.price
+        price: t.price,
+        hsn_code: t.hsnCode || t.hsn_code || ''
     }), []);
 
     const fetchTests = useCallback(async () => {
@@ -103,6 +105,16 @@ export const TestsProvider = ({ children }) => {
     }, [tests]);
 
     const updateTest = async (updatedTest) => {
+        // Check for HSN code collision
+        if (updatedTest.hsnCode) {
+            const existingWithSameHsn = tests.find(
+                t => t.id !== updatedTest.id && t.hsnCode === updatedTest.hsnCode
+            );
+            if (existingWithSameHsn) {
+                throw new Error(`HSN code "${updatedTest.hsnCode}" is already used by another test: "${existingWithSameHsn.testType}"`);
+            }
+        }
+
         setTests(prev => prev.map(t => t.id === updatedTest.id ? updatedTest : t));
         try {
             const dbPayload = mapToDb(updatedTest);
@@ -111,10 +123,21 @@ export const TestsProvider = ({ children }) => {
             if (error) console.warn("Supabase Update Failed (tests):", error.message);
         } catch (err) {
             console.warn("Update Test Exception:", err);
+            throw err;
         }
     };
 
     const addTest = async (newTest) => {
+        // Check for HSN code collision
+        if (newTest.hsnCode) {
+            const existingWithSameHsn = tests.find(
+                t => t.hsnCode === newTest.hsnCode
+            );
+            if (existingWithSameHsn) {
+                throw new Error(`HSN code "${newTest.hsnCode}" is already used by another test: "${existingWithSameHsn.testType}"`);
+            }
+        }
+
         const tempId = newTest.id || `tst_${Date.now()}`;
         const testWithId = { ...newTest, id: tempId, created_at: new Date().toISOString() };
         setTests(prev => [...prev, testWithId]);
@@ -123,6 +146,7 @@ export const TestsProvider = ({ children }) => {
             if (error) console.warn("Supabase Add Failed (tests):", error.message);
         } catch (err) {
             console.warn("Add Test Exception:", err);
+            throw err;
         }
     };
 

@@ -36,6 +36,8 @@ const AdminTestsManager = () => {
 
     const filteredTests = tests.filter(t =>
         (t.testType?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (t.price?.toString() || '').includes(searchTerm) ||
+        (t.hsnCode?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (t.group?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (t.id?.toString().toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
@@ -52,7 +54,8 @@ const AdminTestsManager = () => {
             group: '',
             testMethodSpecification: '',
             numDays: 0,
-            price: 0
+            price: 0,
+            hsnCode: ''
         });
         setIsAddingNew(true);
     };
@@ -71,7 +74,7 @@ const AdminTestsManager = () => {
             setIsAddingNew(false);
         } catch (error) {
             console.error(error);
-            toast({ title: "Error", description: "Failed to save test. Please try again.", variant: "destructive" });
+            toast({ title: "Error", description: "Failed to save test. " + error.message, variant: "destructive" });
         } finally {
             setIsSaving(false);
         }
@@ -220,6 +223,15 @@ const AdminTestsManager = () => {
                             onChange={(e) => handleChange('price', Number(e.target.value))}
                         />
                     </div>
+
+                    <div className="space-y-2">
+                        <Label>HSN Code</Label>
+                        <Input
+                            value={editingTest.hsnCode || ''}
+                            onChange={(e) => handleChange('hsnCode', e.target.value)}
+                            placeholder="e.g. 998346"
+                        />
+                    </div>
                 </div>
             </div>
         );
@@ -265,6 +277,7 @@ const AdminTestsManager = () => {
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600 hidden md:table-cell">Materials</th>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600 hidden md:table-cell">Method</th>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Price</th>
+                            <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">HSN Code</th>
                             <th className="text-right py-3 px-4 font-semibold text-sm text-gray-600">Actions</th>
                         </tr>
                     </thead>
@@ -278,6 +291,7 @@ const AdminTestsManager = () => {
                                 <td className="py-3 px-4 text-gray-600 hidden md:table-cell">{test.materials}</td>
                                 <td className="py-3 px-4 text-gray-600 hidden md:table-cell">{test.testMethodSpecification || '-'}</td>
                                 <td className="py-3 px-4 text-gray-700">₹{test.price.toLocaleString()}</td>
+                                <td className="py-3 px-4 text-gray-600">{test.hsnCode || '-'}</td>
                                 <td className="py-3 px-4 text-right">
                                     <div className="flex justify-end space-x-2">
                                         <Button variant="ghost" size="icon" onClick={() => handleEdit(test)}>

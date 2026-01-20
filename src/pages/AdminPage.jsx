@@ -9,8 +9,11 @@ import { Button } from '@/components/ui/button';
 
 import AdminServicesManager from '@/components/admin/AdminServicesManager.jsx';
 import AdminTestsManager from '@/components/admin/AdminTestsManager.jsx';
+import AdminClientsManager from '@/components/admin/AdminClientsManager.jsx';
 
+import AdminSettingsManager from '@/components/admin/AdminSettingsManager.jsx';
 import AdminSettings from '@/components/admin/AdminSettings';
+
 import AdminLogin from '@/components/admin/AdminLogin';
 import UpdatePassword from '@/components/admin/UpdatePassword';
 import { useToast } from '@/components/ui/use-toast';
@@ -138,7 +141,8 @@ const AdminPage = () => {
 
               <option value="tabs">Services</option>
               <option value="tests">Tests</option>
-
+              <option value="clients">Clients</option>
+              <option value="app_settings">App Settings</option>
               <option value="settings">Security</option>
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
@@ -167,6 +171,20 @@ const AdminPage = () => {
               </TabsTrigger>
 
               <TabsTrigger
+                value="clients"
+                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+              >
+                <User className="w-4 h-4" /> Clients
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="app_settings"
+                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" /> App Settings
+              </TabsTrigger>
+
+              <TabsTrigger
                 value="settings"
                 className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
@@ -185,7 +203,15 @@ const AdminPage = () => {
             <AdminTestsManager />
           </TabsContent>
 
+          <TabsContent value="clients" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AdminClientsManager />
+          </TabsContent>
 
+
+
+          <TabsContent value="app_settings" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AdminSettingsManager />
+          </TabsContent>
 
           <TabsContent value="settings" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <AdminSettings />

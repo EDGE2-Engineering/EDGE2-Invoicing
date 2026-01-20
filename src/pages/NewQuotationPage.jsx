@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useServices } from '@/contexts/ServicesContext';
 import { useTests } from '@/contexts/TestsContext';
+import { useClients } from '@/contexts/ClientsContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import {
     Select,
     SelectContent,
@@ -42,6 +44,12 @@ const STORAGE_KEY = 'quotation_draft';
 const NewQuotationPage = () => {
     const { services } = useServices();
     const { tests } = useTests();
+    const { clients } = useClients();
+    const { settings } = useSettings();
+
+    const taxCGST = settings?.tax_cgst ? Number(settings.tax_cgst) : 9;
+    const taxSGST = settings?.tax_sgst ? Number(settings.tax_sgst) : 9;
+    const taxTotalPercent = taxCGST + taxSGST;
 
     // Load initial state from localStorage
     const loadSavedState = () => {
@@ -96,11 +104,22 @@ const NewQuotationPage = () => {
     const [newItemType, setNewItemType] = useState('service'); // 'service' or 'test'
     const [selectedItemId, setSelectedItemId] = useState('');
     const [qty, setQty] = useState(1);
-    const [documentType, setDocumentType] = useState(initialState.documentType); // 'Invoice' or 'Quotation'
+    const [documentType, setDocumentType] = useState(initialState.documentType); // 'Tax Invoice' or 'Quotation'
     const [discount, setDiscount] = useState(initialState.discount);
     const [comboboxOpen, setComboboxOpen] = useState(false);
     const [searchValue, setSearchValue] = useState('');
     const [clearDialogOpen, setClearDialogOpen] = useState(false);
+    const [clientNameSelection, setClientNameSelection] = useState(''); // Predefined client or 'Other'
+    const [customClientName, setCustomClientName] = useState('');
+
+    // Generate client options from loaded clients
+    const CLIENT_OPTIONS = [
+        ...(clients || []).map(client => ({
+            value: client.clientName,
+            label: client.clientName
+        })),
+        { value: 'Other', label: 'Other' }
+    ];
 
     // Save to localStorage whenever items, quoteDetails, documentType, or discount changes
     useEffect(() => {
@@ -137,6 +156,8 @@ const NewQuotationPage = () => {
         setDiscount(0);
         setSelectedItemId('');
         setQty(1);
+        setClientNameSelection('');
+        setCustomClientName('');
         localStorage.removeItem(STORAGE_KEY);
         setClearDialogOpen(false);
     };
@@ -181,6 +202,7 @@ const NewQuotationPage = () => {
                 price: Number(price),
                 qty: Number(qty),
                 total: Number(price) * Number(qty),
+                hsnCode: itemData.hsnCode || '',
                 // Include new service fields if it's a service
                 ...(newItemType === 'service' && itemData ? {
                     methodOfSampling: itemData.methodOfSampling || itemData.method_of_sampling || 'NA',
@@ -274,8 +296,8 @@ const NewQuotationPage = () => {
                         <h1 className="text-1xl font-bold text-gray-900">Create new {documentType}</h1>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => setClearDialogOpen(true)}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                         >
@@ -299,7 +321,7 @@ const NewQuotationPage = () => {
                                         <SelectValue placeholder="Select Type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Invoice">Invoice</SelectItem>
+                                        <SelectItem value="Tax Invoice">Tax Invoice</SelectItem>
                                         <SelectItem value="Quotation">Quotation</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -321,11 +343,53 @@ const NewQuotationPage = () => {
                             <div className="space-y-4 border-t pt-2">
                                 <div>
                                     <Label>Client Name</Label>
-                                    <Input
-                                        value={quoteDetails.clientName}
-                                        onChange={e => setQuoteDetails({ ...quoteDetails, clientName: e.target.value })}
-                                        placeholder="Enter client name"
-                                    />
+                                    <Select
+                                        value={clientNameSelection}
+                                        onValueChange={(value) => {
+                                            setClientNameSelection(value);
+                                            if (value !== 'Other') {
+                                                const selectedClient = clients.find(c => c.clientName === value);
+                                                setQuoteDetails({
+                                                    ...quoteDetails,
+                                                    clientName: value,
+                                                    clientAddress: selectedClient?.clientAddress || '',
+                                                    email: selectedClient?.email || '',
+                                                    phone: selectedClient?.phone || ''
+                                                });
+                                                setCustomClientName('');
+                                            } else {
+                                                setQuoteDetails({
+                                                    ...quoteDetails,
+                                                    clientName: customClientName,
+                                                    clientAddress: '',
+                                                    email: '',
+                                                    phone: ''
+                                                });
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select client" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {CLIENT_OPTIONS.map(option => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {clientNameSelection === 'Other' && (
+                                        <Input
+                                            className="mt-2"
+                                            value={customClientName}
+                                            onChange={e => {
+                                                setCustomClientName(e.target.value);
+                                                setQuoteDetails({ ...quoteDetails, clientName: e.target.value });
+                                            }}
+                                            placeholder="Enter custom client name"
+                                        />
+                                    )}
                                 </div>
                                 <div>
                                     <Label>Client Address</Label>
@@ -529,7 +593,7 @@ const NewQuotationPage = () => {
                                                                     Vishweshwaraiah Layout, Ullal Upanagar,
                                                                 </p>
                                                                 <p className="text-gray-600 text-xs">
-                                                                     Bangalore - 560056, Karnataka
+                                                                    Bangalore - 560056, Karnataka
                                                                 </p>
                                                                 <p className="text-gray-600 text-xs">
                                                                     <span className="font-bold">PAN:</span> AACCE1702A, <span className="font-bold">GSTIN:</span> 29AACCE1702A1ZD
@@ -559,8 +623,8 @@ const NewQuotationPage = () => {
                                                             </h3>
                                                             <p className="font-bold text-gray-900 text-xs">{quoteDetails.clientName || 'Client Name'}</p>
                                                             <p className="text-gray-600 whitespace-pre-wrap text-xs">{quoteDetails.clientAddress}</p>
-                                                            <p className="text-gray-600 italic mt-1 text-xs">{quoteDetails.email}</p>
-                                                            <p className="text-gray-600 italic text-xs">{quoteDetails.phone}</p>
+                                                            <p className="text-gray-600 mt-1 text-xs">Email: {quoteDetails.email}</p>
+                                                            <p className="text-gray-600 text-xs">Phone: {quoteDetails.phone}</p>
                                                         </div>
 
                                                         {/* Column 2: Contractor */}
@@ -610,6 +674,9 @@ const NewQuotationPage = () => {
                                                             <td className="py-2 text-gray-900">
                                                                 <p className="font-medium pr-4 text-sm">{item.description}</p>
                                                                 <p className="text-xs text-gray-500 capitalize">{item.type}</p>
+                                                                {item.hsnCode && (
+                                                                    <p className="text-xs text-gray-500">HSN: {item.hsnCode}</p>
+                                                                )}
                                                                 {item.type === 'service' && (
                                                                     (() => {
                                                                         const values = [
@@ -674,12 +741,20 @@ const NewQuotationPage = () => {
                                                                 </div>
                                                             )}
                                                             <div className="flex justify-between text-gray-600 text-sm">
-                                                                <span>Tax (18%)</span>
-                                                                <span>₹{((calculateTotal() * (1 - discount / 100)) * 0.18).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                                <span>CGST ({taxCGST}%)</span>
+                                                                <span>₹{((calculateTotal() * (1 - discount / 100)) * (taxCGST / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                            </div>
+                                                            <div className="flex justify-between text-gray-600 text-sm">
+                                                                <span>SGST ({taxSGST}%)</span>
+                                                                <span>₹{((calculateTotal() * (1 - discount / 100)) * (taxSGST / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                            </div>
+                                                            <div className="flex justify-between text-gray-600 text-sm font-medium">
+                                                                <span>Total Tax Amount</span>
+                                                                <span>₹{((calculateTotal() * (1 - discount / 100)) * (taxTotalPercent / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                                             </div>
                                                             <div className="flex justify-between text-l font-bold text-gray-900 pt-4 border-t border-gray-100">
                                                                 <span>Total</span>
-                                                                <span>₹{((calculateTotal() * (1 - discount / 100)) * 1.18).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                                <span>₹{((calculateTotal() * (1 - discount / 100)) * (1 + (taxTotalPercent / 100))).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -703,26 +778,38 @@ const NewQuotationPage = () => {
                                         <div className="text-center text-gray-500 text-sm">
                                             <div className="text-left text-xs">
                                                 <div className="mt-0 pt-2 text-center text-gray-500 text-sm">
-                                                    <h2 className="font-semibold text-left">Bank Details:</h2>
-                                                    <p className="text-left">
-                                                        <br />
-                                                        Name: Edge2 Engineering Solutions India Pvt. Ltd.
-                                                        <br />
-                                                        A/c. No: 560321000022687
-                                                        <br />
-                                                        IFSC Code: UBIN0907634
-                                                        <br />
-                                                        Branch: Bangalore - Peenya
-                                                        <br />
-                                                        Bank: Union Bank of India
-                                                    </p>
+                                                    <h2 className="font-semibold text-left">Bank Details</h2>
+                                                    <table className="w-full text-left text-sm mt-2 border-collapse">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold w-32 align-top">Name:</td>
+                                                                <td className="py-1 align-top">Edge2 Engineering Solutions India Pvt. Ltd.</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold align-top">A/c. No:</td>
+                                                                <td className="py-1 align-top">560321000022687</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold align-top">IFSC Code:</td>
+                                                                <td className="py-1 align-top">UBIN0907634</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold align-top">Branch:</td>
+                                                                <td className="py-1 align-top">Bangalore - Peenya</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold align-top">Bank:</td>
+                                                                <td className="py-1 align-top">Union Bank of India</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
 
                                                 <div className="mt-6 pt-2 border-t text-center text-gray-500 text-sm">
                                                     <h2 className="font-semibold text-left mb-4"> Payment Terms:	</h2>
                                                     <div className="text-left text-xs">
                                                         <ul className="list-disc">
-                                                            <li>Advance Payment of 60% + GST(18%) along with Work order as mobilization advance.</li>
+                                                            <li>Advance Payment of 60% + GST({taxTotalPercent}%) along with Work order as mobilization advance.</li>
                                                             <li>Mobilization of Men and Machines shall be done in 3-5 days after the confirmation of Advance Payment.</li>
                                                             <li>Balance Payment to be done after completion of field work.</li>
                                                         </ul>
@@ -831,7 +918,7 @@ const NewQuotationPage = () => {
                             Clear {documentType}?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to clear all items and start a new {documentType.toLowerCase()}? 
+                            Are you sure you want to clear all items and start a new {documentType.toLowerCase()}?
                             This action cannot be undone and all your current data will be lost.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

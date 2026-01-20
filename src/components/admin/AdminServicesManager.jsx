@@ -36,6 +36,8 @@ const AdminServicesManager = () => {
 
     const filteredServices = services.filter(s =>
         (s.serviceType?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (s.price?.toString() || '').includes(searchTerm) ||
+        (s.hsnCode?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (s.id?.toString().toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
 
@@ -52,7 +54,8 @@ const AdminServicesManager = () => {
             qty: 1,
             methodOfSampling: 'NA',
             numBHs: 0,
-            measure: 'NA'
+            measure: 'NA',
+            hsnCode: ''
         });
         setIsAddingNew(true);
     };
@@ -71,7 +74,7 @@ const AdminServicesManager = () => {
             setIsAddingNew(false);
         } catch (error) {
             console.error(error);
-            toast({ title: "Error", description: "Failed to save service. Please try again.", variant: "destructive" });
+            toast({ title: "Error", description: "Failed to save service. " + error.message, variant: "destructive" });
         } finally {
             setIsSaving(false);
         }
@@ -242,6 +245,15 @@ const AdminServicesManager = () => {
                             </SelectContent>
                         </Select>
                     </div>
+
+                    <div className="space-y-2">
+                        <Label>HSN Code</Label>
+                        <Input
+                            value={editingService.hsnCode || ''}
+                            onChange={(e) => handleChange('hsnCode', e.target.value)}
+                            placeholder="e.g. 998346"
+                        />
+                    </div>
                 </div>
             </div>
         );
@@ -289,6 +301,7 @@ const AdminServicesManager = () => {
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Method</th>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600"># BHs</th>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Measure</th>
+                            <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">HSN Code</th>
                             <th className="text-right py-3 px-4 font-semibold text-sm text-gray-600">Actions</th>
                         </tr>
                     </thead>
@@ -303,6 +316,7 @@ const AdminServicesManager = () => {
                                 <td className="py-3 px-4 text-gray-600">{service.methodOfSampling || 'NA'}</td>
                                 <td className="py-3 px-4 text-gray-600">{service.numBHs ?? 0}</td>
                                 <td className="py-3 px-4 text-gray-600">{service.measure || 'NA'}</td>
+                                <td className="py-3 px-4 text-gray-600">{service.hsnCode || '-'}</td>
                                 <td className="py-3 px-4 text-right">
                                     <div className="flex justify-end space-x-2">
                                         <Button variant="ghost" size="icon" onClick={() => handleEdit(service)}>
