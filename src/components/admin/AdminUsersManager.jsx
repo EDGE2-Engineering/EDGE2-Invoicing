@@ -29,7 +29,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Shield, User as UserIcon, Loader2 } from 'lucide-react';
+import { Plus, Pencil, UserMinus, UserCheck, Shield, User as UserIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -39,8 +39,8 @@ const AdminUsersManager = () => {
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [userToDelete, setUserToDelete] = useState(null);
+    const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+    const [userToToggle, setUserToToggle] = useState(null);
     const [formData, setFormData] = useState({
         username: '',
         password: '',
@@ -92,44 +92,45 @@ const AdminUsersManager = () => {
         setIsDialogOpen(true);
     };
 
-    const handleDeleteClick = (id) => {
-        if (id === currentUser?.id) {
+    const handleToggleStatusClick = (user) => {
+        if (user.id === currentUser?.id) {
             toast({
                 title: 'Action Prohibited',
-                description: 'You cannot delete your own account.',
+                description: 'You cannot deactivate your own account.',
                 variant: 'destructive'
             });
             return;
         }
-        setUserToDelete(id);
-        setIsDeleteDialogOpen(true);
+        setUserToToggle(user);
+        setIsStatusDialogOpen(true);
     };
 
-    const confirmDelete = async () => {
-        if (!userToDelete) return;
+    const confirmToggleStatus = async () => {
+        if (!userToToggle) return;
 
         try {
+            const newStatus = !userToToggle.is_active;
             const { error } = await supabase
                 .from('app_users')
-                .delete()
-                .eq('id', userToDelete);
+                .update({ is_active: newStatus, updated_at: new Date().toISOString() })
+                .eq('id', userToToggle.id);
 
             if (error) throw error;
 
-            setUsers(users.filter(u => u.id !== userToDelete));
+            setUsers(users.map(u => u.id === userToToggle.id ? { ...u, is_active: newStatus } : u));
             toast({
-                title: 'User Deleted',
-                description: 'The user has been successfully removed.'
+                title: `User ${newStatus ? 'Activated' : 'Deactivated'}`,
+                description: `The user has been successfully ${newStatus ? 'activated' : 'deactivated'}.`
             });
         } catch (error) {
             toast({
                 title: 'Error',
-                description: 'Failed to delete user: ' + error.message,
+                description: 'Failed to update user status: ' + error.message,
                 variant: 'destructive'
             });
         } finally {
-            setIsDeleteDialogOpen(false);
-            setUserToDelete(null);
+            setIsStatusDialogOpen(false);
+            setUserToToggle(null);
         }
     };
 
@@ -199,6 +200,7 @@ const AdminUsersManager = () => {
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600 w-[200px]">Username</th>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Full Name</th>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Role</th>
+                            <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Status</th>
                             <th className="text-right py-3 px-4 font-semibold text-sm text-gray-600">Actions</th>
                         </tr>
                     </thead>
@@ -226,6 +228,14 @@ const AdminUsersManager = () => {
                                         {user.role}
                                     </span>
                                 </td>
+                                <td className="py-3 px-4 text-sm">
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_active
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {user.is_active ? 'Active' : 'Deactivated'}
+                                    </span>
+                                </td>
                                 <td className="py-3 px-4 text-right">
                                     <div className="flex justify-end gap-2">
                                         <Button variant="ghost" size="sm" onClick={() => handleEditUser(user)}>
@@ -234,11 +244,12 @@ const AdminUsersManager = () => {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleDeleteClick(user.id)}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-30 disabled:hover:bg-transparent"
+                                            onClick={() => handleToggleStatusClick(user)}
+                                            className={`${user.is_active ? 'text-red-500 hover:text-red-700 hover:bg-red-50' : 'text-green-500 hover:text-green-700 hover:bg-green-50'} disabled:opacity-30 disabled:hover:bg-transparent`}
                                             disabled={user.id === currentUser?.id}
+                                            title={user.is_active ? 'Deactivate User' : 'Activate User'}
                                         >
-                                            <Trash2 className="w-4 h-4" />
+                                            {user.is_active ? <UserMinus className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                                         </Button>
                                     </div>
                                 </td>
@@ -304,19 +315,23 @@ const AdminUsersManager = () => {
                 </DialogContent>
             </Dialog>
 
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogTitle>{userToToggle?.is_active ? 'Deactivate User?' : 'Activate User?'}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the user
-                            and remove their data from our servers.
+                            {userToToggle?.is_active
+                                ? 'Are you sure you want to deactivate this user? They will no longer be able to log in to the system.'
+                                : 'Are you sure you want to reactivate this user? They will regain access to the system.'}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white">
-                            Delete User
+                        <AlertDialogAction
+                            onClick={confirmToggleStatus}
+                            className={userToToggle?.is_active ? "bg-red-600 hover:bg-red-700 text-white" : "bg-green-600 hover:bg-green-700 text-white"}
+                        >
+                            {userToToggle?.is_active ? 'Deactivate' : 'Activate'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

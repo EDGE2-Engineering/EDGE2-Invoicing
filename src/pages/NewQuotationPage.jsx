@@ -1,8 +1,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { Plus, Trash2, Printer, FileText, ArrowLeft, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Plus, Trash2, Printer, FileText, ArrowLeft, X, Save, Loader2 } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,8 @@ import ReactSelect from 'react-select';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { getSiteContent } from '@/data/siteContent';
+import { supabase } from '@/lib/customSupabaseClient';
+import { useToast } from '@/components/ui/use-toast';
 
 const STORAGE_KEY = 'quotation_draft';
 
@@ -110,6 +112,10 @@ const NewQuotationPage = () => {
     const { clients } = useClients();
     const { settings } = useSettings();
     const { user, isStandard } = useAuth();
+    const { toast } = useToast();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [savedRecordId, setSavedRecordId] = useState(searchParams.get('id') || null);
+    const [isSavingRecord, setIsSavingRecord] = useState(false);
 
     const taxCGST = settings?.tax_cgst ? Number(settings.tax_cgst) : 9;
     const taxSGST = settings?.tax_sgst ? Number(settings.tax_sgst) : 9;
@@ -211,6 +217,129 @@ const NewQuotationPage = () => {
         }
     }, [user, quoteDetails.generatedBy]);
 
+    // Load record from Supabase if ID is present
+    useEffect(() => {
+        const loadFromSupabase = async (id) => {
+            try {
+                const { data, error } = await supabase
+                    .from('saved_records')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+
+                if (data && data.content) {
+                    const content = data.content;
+                    setQuoteDetails(content.quoteDetails || {});
+                    setItems(content.items || []);
+                    setDocumentType(data.document_type || 'Quotation');
+                    setDiscount(content.discount || 0);
+                    setSavedRecordId(data.id);
+
+                    toast({
+                        title: "Record Loaded",
+                        description: `Loaded ${data.document_type} ${data.quote_number}`
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading record:', err);
+                toast({
+                    title: "Error",
+                    description: "Failed to load record from database.",
+                    variant: "destructive"
+                });
+            }
+        };
+
+        const id = searchParams.get('id');
+        if (id) {
+            loadFromSupabase(id);
+        }
+    }, [searchParams]);
+
+    const handleSaveToDatabase = async () => {
+        if (!user) {
+            toast({
+                title: "Authentication Required",
+                description: "You must be logged in to save to the database.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        setIsSavingRecord(true);
+        try {
+            const recordData = {
+                quote_number: quoteDetails.quoteNumber,
+                document_type: documentType,
+                client_name: quoteDetails.clientName,
+                content: {
+                    quoteDetails,
+                    items,
+                    discount
+                },
+                created_by: user.id,
+                updated_at: new Date().toISOString()
+            };
+
+            let error;
+            if (savedRecordId) {
+                // Update existing
+                const { error: updateError } = await supabase
+                    .from('saved_records')
+                    .update(recordData)
+                    .eq('id', savedRecordId);
+                error = updateError;
+            } else {
+                // Create new
+                const { data, error: insertError } = await supabase
+                    .from('saved_records')
+                    .insert([recordData])
+                    .select()
+                    .single();
+
+                if (!insertError && data) {
+                    setSavedRecordId(data.id);
+                    setSearchParams({ id: data.id });
+                }
+                error = insertError;
+            }
+
+            if (error) throw error;
+
+            toast({
+                title: "Success",
+                description: savedRecordId ? "Record updated successfully." : "Record saved successfully."
+            });
+        } catch (err) {
+            console.error('Error saving record:', err);
+
+            let finalErrorMessage = err.message || "Failed to save record.";
+
+            // Comprehensive check for Supabase/Postgres unique constraint violation (23505)
+            const isUniqueError =
+                err.code === '23505' ||
+                String(err.code) === '23505' ||
+                (err.message && (
+                    err.message.toLowerCase().includes('unique constraint') ||
+                    err.message.toLowerCase().includes('already exists')
+                ));
+
+            if (isUniqueError) {
+                finalErrorMessage = `A ${documentType.toLowerCase()} with number "${quoteDetails.quoteNumber}" already exists in the system. Please use a unique number.`;
+            }
+
+            toast({
+                title: "Error",
+                description: finalErrorMessage,
+                variant: "destructive"
+            });
+        } finally {
+            setIsSavingRecord(false);
+        }
+    };
+
     const handleClear = () => {
         setQuoteDetails({
             clientName: '',
@@ -232,6 +361,8 @@ const NewQuotationPage = () => {
         setQty(1);
         setClientNameSelection('');
         setCustomClientName('');
+        setSavedRecordId(null);
+        setSearchParams({});
         localStorage.removeItem(STORAGE_KEY);
         setClearDialogOpen(false);
     };
@@ -403,7 +534,11 @@ const NewQuotationPage = () => {
                         >
                             <X className="w-4 h-4 mr-2" /> Clear
                         </Button>
-                        <Button onClick={handlePrint} className="bg-primary hover:bg-primary-dark">
+                        <Button onClick={handleSaveToDatabase} disabled={isSavingRecord} className="bg-green-800 hover:bg-green-900 text-white">
+                            {isSavingRecord ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                            {savedRecordId ? 'Update' : 'Save'} {documentType}
+                        </Button>
+                        <Button onClick={handlePrint} className="bg-blue-800 hover:bg-blue-900 text-white">
                             <Printer className="w-4 h-4 mr-2" /> Print / PDF
                         </Button>
                     </div>

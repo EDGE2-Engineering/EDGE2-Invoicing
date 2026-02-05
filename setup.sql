@@ -9,6 +9,7 @@ drop table if exists public.app_settings cascade;
 drop table if exists public.client_service_prices cascade;
 drop table if exists public.client_test_prices cascade;
 drop table if exists public.app_users cascade;
+drop table if exists public.saved_records cascade;
 
 -- Keeping site_content and blogs if they are used by other parts of the app, 
 -- but ensuring services/tests are clean.
@@ -336,6 +337,7 @@ create table if not exists public.app_users (
   password text not null,
   full_name text,
   role text not null check (role in ('admin', 'standard')),
+  is_active boolean default true,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
@@ -353,9 +355,10 @@ create policy "Allow public management of users"
   using ( true )
   with check ( true );
 
-insert into public.app_users (username, password, full_name, role) values
-('admin', 'admin123', 'Administrator', 'admin'),
-('user', 'user123', 'Standard User', 'standard')
+insert into public.app_users (username, password, full_name, role, is_active) values
+('admin', 'admin123', 'Administrator', 'admin', true),
+('user', 'user123', 'Standard User', 'standard', true),
+('test', 'test123', 'Test User', 'standard', false)
 on conflict (username) do nothing;
 
 -- -----------------------------------------------------------------------------
@@ -365,3 +368,28 @@ insert into public.app_settings (setting_key, setting_value, description) values
 ('tax_cgst', '9', 'CGST Percentage'),
 ('tax_sgst', '9', 'SGST Percentage')
 ON CONFLICT (setting_key) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
+-- 10. Table: saved_records
+-- -----------------------------------------------------------------------------
+create table if not exists public.saved_records (
+  id uuid primary key default gen_random_uuid(),
+  quote_number text unique not null,
+  document_type text not null, -- 'Tax Invoice' or 'Quotation'
+  client_name text,
+  content jsonb not null, -- Stores quoteDetails, items, discount, etc.
+  created_by uuid references public.app_users(id),
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+alter table public.saved_records enable row level security;
+
+create policy "Saved records are viewable by everyone"
+  on public.saved_records for select
+  using ( true );
+
+create policy "Allow public management of saved records"
+  on public.saved_records for all
+  using ( true )
+  with check ( true );

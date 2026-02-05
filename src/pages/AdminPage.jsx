@@ -14,6 +14,7 @@ import AdminClientsManager from '@/components/admin/AdminClientsManager.jsx';
 import AdminSettingsManager from '@/components/admin/AdminSettingsManager.jsx';
 import AdminClientPricingManager from '@/components/admin/AdminClientPricingManager.jsx';
 import AdminUsersManager from '@/components/admin/AdminUsersManager.jsx';
+import SavedRecordsManager from '@/components/admin/SavedRecordsManager.jsx';
 
 import AdminLogin from '@/components/admin/AdminLogin';
 import UpdatePassword from '@/components/admin/UpdatePassword';
@@ -100,11 +101,12 @@ const AdminPage = () => {
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none appearance-none"
             >
 
-              <option value="tabs">Services</option>
+              <option value="services">Services</option>
               <option value="tests">Tests</option>
               <option value="clients">Clients</option>
               <option value="pricing">Client Pricing</option>
               <option value="app_settings">App Settings</option>
+              <option value="saved_records">Saved Records</option>
               <option value="users">User Management</option>
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
@@ -154,6 +156,13 @@ const AdminPage = () => {
               </TabsTrigger>
 
               <TabsTrigger
+                value="saved_records"
+                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" /> Saved Records
+              </TabsTrigger>
+
+              <TabsTrigger
                 value="users"
                 className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
@@ -185,6 +194,10 @@ const AdminPage = () => {
 
           <TabsContent value="app_settings" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <AdminSettingsManager />
+          </TabsContent>
+
+          <TabsContent value="saved_records" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <SavedRecordsManager />
           </TabsContent>
 
           <TabsContent value="users" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">

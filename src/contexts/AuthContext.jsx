@@ -29,6 +29,7 @@ export const AuthProvider = ({ children }) => {
                 .select('*')
                 .eq('username', username)
                 .eq('password', password)
+                .eq('is_active', true)
                 .single();
 
             if (error || !data) {
