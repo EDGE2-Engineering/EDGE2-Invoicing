@@ -43,8 +43,8 @@ const AdminLogin = ({ onLoginSuccess }) => {
               className="h-12 w-auto object-contain"
             />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Sign In</h1>
-          <p className="text-gray-500 mt-2 text-sm">Authorized Access Only</p>
+          <h1 className="text-xl font-bold text-gray-900">EDGE2 Invoicing</h1>
+          <p className="text-gray-500 mt-2 text-sm">Sign in to with your username and password</p>
         </div>
 
         {/* Form */}
@@ -117,7 +117,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
           <div className="text-center pt-2">
             <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
-              <ShieldCheck className="w-3 h-3" /> Secure System
+              <ShieldCheck className="w-3 h-3" /> Protected By EDGE2 Engineering Solutions India Pvt. Ltd.
             </p>
           </div>
         </form>
