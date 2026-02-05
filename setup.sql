@@ -5,6 +5,11 @@ drop table if exists public.products cascade;
 drop table if exists public.services cascade;
 drop table if exists public.tests cascade;
 drop table if exists public.clients cascade;
+drop table if exists public.app_settings cascade;
+drop table if exists public.client_service_prices cascade;
+drop table if exists public.client_test_prices cascade;
+drop table if exists public.app_users cascade;
+
 -- Keeping site_content and blogs if they are used by other parts of the app, 
 -- but ensuring services/tests are clean.
 
@@ -271,7 +276,91 @@ insert into public.clients (id, client_name, client_address, email, phone) value
 ('C2', 'Reliance Jio Infocomm Ltd.', 'Bengaluru, Karnataka', 'jio@email.com', '456'),
 ('C3', 'ATC Telecom Infrastructure Pvt. Ltd.', 'HM Tower, 1st Floor, Magrath Road Junction, Brigade Road, Ashok Nagar, Bengaluru - 560001, Karnataka, INDIA', 'atc@email.com', '789');
 
--- Sample Settings
+-- -----------------------------------------------------------------------------
+-- 6. Table: client_service_prices
+-- -----------------------------------------------------------------------------
+
+create table if not exists public.client_service_prices (
+  client_id text references public.clients(id) on delete cascade,
+  service_id text references public.services(id) on delete cascade,
+  price numeric not null,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now(),
+  primary key (client_id, service_id)
+);
+
+alter table public.client_service_prices enable row level security;
+
+create policy "Client service prices are viewable by everyone"
+  on public.client_service_prices for select
+  using ( true );
+
+create policy "Allow public management of client service prices"
+  on public.client_service_prices for all
+  using ( true )
+  with check ( true );
+
+-- -----------------------------------------------------------------------------
+-- 7. Table: client_test_prices
+-- -----------------------------------------------------------------------------
+
+create table if not exists public.client_test_prices (
+  client_id text references public.clients(id) on delete cascade,
+  test_id text references public.tests(id) on delete cascade,
+  price numeric not null,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now(),
+  primary key (client_id, test_id)
+);
+
+alter table public.client_test_prices enable row level security;
+
+drop policy if exists "Client test prices are viewable by everyone" on public.client_test_prices;
+create policy "Client test prices are viewable by everyone"
+  on public.client_test_prices for select
+  using ( true );
+
+drop policy if exists "Allow public management of client test prices" on public.client_test_prices;
+create policy "Allow public management of client test prices"
+  on public.client_test_prices for all
+  using ( true )
+  with check ( true );
+
+-- -----------------------------------------------------------------------------
+-- 8. Table: app_users
+-- -----------------------------------------------------------------------------
+
+create table if not exists public.app_users (
+  id uuid primary key default gen_random_uuid(),
+  username text unique not null,
+  password text not null,
+  full_name text,
+  role text not null check (role in ('admin', 'standard')),
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+alter table public.app_users enable row level security;
+
+drop policy if exists "Users are viewable by everyone" on public.app_users;
+create policy "Users are viewable by everyone"
+  on public.app_users for select
+  using ( true );
+
+drop policy if exists "Allow public management of users" on public.app_users;
+create policy "Allow public management of users"
+  on public.app_users for all
+  using ( true )
+  with check ( true );
+
+insert into public.app_users (username, password, full_name, role) values
+('admin', 'admin123', 'Administrator', 'admin'),
+('user', 'user123', 'Standard User', 'standard')
+on conflict (username) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- 9. Table: app_settings
+-- -----------------------------------------------------------------------------
 insert into public.app_settings (setting_key, setting_value, description) values
 ('tax_cgst', '9', 'CGST Percentage'),
 ('tax_sgst', '9', 'SGST Percentage')

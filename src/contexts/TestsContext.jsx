@@ -7,6 +7,7 @@ export const TestsContext = createContext();
 
 export const TestsProvider = ({ children }) => {
     const [tests, setTests] = useState([]);
+    const [clientTestPrices, setClientTestPrices] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const mapFromDb = useCallback((t) => {
@@ -83,8 +84,28 @@ export const TestsProvider = ({ children }) => {
         }
     }, [mapFromDb]);
 
+    const fetchClientTestPrices = useCallback(async () => {
+        try {
+            const { data, error } = await supabase
+                .from('client_test_prices')
+                .select('*');
+
+            if (error) {
+                console.warn("Supabase fetch error (client_test_prices):", error.message);
+                return;
+            }
+
+            if (data) {
+                setClientTestPrices(data);
+            }
+        } catch (error) {
+            console.error("Error loading client test prices:", error);
+        }
+    }, []);
+
     useEffect(() => {
         fetchTests();
+        fetchClientTestPrices();
         const handleStorageChange = () => {
             const stored = localStorage.getItem('tests');
             if (stored) {
@@ -96,7 +117,7 @@ export const TestsProvider = ({ children }) => {
         };
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, [fetchTests]);
+    }, [fetchTests, fetchClientTestPrices]);
 
     useEffect(() => {
         if (tests.length > 0) {
@@ -105,7 +126,6 @@ export const TestsProvider = ({ children }) => {
     }, [tests]);
 
     const updateTest = async (updatedTest) => {
-        // Check for HSN code collision
         if (updatedTest.hsnCode) {
             const existingWithSameHsn = tests.find(
                 t => t.id !== updatedTest.id && t.hsnCode === updatedTest.hsnCode
@@ -128,7 +148,6 @@ export const TestsProvider = ({ children }) => {
     };
 
     const addTest = async (newTest) => {
-        // Check for HSN code collision
         if (newTest.hsnCode) {
             const existingWithSameHsn = tests.find(
                 t => t.hsnCode === newTest.hsnCode
@@ -160,8 +179,65 @@ export const TestsProvider = ({ children }) => {
         }
     };
 
+    const updateClientTestPrice = async (clientId, testId, price) => {
+        try {
+            console.log(`Updating client test price: client=${clientId}, test=${testId}, price=${price}`);
+            const { data, error } = await supabase
+                .from('client_test_prices')
+                .upsert({
+                    client_id: clientId,
+                    test_id: testId,
+                    price: price,
+                    updated_at: new Date().toISOString()
+                })
+                .select();
+
+            if (error) {
+                console.error("Supabase Upsert Error (client_test_prices):", error);
+                throw error;
+            }
+            if (data) {
+                setClientTestPrices(prev => {
+                    const filtered = prev.filter(p => !(p.client_id === clientId && p.test_id === testId));
+                    return [...filtered, data[0]];
+                });
+            }
+        } catch (err) {
+            console.error("Exception in updateClientTestPrice:", err);
+            throw err;
+        }
+    };
+
+    const deleteClientTestPrice = async (clientId, testId) => {
+        try {
+            const { error } = await supabase
+                .from('client_test_prices')
+                .delete()
+                .eq('client_id', clientId)
+                .eq('test_id', testId);
+
+            if (error) throw error;
+            setClientTestPrices(prev => prev.filter(p => !(p.client_id === clientId && p.test_id === testId)));
+        } catch (err) {
+            console.error("Error deleting client test price:", err);
+            throw err;
+        }
+    };
+
     return (
-        <TestsContext.Provider value={{ tests, loading, updateTest, addTest, deleteTest, setTests, refreshTests: fetchTests }}>
+        <TestsContext.Provider value={{
+            tests,
+            clientTestPrices,
+            loading,
+            updateTest,
+            addTest,
+            deleteTest,
+            updateClientTestPrice,
+            deleteClientTestPrice,
+            setTests,
+            refreshTests: fetchTests,
+            refreshClientTestPrices: fetchClientTestPrices
+        }}>
             {children}
         </TestsContext.Provider>
     );

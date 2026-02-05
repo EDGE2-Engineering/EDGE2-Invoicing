@@ -38,7 +38,7 @@ clean: clean-build
 	rm -rf node_modules
 	rm -f package-lock.json
 
-# Run development server
+# Run development server with hot reload
 dev: install
 	@echo "Starting development server on http://localhost:3000..."
 	npm run dev

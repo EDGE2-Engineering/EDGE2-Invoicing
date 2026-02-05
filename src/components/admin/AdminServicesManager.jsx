@@ -309,14 +309,14 @@ const AdminServicesManager = () => {
                         {filteredServices.map((service) => (
                             <tr key={service.id} className="border-b hover:bg-gray-50 transition-colors">
                                 <td className="py-3 px-4">
-                                    <p className="font-medium text-gray-900">{service.serviceType}</p>
+                                    <p className="font-small text-sm text-gray-900">{service.serviceType}</p>
                                 </td>
-                                <td className="py-3 px-4 text-gray-700">₹{service.price.toLocaleString()}</td>
-                                <td className="py-3 px-4 text-gray-600">{service.unit}</td>
-                                <td className="py-3 px-4 text-gray-600">{service.methodOfSampling || 'NA'}</td>
-                                <td className="py-3 px-4 text-gray-600">{service.numBHs ?? 0}</td>
-                                <td className="py-3 px-4 text-gray-600">{service.measure || 'NA'}</td>
-                                <td className="py-3 px-4 text-gray-600">{service.hsnCode || '-'}</td>
+                                <td className="py-3 px-4 text-sm text-gray-700">₹{service.price.toLocaleString()}</td>
+                                <td className="py-3 px-4 text-sm text-gray-600">{service.unit}</td>
+                                <td className="py-3 px-4 text-sm text-gray-600">{service.methodOfSampling || 'NA'}</td>
+                                <td className="py-3 px-4 text-sm text-gray-600">{service.numBHs ?? 0}</td>
+                                <td className="py-3 px-4 text-sm text-gray-600">{service.measure || 'NA'}</td>
+                                <td className="py-3 px-4 text-sm text-gray-600">{service.hsnCode || '-'}</td>
                                 <td className="py-3 px-4 text-right">
                                     <div className="flex justify-end space-x-2">
                                         <Button variant="ghost" size="icon" onClick={() => handleEdit(service)}>

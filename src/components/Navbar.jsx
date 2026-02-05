@@ -2,21 +2,32 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Lock, ClipboardCheck, Settings } from 'lucide-react';
+import { Menu, X, Lock, ClipboardCheck, Settings, LogOut, User } from 'lucide-react';
 import { initialSiteContent } from '@/data/siteContent';
+import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 
+
+
+import { useAuth } from '@/contexts/AuthContext';
 
 
 const Navbar = () => {
+  const { user, logout, isStandard } = useAuth();
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const content = initialSiteContent;
 
+  const handleLogout = () => {
+    logout();
+    toast({ title: "Logged Out", description: "See you next time." });
+  };
 
   const navItems = [
-    { path: '/new-quotation', label: 'Create New', icon: ClipboardCheck },
-    { path: '/', label: 'Configure', icon: Settings }
-  ];
+    { path: '/new-quotation', label: 'Create New', icon: ClipboardCheck, roles: ['admin'] },
+    { path: '/', label: 'Configure', icon: Settings, roles: ['admin'] }
+  ].filter(item => !item.roles || (item.roles.includes('admin') && !isStandard()));
 
   const isActive = (path) => location.pathname === path;
 
@@ -50,8 +61,23 @@ const Navbar = () => {
                 <span>{item.label}</span>
               </Link>
             ))}
-
-
+            {user && (
+              <div className="flex items-center gap-4">
+                <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center">
+                  <User className="w-3.5 h-3.5 mr-1.5" />
+                  {user?.fullName || user?.username || 'Admin'}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  <span>Logout</span>
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center md:hidden gap-4">
@@ -90,6 +116,26 @@ const Navbar = () => {
                   <span className="font-medium">{item.label}</span>
                 </Link>
               ))}
+              {user && (
+                <>
+                  <div className="flex items-center space-x-3 py-3 px-4 rounded-lg bg-blue-50 text-blue-700 mb-2">
+                    <User className="w-5 h-5" />
+                    <span className="font-medium text-sm">
+                      Logged in as {user?.fullName || user?.username || 'Admin'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      handleLogout();
+                    }}
+                    className="flex items-center space-x-3 py-3 px-4 rounded-lg transition-colors text-red-600 hover:bg-red-50 w-full text-left"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span className="font-medium">Logout</span>
+                  </button>
+                </>
+              )}
             </div>
           </motion.div>
         )}

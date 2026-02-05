@@ -12,6 +12,7 @@ import { useServices } from '@/contexts/ServicesContext';
 import { useTests } from '@/contexts/TestsContext';
 import { useClients } from '@/contexts/ClientsContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Select,
     SelectContent,
@@ -42,10 +43,11 @@ import { format } from 'date-fns';
 const STORAGE_KEY = 'quotation_draft';
 
 const NewQuotationPage = () => {
-    const { services } = useServices();
-    const { tests } = useTests();
+    const { services, clientServicePrices } = useServices();
+    const { tests, clientTestPrices } = useTests();
     const { clients } = useClients();
     const { settings } = useSettings();
+    const { isStandard } = useAuth();
 
     const taxCGST = settings?.tax_cgst ? Number(settings.tax_cgst) : 9;
     const taxSGST = settings?.tax_sgst ? Number(settings.tax_sgst) : 9;
@@ -68,7 +70,7 @@ const NewQuotationPage = () => {
                         email: '',
                         phone: '',
                         date: format(new Date(), 'yyyy-MM-dd'),
-                        quoteNumber: `EESPIL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
+                        quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
                     },
                     items: parsed.items || [],
                     documentType: parsed.documentType || 'Quotation',
@@ -89,7 +91,7 @@ const NewQuotationPage = () => {
                 email: '',
                 phone: '',
                 date: format(new Date(), 'yyyy-MM-dd'),
-                quoteNumber: `EESPIL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
+                quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
             },
             items: [],
             documentType: 'Quotation',
@@ -149,7 +151,7 @@ const NewQuotationPage = () => {
             email: '',
             phone: '',
             date: format(new Date(), 'yyyy-MM-dd'),
-            quoteNumber: `EESPIL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
+            quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
         });
         setItems([]);
         setDocumentType('Quotation');
@@ -160,6 +162,26 @@ const NewQuotationPage = () => {
         setCustomClientName('');
         localStorage.removeItem(STORAGE_KEY);
         setClearDialogOpen(false);
+    };
+
+    const getAppropiatePrice = (itemId, type, clientId) => {
+        if (!clientId) {
+            if (type === 'service') {
+                return services.find(s => s.id === itemId)?.price || 0;
+            } else {
+                return tests.find(t => t.id === itemId)?.price || 0;
+            }
+        }
+
+        if (type === 'service') {
+            const clientPrice = clientServicePrices.find(p => p.client_id === clientId && p.service_id === itemId);
+            if (clientPrice) return clientPrice.price;
+            return services.find(s => s.id === itemId)?.price || 0;
+        } else {
+            const clientPrice = clientTestPrices.find(p => p.client_id === clientId && p.test_id === itemId);
+            if (clientPrice) return clientPrice.price;
+            return tests.find(t => t.id === itemId)?.price || 0;
+        }
     };
 
     const componentRef = useRef();
@@ -193,15 +215,18 @@ const NewQuotationPage = () => {
         }
 
         if (itemData) {
+            const clientId = clients.find(c => c.clientName === quoteDetails.clientName)?.id;
+            const finalPrice = getAppropiatePrice(selectedItemId, newItemType, clientId);
+
             setItems(prev => [...prev, {
                 id: Date.now(), // unique ID for row
                 sourceId: selectedItemId,
                 type: newItemType,
                 description,
                 unit,
-                price: Number(price),
+                price: Number(finalPrice),
                 qty: Number(qty),
-                total: Number(price) * Number(qty),
+                total: Number(finalPrice) * Number(qty),
                 hsnCode: itemData.hsnCode || '',
                 // Include new service fields if it's a service
                 ...(newItemType === 'service' && itemData ? {
@@ -290,9 +315,11 @@ const NewQuotationPage = () => {
             <div className="container mx-auto px-4 py-8">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
-                        <Link to="/" className="text-gray-500 hover:text-gray-900">
-                            <ArrowLeft className="w-6 h-6" />
-                        </Link>
+                        {!isStandard() && (
+                            <Link to="/" className="text-gray-500 hover:text-gray-900">
+                                <ArrowLeft className="w-6 h-6" />
+                            </Link>
+                        )}
                         <h1 className="text-1xl font-bold text-gray-900">Create new {documentType}</h1>
                     </div>
                     <div className="flex items-center gap-2">
@@ -357,6 +384,19 @@ const NewQuotationPage = () => {
                                                     phone: selectedClient?.phone || ''
                                                 });
                                                 setCustomClientName('');
+
+                                                // Update item prices based on the new client
+                                                if (items.length > 0) {
+                                                    const updatedItems = items.map(item => {
+                                                        const newPrice = getAppropiatePrice(item.sourceId, item.type, selectedClient?.id);
+                                                        return {
+                                                            ...item,
+                                                            price: Number(newPrice),
+                                                            total: Number(newPrice) * item.qty
+                                                        };
+                                                    });
+                                                    setItems(updatedItems);
+                                                }
                                             } else {
                                                 setQuoteDetails({
                                                     ...quoteDetails,

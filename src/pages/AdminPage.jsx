@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, LayoutDashboard, Home, FileText, LogOut, User, Save, Loader2, UserCog } from 'lucide-react';
+import { Settings, LayoutDashboard, Home, FileText, User, Save, Loader2, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import AdminServicesManager from '@/components/admin/AdminServicesManager.jsx';
@@ -12,7 +12,8 @@ import AdminTestsManager from '@/components/admin/AdminTestsManager.jsx';
 import AdminClientsManager from '@/components/admin/AdminClientsManager.jsx';
 
 import AdminSettingsManager from '@/components/admin/AdminSettingsManager.jsx';
-import AdminSettings from '@/components/admin/AdminSettings';
+import AdminClientPricingManager from '@/components/admin/AdminClientPricingManager.jsx';
+import AdminUsersManager from '@/components/admin/AdminUsersManager.jsx';
 
 import AdminLogin from '@/components/admin/AdminLogin';
 import UpdatePassword from '@/components/admin/UpdatePassword';
@@ -20,57 +21,29 @@ import { useToast } from '@/components/ui/use-toast';
 
 import { supabase } from '@/lib/customSupabaseClient';
 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+
 const AdminPage = () => {
+  const { user, loading, logout, isStandard } = useAuth();
+  const navigate = useNavigate();
   const [mainTab, setMainTab] = useState('services');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
-  const [username, setUsername] = useState('');
 
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-      if (session?.user) {
-        const nameFromMetadata = session.user.user_metadata?.username || session.user.user_metadata?.full_name;
-        setUsername(nameFromMetadata || session.user.email || 'Admin');
-      }
-      setCheckingAuth(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsPasswordRecovery(true);
-      }
-      setIsAuthenticated(!!session);
-      if (session?.user) {
-        const nameFromMetadata = session.user.user_metadata?.username || session.user.user_metadata?.full_name;
-        setUsername(nameFromMetadata || session.user.email || 'Admin');
-      } else {
-        setUsername('');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    if (isStandard()) {
+      navigate('/new-quotation');
+    }
+  }, [user, navigate]);
 
   const handleLoginSuccess = () => {
-    // Session state is handled by the subscription above
     toast({ title: "Welcome back", description: "You have successfully logged in." });
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast({ title: "Logged Out", description: "See you next time." });
-  };
 
-
-
-  if (checkingAuth) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -89,7 +62,7 @@ const AdminPage = () => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!user && !loading) {
     return (
       <>
         <Helmet>
@@ -112,19 +85,7 @@ const AdminPage = () => {
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div>
             <h1 className="text-xl font-bold text-gray-900">Configure</h1>
-            <p className="text-gray-500 mt-1">Manage services and tests</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center hidden md:flex">
-              <User className="w-4 h-4 mr-2" />
-              {`Logged in as ${username || 'Admin'}`}
-            </div>
-
-
-
-            <Button variant="outline" size="sm" onClick={handleLogout} className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100">
-              <LogOut className="w-4 h-4 mr-2" /> Logout
-            </Button>
+            <p className="text-gray-500 mt-1">Manage everything</p>
           </div>
         </div>
 
@@ -142,8 +103,9 @@ const AdminPage = () => {
               <option value="tabs">Services</option>
               <option value="tests">Tests</option>
               <option value="clients">Clients</option>
+              <option value="pricing">Client Pricing</option>
               <option value="app_settings">App Settings</option>
-              <option value="settings">Security</option>
+              <option value="users">User Management</option>
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -178,6 +140,13 @@ const AdminPage = () => {
               </TabsTrigger>
 
               <TabsTrigger
+                value="pricing"
+                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+              >
+                <LayoutDashboard className="w-4 h-4" /> Client Pricing
+              </TabsTrigger>
+
+              <TabsTrigger
                 value="app_settings"
                 className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
@@ -185,11 +154,12 @@ const AdminPage = () => {
               </TabsTrigger>
 
               <TabsTrigger
-                value="settings"
+                value="users"
                 className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
-                <UserCog className="w-4 h-4" /> Security
+                <UserCog className="w-4 h-4" /> Users
               </TabsTrigger>
+
             </TabsList>
           </div>
 
@@ -207,20 +177,24 @@ const AdminPage = () => {
             <AdminClientsManager />
           </TabsContent>
 
+          <TabsContent value="pricing" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AdminClientPricingManager />
+          </TabsContent>
+
 
 
           <TabsContent value="app_settings" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <AdminSettingsManager />
           </TabsContent>
 
-          <TabsContent value="settings" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <AdminSettings />
+          <TabsContent value="users" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AdminUsersManager />
           </TabsContent>
         </Tabs>
-      </main>
+      </main >
 
       <Footer />
-    </div>
+    </div >
   );
 };
 

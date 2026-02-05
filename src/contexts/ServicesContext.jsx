@@ -7,6 +7,7 @@ export const ServicesContext = createContext();
 
 export const ServicesProvider = ({ children }) => {
     const [services, setServices] = useState([]);
+    const [clientServicePrices, setClientServicePrices] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const mapFromDb = useCallback((s) => {
@@ -85,8 +86,28 @@ export const ServicesProvider = ({ children }) => {
         }
     }, [mapFromDb]);
 
+    const fetchClientServicePrices = useCallback(async () => {
+        try {
+            const { data, error } = await supabase
+                .from('client_service_prices')
+                .select('*');
+
+            if (error) {
+                console.warn("Supabase fetch error (client_service_prices):", error.message);
+                return;
+            }
+
+            if (data) {
+                setClientServicePrices(data);
+            }
+        } catch (error) {
+            console.error("Error loading client service prices:", error);
+        }
+    }, []);
+
     useEffect(() => {
         fetchServices();
+        fetchClientServicePrices();
         const handleStorageChange = () => {
             const stored = localStorage.getItem('services');
             if (stored) {
@@ -98,7 +119,7 @@ export const ServicesProvider = ({ children }) => {
         };
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, [fetchServices]);
+    }, [fetchServices, fetchClientServicePrices]);
 
     useEffect(() => {
         if (services.length > 0) {
@@ -107,7 +128,6 @@ export const ServicesProvider = ({ children }) => {
     }, [services]);
 
     const updateService = async (updatedService) => {
-        // Check for HSN code collision
         if (updatedService.hsnCode) {
             const existingWithSameHsn = services.find(
                 s => s.id !== updatedService.id && s.hsnCode === updatedService.hsnCode
@@ -117,17 +137,12 @@ export const ServicesProvider = ({ children }) => {
             }
         }
 
-        // Store the previous state to revert if update fails
         const previousServices = [...services];
-
-        // Optimistically update local state
         setServices(prev => prev.map(s => s.id === updatedService.id ? updatedService : s));
 
         try {
             const dbPayload = mapToDb(updatedService);
             const { id, ...updates } = dbPayload;
-
-            // Add updated_at timestamp
             updates.updated_at = new Date().toISOString();
 
             const { error, data } = await supabase
@@ -138,26 +153,22 @@ export const ServicesProvider = ({ children }) => {
 
             if (error) {
                 console.error("Supabase Update Failed (services):", error);
-                // Revert local state on error
                 setServices(previousServices);
                 throw new Error(`Failed to update service: ${error.message}`);
             }
 
-            // Update local state with the returned data to ensure consistency
             if (data && data.length > 0) {
                 const updated = mapFromDb(data[0]);
                 setServices(prev => prev.map(s => s.id === updated.id ? updated : s));
             }
         } catch (err) {
             console.error("Update Service Exception:", err);
-            // Revert local state on error
             setServices(previousServices);
             throw err;
         }
     };
 
     const addService = async (newService) => {
-        // Check for HSN code collision
         if (newService.hsnCode) {
             const existingWithSameHsn = services.find(
                 s => s.hsnCode === newService.hsnCode
@@ -170,10 +181,7 @@ export const ServicesProvider = ({ children }) => {
         const tempId = newService.id || `srv_${Date.now()}`;
         const serviceWithId = { ...newService, id: tempId, created_at: new Date().toISOString() };
 
-        // Store the previous state to revert if insert fails
         const previousServices = [...services];
-
-        // Optimistically update local state
         setServices(prev => [...prev, serviceWithId]);
 
         try {
@@ -188,30 +196,23 @@ export const ServicesProvider = ({ children }) => {
 
             if (error) {
                 console.error("Supabase Add Failed (services):", error);
-                // Revert local state on error
                 setServices(previousServices);
                 throw new Error(`Failed to add service: ${error.message}`);
             }
 
-            // Update local state with the returned data to ensure consistency
             if (data && data.length > 0) {
                 const added = mapFromDb(data[0]);
                 setServices(prev => prev.map(s => s.id === tempId ? added : s));
             }
         } catch (err) {
             console.error("Add Service Exception:", err);
-            // Revert local state on error
             setServices(previousServices);
             throw err;
         }
     };
 
     const deleteService = async (id) => {
-        // Store the previous state to revert if delete fails
         const previousServices = [...services];
-        const serviceToDelete = services.find(s => s.id === id);
-
-        // Optimistically update local state
         setServices(prev => prev.filter(s => s.id !== id));
 
         try {
@@ -222,20 +223,75 @@ export const ServicesProvider = ({ children }) => {
 
             if (error) {
                 console.error("Supabase Delete Failed (services):", error);
-                // Revert local state on error
                 setServices(previousServices);
                 throw new Error(`Failed to delete service: ${error.message}`);
             }
         } catch (err) {
             console.error("Delete Service Exception:", err);
-            // Revert local state on error
             setServices(previousServices);
             throw err;
         }
     };
 
+    const updateClientServicePrice = async (clientId, serviceId, price) => {
+        try {
+            console.log(`Updating client service price: client=${clientId}, service=${serviceId}, price=${price}`);
+            const { data, error } = await supabase
+                .from('client_service_prices')
+                .upsert({
+                    client_id: clientId,
+                    service_id: serviceId,
+                    price: price,
+                    updated_at: new Date().toISOString()
+                })
+                .select();
+
+            if (error) {
+                console.error("Supabase Upsert Error (client_service_prices):", error);
+                throw error;
+            }
+            if (data) {
+                setClientServicePrices(prev => {
+                    const filtered = prev.filter(p => !(p.client_id === clientId && p.service_id === serviceId));
+                    return [...filtered, data[0]];
+                });
+            }
+        } catch (err) {
+            console.error("Exception in updateClientServicePrice:", err);
+            throw err;
+        }
+    };
+
+    const deleteClientServicePrice = async (clientId, serviceId) => {
+        try {
+            const { error } = await supabase
+                .from('client_service_prices')
+                .delete()
+                .eq('client_id', clientId)
+                .eq('service_id', serviceId);
+
+            if (error) throw error;
+            setClientServicePrices(prev => prev.filter(p => !(p.client_id === clientId && p.service_id === serviceId)));
+        } catch (err) {
+            console.error("Error deleting client service price:", err);
+            throw err;
+        }
+    };
+
     return (
-        <ServicesContext.Provider value={{ services, loading, updateService, addService, deleteService, setServices, refreshServices: fetchServices }}>
+        <ServicesContext.Provider value={{
+            services,
+            clientServicePrices,
+            loading,
+            updateService,
+            addService,
+            deleteService,
+            updateClientServicePrice,
+            deleteClientServicePrice,
+            setServices,
+            refreshServices: fetchServices,
+            refreshClientServicePrices: fetchClientServicePrices
+        }}>
             {children}
         </ServicesContext.Provider>
     );

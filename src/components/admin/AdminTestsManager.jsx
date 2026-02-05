@@ -285,13 +285,13 @@ const AdminTestsManager = () => {
                         {filteredTests.map((test) => (
                             <tr key={test.id} className="border-b hover:bg-gray-50 transition-colors">
                                 <td className="py-3 px-4">
-                                    <p className="font-medium text-gray-900">{test.testType}</p>
-                                    <p className="text-xs text-gray-500 md:hidden">{test.materials}</p>
+                                    <p className="font-small text-sm text-gray-900">{test.testType}</p>
+                                    <p className="text-xs text-sm text-gray-500 md:hidden">{test.materials}</p>
                                 </td>
-                                <td className="py-3 px-4 text-gray-600 hidden md:table-cell">{test.materials}</td>
-                                <td className="py-3 px-4 text-gray-600 hidden md:table-cell">{test.testMethodSpecification || '-'}</td>
-                                <td className="py-3 px-4 text-gray-700">₹{test.price.toLocaleString()}</td>
-                                <td className="py-3 px-4 text-gray-600">{test.hsnCode || '-'}</td>
+                                <td className="py-3 px-4 text-sm text-gray-600 hidden md:table-cell">{test.materials}</td>
+                                <td className="py-3 px-4 text-sm text-gray-600 hidden md:table-cell">{test.testMethodSpecification || '-'}</td>
+                                <td className="py-3 px-4 text-sm text-gray-700">₹{test.price.toLocaleString()}</td>
+                                <td className="py-3 px-4 text-sm text-gray-600">{test.hsnCode || '-'}</td>
                                 <td className="py-3 px-4 text-right">
                                     <div className="flex justify-end space-x-2">
                                         <Button variant="ghost" size="icon" onClick={() => handleEdit(test)}>

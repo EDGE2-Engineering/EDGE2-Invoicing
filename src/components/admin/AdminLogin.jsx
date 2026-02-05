@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Lock, User, AlertCircle, Loader2, Eye, EyeOff, ShieldCheck } from 'lucide-react';
-import { supabase } from '@/lib/customSupabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AdminLogin = ({ onLoginSuccess }) => {
+  const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,18 +20,8 @@ const AdminLogin = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: username, // Assuming username input is used for email
-        password: password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data.user) {
-        onLoginSuccess();
-      }
+      await login(username, password);
+      onLoginSuccess();
     } catch (err) {
       console.error('Login failed:', err.message);
       setError(err.message || 'Invalid login credentials.');
@@ -45,10 +36,14 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-primary" />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <img
+              src={`${import.meta.env.BASE_URL}edge2-logo.png`}
+              alt="EDGE2 Logo"
+              className="h-12 w-auto object-contain"
+            />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Sign In</h1>
           <p className="text-gray-500 mt-2 text-sm">Authorized Access Only</p>
         </div>
 
@@ -63,13 +58,13 @@ const AdminLogin = ({ onLoginSuccess }) => {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="username">Email</Label>
+            <Label htmlFor="username">Username</Label>
             <div className="relative">
               <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               <Input
                 id="username"
-                type="email"
-                placeholder="Enter email"
+                type="text"
+                placeholder="Enter username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="pl-10"

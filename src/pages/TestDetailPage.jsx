@@ -1,15 +1,20 @@
 
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { useTests } from '@/contexts/TestsContext';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 const TestDetailPage = () => {
+    const { user, loading, isStandard } = useAuth();
+    const navigate = useNavigate();
     const { id } = useParams();
     const { tests } = useTests();
+
+    React.useEffect(() => {
+        if (!loading && isStandard()) {
+            navigate('/new-quotation');
+        }
+    }, [user, loading, navigate]);
 
     const test = tests.find(t => t.id === id);
 

@@ -1,15 +1,20 @@
 
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { ArrowLeft } from 'lucide-react';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { useServices } from '@/contexts/ServicesContext';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 const ServiceDetailPage = () => {
+    const { user, loading, isStandard } = useAuth();
+    const navigate = useNavigate();
     const { id } = useParams();
     const { services } = useServices();
+
+    React.useEffect(() => {
+        if (!loading && isStandard()) {
+            navigate('/new-quotation');
+        }
+    }, [user, loading, navigate]);
 
     const service = services.find(s => s.id === id);
 
