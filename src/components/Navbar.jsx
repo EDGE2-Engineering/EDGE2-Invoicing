@@ -26,7 +26,7 @@ const Navbar = () => {
 
   const navItems = [
     { path: '/new-quotation', label: 'Create New', icon: FileText, roles: ['admin'] },
-    { path: '/', label: 'Configure', icon: Settings, roles: ['admin'] }
+    { path: '/', label: 'Settings', icon: Settings, roles: ['admin'] }
   ].filter(item => !item.roles || (item.roles.includes('admin') && !isStandard()));
 
   const isActive = (path) => location.pathname === path;
@@ -44,10 +44,10 @@ const Navbar = () => {
               />
             </div>
             <span className="text-xl font-bold text-gray-900 hidden sm:inline-block">
-              {content.global?.siteName || "EDGE2 Invoicing"}
+              {content.global?.siteName || "Invoicing"}
             </span>
             <span className="text-sm font-bold text-gray-900 sm:hidden">
-              {content.global?.siteName || "EDGE2 Invoicing"}
+              {content.global?.siteName || "Invoicing"}
             </span>
           </Link>
 

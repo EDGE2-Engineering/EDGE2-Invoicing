@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Edit, Trash2, Save, Search, Download, Upload, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, Search, Download, Upload, AlertCircle, Mail, Phone } from 'lucide-react';
 import { useClients } from '@/contexts/ClientsContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -245,12 +245,12 @@ const AdminClientsManager = () => {
                         {filteredClients.length > 0 ? (
                             filteredClients.map((client) => (
                                 <tr key={client.id} className="border-b hover:bg-gray-50 transition-colors">
-                                    <td className="py-3 px-4 text-gray-800 font-medium">{client.clientName}</td>
-                                    <td className="py-3 px-4 text-gray-600 text-sm max-w-xs truncate" title={client.clientAddress}>{client.clientAddress}</td>
-                                    <td className="py-3 px-4 text-gray-600 text-sm">
+                                    <td className="py-3 px-4 text-gray-800 font-medium text-sm">{client.clientName}</td>
+                                    <td className="py-3 px-4 text-gray-600 text-xs max-w-xs truncate" title={client.clientAddress}>{client.clientAddress}</td>
+                                    <td className="py-3 px-4 text-gray-600 text-xs">
                                         <div className="flex flex-col">
-                                            <span>{client.email}</span>
-                                            <span className="text-xs text-gray-500">{client.phone}</span>
+                                            <span className="flex items-center"><Mail className="w-4 h-4 mr-2 text-blue-500" />{client.email}</span>
+                                            <span className="text-xs text-gray-500 flex items-center"><Phone className="w-4 h-4 mr-2 text-green-500" />{client.phone}</span>
                                         </div>
                                     </td>
                                     <td className="py-3 px-4 text-right">

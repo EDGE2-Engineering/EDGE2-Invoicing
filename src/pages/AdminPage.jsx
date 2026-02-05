@@ -76,18 +76,18 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Helmet>
-        <title>Configure | EDGE2 Invoicing</title>
+        <title>Settings | EDGE2 Invoicing</title>
       </Helmet>
 
       <Navbar />
 
-      <main className="flex-grow container mx-auto px-4 py-12 relative">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <main className="flex-grow container mx-auto px-4 py-0 relative">
+        {/* <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Configure</h1>
+            <h1 className="text-xl font-bold text-gray-900">Settings</h1>
             <p className="text-gray-500 mt-1">Manage everything</p>
           </div>
-        </div>
+        </div> */}
 
         <Tabs value={mainTab} onValueChange={setMainTab} className="w-full space-y-8">
           {/* Mobile View: Select Dropdown */}
