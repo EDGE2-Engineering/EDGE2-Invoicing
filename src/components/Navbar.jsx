@@ -8,20 +8,39 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 
 
-
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 
 const Navbar = () => {
   const { user, logout, isStandard } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const location = useLocation();
   const content = initialSiteContent;
 
   const handleLogout = () => {
+    setLogoutDialogOpen(true);
+  };
+
+  const confirmLogout = () => {
     logout();
-    toast({ title: "Logged Out", description: "See you next time." });
+    // Clear relevant storage keys
+    const keysToClear = ['quotation_draft', 'services', 'tests', 'clients'];
+    keysToClear.forEach(key => localStorage.removeItem(key));
+
+    toast({ title: "Logged Out", description: "Storage cleared and logged out successfully." });
+    setLogoutDialogOpen(false);
   };
 
   const navItems = [
@@ -144,6 +163,26 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center text-red-600">
+              Clear Data & Logout?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to logout? This will also clear all locally saved quotation drafts and cached data for security.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLogout} className="bg-red-600 hover:bg-red-700 text-white">
+              Logout and Clear Data
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </nav>
   );
 };

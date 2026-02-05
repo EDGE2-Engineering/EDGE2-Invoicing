@@ -7,6 +7,12 @@ export const initialSiteContent = {
     address: "EDGE2 - Invoicing, Karnataka",
     footerAbout: "EDGE2 - Invoicing"
   },
+  pagination: {
+    // Very conservative - first page has header, client details, totals, bank details, payment terms
+    itemsPerFirstPage: 6,
+    // Continuation pages have more space (just header + table)
+    itemsPerContinuationPage: 7
+  }
 };
 
 export const getSiteContent = () => {

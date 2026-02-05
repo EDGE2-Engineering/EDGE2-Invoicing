@@ -39,6 +39,7 @@ import {
 import ReactSelect from 'react-select';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
+import { getSiteContent } from '@/data/siteContent';
 
 const STORAGE_KEY = 'quotation_draft';
 
@@ -108,7 +109,7 @@ const NewQuotationPage = () => {
     const { tests, clientTestPrices } = useTests();
     const { clients } = useClients();
     const { settings } = useSettings();
-    const { isStandard } = useAuth();
+    const { user, isStandard } = useAuth();
 
     const taxCGST = settings?.tax_cgst ? Number(settings.tax_cgst) : 9;
     const taxSGST = settings?.tax_sgst ? Number(settings.tax_sgst) : 9;
@@ -131,7 +132,8 @@ const NewQuotationPage = () => {
                         email: '',
                         phone: '',
                         date: format(new Date(), 'yyyy-MM-dd'),
-                        quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
+                        quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`,
+                        generatedBy: parsed.quoteDetails.generatedBy || ''
                     },
                     items: parsed.items || [],
                     documentType: parsed.documentType || 'Quotation',
@@ -152,7 +154,8 @@ const NewQuotationPage = () => {
                 email: '',
                 phone: '',
                 date: format(new Date(), 'yyyy-MM-dd'),
-                quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
+                quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`,
+                generatedBy: user?.fullName || ''
             },
             items: [],
             documentType: 'Quotation',
@@ -201,6 +204,13 @@ const NewQuotationPage = () => {
         setSearchValue('');
     }, [newItemType]);
 
+    // Auto-populate generatedBy from logged-in user if not already set
+    useEffect(() => {
+        if (user?.fullName && !quoteDetails.generatedBy) {
+            setQuoteDetails(prev => ({ ...prev, generatedBy: user.fullName }));
+        }
+    }, [user, quoteDetails.generatedBy]);
+
     const handleClear = () => {
         setQuoteDetails({
             clientName: '',
@@ -212,7 +222,8 @@ const NewQuotationPage = () => {
             email: '',
             phone: '',
             date: format(new Date(), 'yyyy-MM-dd'),
-            quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`
+            quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`,
+            generatedBy: user?.fullName || ''
         });
         setItems([]);
         setDocumentType('Quotation');
@@ -312,8 +323,9 @@ const NewQuotationPage = () => {
     };
 
     // Dynamic pagination: Split items across pages
-    const ITEMS_PER_FIRST_PAGE = 5; // Very conservative - first page has header, client details, totals, bank details, payment terms
-    const ITEMS_PER_CONTINUATION_PAGE = 6; // Continuation pages have more space (just header + table)
+    const siteContent = getSiteContent();
+    const ITEMS_PER_FIRST_PAGE = siteContent.pagination?.itemsPerFirstPage || 5;
+    const ITEMS_PER_CONTINUATION_PAGE = siteContent.pagination?.itemsPerContinuationPage || 6;
 
     const paginateItems = () => {
         const pages = [];
@@ -746,6 +758,7 @@ const NewQuotationPage = () => {
                                                             <p className="text-gray-600 whitespace-pre-wrap text-xs">{quoteDetails.projectAddress}</p>
                                                         </div>
                                                     </div>
+                                                    <div className="text-xs text-right">Created by: {quoteDetails.generatedBy}</div>
                                                 </>
                                             )}
 
@@ -759,7 +772,7 @@ const NewQuotationPage = () => {
                                             )}
 
                                             {/* Table */}
-                                            <table className="w-full mb-8 mt-8">
+                                            <table className="w-full mb-8 mt-2">
                                                 <thead>
                                                     <tr>
                                                         <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-5">Sl No.</th>
@@ -767,7 +780,7 @@ const NewQuotationPage = () => {
                                                         <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">HSN</th>
                                                         <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Price</th>
                                                         <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Qty</th>
-                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-20">Total</th>
+                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-15">Total</th>
                                                         <th className="w-10 print:hidden"></th>
                                                     </tr>
                                                 </thead>
@@ -886,76 +899,76 @@ const NewQuotationPage = () => {
 
                                 {/* Page 2: Bank */}
                                 <div className="a4-container">
-                                <div className="a4-page-content">
-                                    <div className="text-gray-500 text-sm">
+                                    <div className="a4-page-content">
+                                        <div className="text-gray-500 text-sm">
 
-                                    {/* Bank + Signatory (Grid) */}
-                                    <div className="grid grid-cols-2 gap-8 mt-2 text-left text-xs">
-                                        {/* Bank Details */}
-                                        <div>
-                                            <h2 className="font-semibold mb-2 text-sm">Bank Details</h2>
-                                            <table className="w-full text-sm border-collapse">
-                                                <tbody>
-                                                    <tr>
-                                                        <td className="py-1 font-semibold w-32">Name:</td>
-                                                        <td className="py-1">Edge2 Engineering Solutions India Pvt. Ltd.</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="py-1 font-semibold">A/c. No:</td>
-                                                        <td className="py-1">560321000022687</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="py-1 font-semibold">IFSC Code:</td>
-                                                        <td className="py-1">UBIN0907634</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="py-1 font-semibold">Branch:</td>
-                                                        <td className="py-1">Bangalore - Peenya</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="py-1 font-semibold">Bank:</td>
-                                                        <td className="py-1">Union Bank of India</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                            {/* Bank + Signatory (Grid) */}
+                                            <div className="grid grid-cols-2 gap-8 mt-2 text-left text-xs">
+                                                {/* Bank Details */}
+                                                <div>
+                                                    <h2 className="font-semibold mb-2 text-sm">Bank Details</h2>
+                                                    <table className="w-full text-sm border-collapse">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold w-32">Name:</td>
+                                                                <td className="py-1">Edge2 Engineering Solutions India Pvt. Ltd.</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold">A/c. No:</td>
+                                                                <td className="py-1">560321000022687</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold">IFSC Code:</td>
+                                                                <td className="py-1">UBIN0907634</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold">Branch:</td>
+                                                                <td className="py-1">Bangalore - Peenya</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold">Bank:</td>
+                                                                <td className="py-1">Union Bank of India</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
 
-                                        {/* Authorized Signatory */}
-                                        <div className="flex flex-col items-center">
-                                            <h2 className="font-semibold mb-2 text-sm">Authorized Signatory</h2>
-                                            <table className="w-full text-sm border-collapse">
-                                                <tbody>
-                                                    {/* <tr>
+                                                {/* Authorized Signatory */}
+                                                <div className="flex flex-col items-center">
+                                                    <h2 className="font-semibold mb-2 text-sm">Authorized Signatory</h2>
+                                                    <table className="w-full text-sm border-collapse">
+                                                        <tbody>
+                                                            {/* <tr>
                                                         <td className="py-1">For EDGE2 Engineering Solutions India Pvt. Ltd.</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="py-1 h-10"></td>
                                                     </tr> */}
-                                                </tbody>
-                                            </table>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            {/* Payment Terms */}
+                                            <div className="mt-6 pt-4 border-t">
+                                                <h2 className="font-semibold text-left mb-3">Payment Terms:</h2>
+                                                <ul className="list-disc pl-5 text-xs">
+                                                    <li>
+                                                        Advance Payment of 60% + GST ({taxTotalPercent}%) along with Work order
+                                                        as mobilization advance.
+                                                    </li>
+                                                    <li>
+                                                        Mobilization of Men and Machines shall be done in 3–5 days after the
+                                                        confirmation of Advance Payment.
+                                                    </li>
+                                                    <li>
+                                                        Balance Payment to be done after completion of field work.
+                                                    </li>
+                                                </ul>
+                                            </div>
+
                                         </div>
                                     </div>
-
-                                    {/* Payment Terms */}
-                                    <div className="mt-6 pt-4 border-t">
-                                        <h2 className="font-semibold text-left mb-3">Payment Terms:</h2>
-                                        <ul className="list-disc pl-5 text-xs">
-                                        <li>
-                                            Advance Payment of 60% + GST ({taxTotalPercent}%) along with Work order
-                                            as mobilization advance.
-                                        </li>
-                                        <li>
-                                            Mobilization of Men and Machines shall be done in 3–5 days after the
-                                            confirmation of Advance Payment.
-                                        </li>
-                                        <li>
-                                            Balance Payment to be done after completion of field work.
-                                        </li>
-                                        </ul>
-                                    </div>
-
-                                    </div>
-                                </div>
                                 </div>
 
 
