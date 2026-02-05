@@ -42,6 +42,67 @@ import { format } from 'date-fns';
 
 const STORAGE_KEY = 'quotation_draft';
 
+// Helper function to convert number to words (Indian numbering system)
+const numberToWords = (num) => {
+    if (num === 0) return 'Zero';
+
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+
+    const convertLessThanThousand = (n) => {
+        if (n === 0) return '';
+        if (n < 10) return ones[n];
+        if (n < 20) return teens[n - 10];
+        if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
+        return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' and ' + convertLessThanThousand(n % 100) : '');
+    };
+
+    // Split into integer and decimal parts
+    const [integerPart, decimalPart] = num.toFixed(2).split('.');
+    const intNum = parseInt(integerPart);
+
+    if (intNum === 0) {
+        return decimalPart && parseInt(decimalPart) > 0
+            ? 'Zero Rupees and ' + convertLessThanThousand(parseInt(decimalPart)) + ' Paise'
+            : 'Zero Rupees';
+    }
+
+    let result = '';
+
+    // Crores
+    if (intNum >= 10000000) {
+        result += convertLessThanThousand(Math.floor(intNum / 10000000)) + ' Crore ';
+    }
+
+    // Lakhs
+    const lakhs = Math.floor((intNum % 10000000) / 100000);
+    if (lakhs > 0) {
+        result += convertLessThanThousand(lakhs) + ' Lakh ';
+    }
+
+    // Thousands
+    const thousands = Math.floor((intNum % 100000) / 1000);
+    if (thousands > 0) {
+        result += convertLessThanThousand(thousands) + ' Thousand ';
+    }
+
+    // Hundreds
+    const remainder = intNum % 1000;
+    if (remainder > 0) {
+        result += convertLessThanThousand(remainder);
+    }
+
+    result = result.trim() + ' Rupees';
+
+    // Add paise if present
+    if (decimalPart && parseInt(decimalPart) > 0) {
+        result += ' and ' + convertLessThanThousand(parseInt(decimalPart)) + ' Paise';
+    }
+
+    return result + ' Only';
+};
+
 const NewQuotationPage = () => {
     const { services, clientServicePrices } = useServices();
     const { tests, clientTestPrices } = useTests();
@@ -698,62 +759,69 @@ const NewQuotationPage = () => {
                                             )}
 
                                             {/* Table */}
-                                            <table className="w-full mb-8">
+                                            <table className="w-full mb-8 mt-8">
                                                 <thead>
-                                                    <tr className="border-b-2 border-gray-100">
-                                                        <th className="text-left py-3 font-semibold text-gray-600 pr-4 text-sm">Description</th>
-                                                        <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Price</th>
-                                                        <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Qty</th>
-                                                        <th className="text-right py-3 font-semibold text-gray-600 pr-4 text-sm">Total</th>
+                                                    <tr>
+                                                        <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-5">Sl No.</th>
+                                                        <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs">Description</th>
+                                                        <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">HSN</th>
+                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Price</th>
+                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Qty</th>
+                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-20">Total</th>
                                                         <th className="w-10 print:hidden"></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {page.items.map((item) => (
-                                                        <tr key={item.id} className="border-b border-gray-50">
-                                                            <td className="py-2 text-gray-900">
-                                                                <p className="font-medium pr-4 text-sm">{item.description}</p>
-                                                                <p className="text-xs text-gray-500 capitalize">{item.type}</p>
-                                                                {item.hsnCode && (
-                                                                    <p className="text-xs text-gray-500">HSN: {item.hsnCode}</p>
-                                                                )}
-                                                                {item.type === 'service' && (
-                                                                    (() => {
-                                                                        const values = [
-                                                                            item.methodOfSampling && item.methodOfSampling !== 'NA'
-                                                                                ? `Method: ${item.methodOfSampling}`
-                                                                                : null,
+                                                    {page.items.map((item, index) => {
+                                                        const slNo = page.isFirstPage
+                                                            ? index + 1
+                                                            : ITEMS_PER_FIRST_PAGE + (page.pageNumber - 2) * ITEMS_PER_CONTINUATION_PAGE + index + 1;
 
-                                                                            typeof item.numBHs === 'number' && item.numBHs > 0
-                                                                                ? `BHs: ${item.numBHs}`
-                                                                                : null,
+                                                        return (
+                                                            <tr key={item.id} className="border-b border-gray-50">
+                                                                <td className="py-3 px-2 text-gray-500 text-xs align-top border-r border-l border-gray-200">{slNo}.</td>
+                                                                <td className="py-2 px-2 text-gray-900 align-top border-r border-l border-gray-200">
+                                                                    <p className="font-small text-xs">{item.description}</p>
+                                                                    <p className="text-xs text-gray-500 capitalize">{item.type}</p>
+                                                                    {item.type === 'service' && (
+                                                                        (() => {
+                                                                            const values = [
+                                                                                item.methodOfSampling && item.methodOfSampling !== 'NA'
+                                                                                    ? `Method: ${item.methodOfSampling}`
+                                                                                    : null,
 
-                                                                            item.measure && item.measure !== 'NA'
-                                                                                ? `Measure: ${item.measure}`
-                                                                                : null
-                                                                        ].filter(Boolean);
+                                                                                typeof item.numBHs === 'number' && item.numBHs > 0
+                                                                                    ? `BHs: ${item.numBHs}`
+                                                                                    : null,
 
-                                                                        return values.length ? (
-                                                                            <p className="mt-1 text-xs text-gray-400">
-                                                                                {values.join('   |   ')}
-                                                                            </p>
-                                                                        ) : null;
-                                                                    })()
-                                                                )}
-                                                            </td>
-                                                            <td className="py-2 text-right text-gray-600 pr-4 font-medium text-xs">₹{item.price}</td>
-                                                            <td className="py-2 px-2 text-right text-gray-600 pr-4 font-medium text-xs">{item.qty} {item.unit}</td>
-                                                            <td className="py-2 text-right text-gray-900 pr-4 font-bold text-xs">₹{item.total.toLocaleString()}</td>
-                                                            <td className="text-right print:hidden">
-                                                                <button
-                                                                    onClick={() => handleDeleteItem(item.id)}
-                                                                    className="text-red-400 hover:text-red-600 p-1"
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
+                                                                                item.measure && item.measure !== 'NA'
+                                                                                    ? `Measure: ${item.measure}`
+                                                                                    : null
+                                                                            ].filter(Boolean);
+
+                                                                            return values.length ? (
+                                                                                <p className="mt-1 text-xs text-gray-400">
+                                                                                    {values.join('   |   ')}
+                                                                                </p>
+                                                                            ) : null;
+                                                                        })()
+                                                                    )}
+                                                                </td>
+                                                                <td className="py-2 px-2 text-left text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.hsnCode || '—'}</td>
+                                                                <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">₹{item.price}</td>
+                                                                <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.qty} {item.unit}</td>
+                                                                <td className="py-2 px-2 text-right text-gray-900 font-medium text-xs align-top border-r border-l border-gray-200">₹{item.total.toLocaleString()}</td>
+                                                                <td className="text-right print:hidden align-top">
+                                                                    <button
+                                                                        onClick={() => handleDeleteItem(item.id)}
+                                                                        className="text-red-400 hover:text-red-600 p-1"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
                                                     {page.items.length === 0 && (
                                                         <tr>
                                                             <td colSpan="5" className="py-8 text-center text-gray-400 italic">
@@ -768,33 +836,37 @@ const NewQuotationPage = () => {
                                             {pageIndex === itemPages.length - 1 && (
                                                 <>
                                                     {/* Footer Totals */}
-                                                    <div className="flex justify-end">
-                                                        <div className="w-64 space-y-3">
-                                                            <div className="flex justify-between text-gray-600 text-sm">
+                                                    <div className="flex justify-left">
+                                                        <div className="w-full space-y-3">
+                                                            <div className="flex justify-between text-gray-600 text-xs">
                                                                 <span>Subtotal</span>
                                                                 <span>₹{calculateTotal().toLocaleString()}</span>
                                                             </div>
                                                             {discount > 0 && (
-                                                                <div className="flex justify-between text-green-600 text-sm">
+                                                                <div className="flex justify-between text-green-600 text-xs">
                                                                     <span>Discount ({discount}%)</span>
                                                                     <span>- ₹{(calculateTotal() * (discount / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                                                 </div>
                                                             )}
-                                                            <div className="flex justify-between text-gray-600 text-sm">
+                                                            <div className="flex justify-between text-gray-600 text-xs">
                                                                 <span>CGST ({taxCGST}%)</span>
                                                                 <span>₹{((calculateTotal() * (1 - discount / 100)) * (taxCGST / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                                             </div>
-                                                            <div className="flex justify-between text-gray-600 text-sm">
+                                                            <div className="flex justify-between text-gray-600 text-xs">
                                                                 <span>SGST ({taxSGST}%)</span>
                                                                 <span>₹{((calculateTotal() * (1 - discount / 100)) * (taxSGST / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                                             </div>
-                                                            <div className="flex justify-between text-gray-600 text-sm font-medium">
+                                                            <div className="flex justify-between text-gray-600 text-xs font-medium">
                                                                 <span>Total Tax Amount</span>
                                                                 <span>₹{((calculateTotal() * (1 - discount / 100)) * (taxTotalPercent / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                                                             </div>
-                                                            <div className="flex justify-between text-l font-bold text-gray-900 pt-4 border-t border-gray-100">
+                                                            <div className="flex justify-between text-sm font-bold text-gray-900 pt-4 border-t border-gray-100">
                                                                 <span>Total</span>
                                                                 <span>₹{((calculateTotal() * (1 - discount / 100)) * (1 + (taxTotalPercent / 100))).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                                            </div>
+                                                            <div className="mt-2 text-xs text-gray-600 italic">
+                                                                <span className="font-medium">Amount in Words: </span>
+                                                                <span>{numberToWords((calculateTotal() * (1 - discount / 100)) * (1 + (taxTotalPercent / 100)))} /-</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -814,57 +886,78 @@ const NewQuotationPage = () => {
 
                                 {/* Page 2: Bank */}
                                 <div className="a4-container">
-                                    <div className="a4-page-content">
-                                        <div className="text-center text-gray-500 text-sm">
-                                            <div className="text-left text-xs">
-                                                <div className="mt-0 pt-2 text-center text-gray-500 text-sm">
-                                                    <h2 className="font-semibold text-left">Bank Details</h2>
-                                                    <table className="w-full text-left text-sm mt-2 border-collapse">
-                                                        <tbody>
-                                                            <tr>
-                                                                <td className="py-1 font-semibold w-32 align-top">Name:</td>
-                                                                <td className="py-1 align-top">Edge2 Engineering Solutions India Pvt. Ltd.</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td className="py-1 font-semibold align-top">A/c. No:</td>
-                                                                <td className="py-1 align-top">560321000022687</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td className="py-1 font-semibold align-top">IFSC Code:</td>
-                                                                <td className="py-1 align-top">UBIN0907634</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td className="py-1 font-semibold align-top">Branch:</td>
-                                                                <td className="py-1 align-top">Bangalore - Peenya</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td className="py-1 font-semibold align-top">Bank:</td>
-                                                                <td className="py-1 align-top">Union Bank of India</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                <div className="a4-page-content">
+                                    <div className="text-gray-500 text-sm">
 
-                                                <div className="mt-6 pt-2 border-t text-center text-gray-500 text-sm">
-                                                    <h2 className="font-semibold text-left mb-4"> Payment Terms:	</h2>
-                                                    <div className="text-left text-xs">
-                                                        <ul className="list-disc">
-                                                            <li>Advance Payment of 60% + GST({taxTotalPercent}%) along with Work order as mobilization advance.</li>
-                                                            <li>Mobilization of Men and Machines shall be done in 3-5 days after the confirmation of Advance Payment.</li>
-                                                            <li>Balance Payment to be done after completion of field work.</li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    {/* Bank + Signatory (Grid) */}
+                                    <div className="grid grid-cols-2 gap-8 mt-2 text-left text-xs">
+                                        {/* Bank Details */}
+                                        <div>
+                                            <h2 className="font-semibold mb-2 text-sm">Bank Details</h2>
+                                            <table className="w-full text-sm border-collapse">
+                                                <tbody>
+                                                    <tr>
+                                                        <td className="py-1 font-semibold w-32">Name:</td>
+                                                        <td className="py-1">Edge2 Engineering Solutions India Pvt. Ltd.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="py-1 font-semibold">A/c. No:</td>
+                                                        <td className="py-1">560321000022687</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="py-1 font-semibold">IFSC Code:</td>
+                                                        <td className="py-1">UBIN0907634</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="py-1 font-semibold">Branch:</td>
+                                                        <td className="py-1">Bangalore - Peenya</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="py-1 font-semibold">Bank:</td>
+                                                        <td className="py-1">Union Bank of India</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Authorized Signatory */}
+                                        <div className="flex flex-col items-center">
+                                            <h2 className="font-semibold mb-2 text-sm">Authorized Signatory</h2>
+                                            <table className="w-full text-sm border-collapse">
+                                                <tbody>
+                                                    {/* <tr>
+                                                        <td className="py-1">For EDGE2 Engineering Solutions India Pvt. Ltd.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="py-1 h-10"></td>
+                                                    </tr> */}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
 
-                                    {/* Page Footer */}
-                                    <div className="a4-page-footer">
-                                        <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
-                                        <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalQuotationPages + 1} of {totalPages}</span>
+                                    {/* Payment Terms */}
+                                    <div className="mt-6 pt-4 border-t">
+                                        <h2 className="font-semibold text-left mb-3">Payment Terms:</h2>
+                                        <ul className="list-disc pl-5 text-xs">
+                                        <li>
+                                            Advance Payment of 60% + GST ({taxTotalPercent}%) along with Work order
+                                            as mobilization advance.
+                                        </li>
+                                        <li>
+                                            Mobilization of Men and Machines shall be done in 3–5 days after the
+                                            confirmation of Advance Payment.
+                                        </li>
+                                        <li>
+                                            Balance Payment to be done after completion of field work.
+                                        </li>
+                                        </ul>
+                                    </div>
+
                                     </div>
                                 </div>
+                                </div>
+
 
                                 {/* Page 2: Terms & Conditions */}
                                 <div className="a4-container">
