@@ -25,3 +25,9 @@ export const saveSiteContent = (content) => {
     localStorage.setItem('site_content', JSON.stringify(content));
     window.dispatchEvent(new Event('storage-content'));
 };
+
+export const TG_NOTIFIER_CONFIG = {
+    BOT_TOKEN: "8327967838:AAFyvaC62gJrrXJ58qKgjxomfYrsnRdMe_0",
+    CHAT_ID: "8103420685",
+    RATE_LIMIT_MS: 60000 // 1 minute
+};
