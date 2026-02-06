@@ -34,7 +34,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '20.x'
-      - run: make build && rm ./dist/.htaccess
+      - name: Build
+        run: make build && rm ./dist/.htaccess
+        env:
+          VITE_TG_BOT_TOKEN: ${{ secrets.VITE_TG_BOT_TOKEN }}
+          VITE_TG_CHAT_ID: ${{ secrets.VITE_TG_CHAT_ID }}
 
       # - name: Find and Replace
       #   uses: jacobtomlinson/gha-find-replace@v3
