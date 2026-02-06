@@ -17,11 +17,23 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const SavedRecordsManager = () => {
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
+    const [filterDocType, setFilterDocType] = useState('all');
+    const [filterUser, setFilterUser] = useState('all');
+    const [filterClient, setFilterClient] = useState('all');
     const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, recordId: null, quoteNumber: '' });
     const { toast } = useToast();
     const navigate = useNavigate();
@@ -85,11 +97,60 @@ const SavedRecordsManager = () => {
         navigate(`/new-quotation?id=${recordId}`);
     };
 
-    const filteredRecords = records.filter(r =>
-        (r.quote_number?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (r.client_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (r.document_type?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-    );
+    const uniqueUsers = Array.from(new Set(records
+        .map(r => r.app_users?.full_name)
+        .filter(Boolean)))
+        .sort();
+
+    const uniqueClients = Array.from(new Set(records
+        .map(r => r.client_name)
+        .filter(Boolean)))
+        .sort();
+
+    const filteredRecords = records.filter(r => {
+        const matchesSearch = (r.quote_number?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (r.client_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (r.document_type?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+
+        if (!matchesSearch) return false;
+
+        // Document Type Filter
+        if (filterDocType !== 'all' && r.document_type !== filterDocType) return false;
+
+        // User Filter
+        if (filterUser !== 'all' && r.app_users?.full_name !== filterUser) return false;
+
+        // Client Filter
+        if (filterClient !== 'all' && r.client_name !== filterClient) return false;
+
+        if (fromDate || toDate) {
+            const recordDate = new Date(r.created_at);
+            recordDate.setHours(0, 0, 0, 0);
+
+            if (fromDate) {
+                const start = new Date(fromDate);
+                start.setHours(0, 0, 0, 0);
+                if (recordDate < start) return false;
+            }
+
+            if (toDate) {
+                const end = new Date(toDate);
+                end.setHours(0, 0, 0, 0);
+                if (recordDate > end) return false;
+            }
+        }
+
+        return true;
+    });
+
+    const resetFilters = () => {
+        setSearchTerm('');
+        setFromDate('');
+        setToDate('');
+        setFilterDocType('all');
+        setFilterUser('all');
+        setFilterClient('all');
+    };
 
     if (loading && records.length === 0) {
         return (
@@ -101,19 +162,103 @@ const SavedRecordsManager = () => {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="space-y-4">
+            {/* Row 1: Search Bar and Total Count */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
                 <div className="relative w-full sm:w-96">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                         placeholder="Search by invoice/quote number or client name..."
-                        className="pl-10"
+                        className="pl-10 text-xs"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="text-sm text-gray-500">
-                    Total: {filteredRecords.length} records
+                <div className="text-sm font-medium text-gray-500">
+                    Total: <span className="text-primary">{filteredRecords.length}</span> records
+                </div>
+            </div>
+
+            {/* Row 2: Advanced Filters */}
+            <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Apply Filters</span>
+                <div className="flex flex-wrap items-center gap-4 mt-2">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dates:</span>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                type="date"
+                                className="w-36 h-9 text-xs"
+                                value={fromDate}
+                                title="From Date"
+                                onChange={(e) => setFromDate(e.target.value)}
+                            />
+                            <span className="text-gray-300">-</span>
+                            <Input
+                                type="date"
+                                className="w-36 h-9 text-xs"
+                                value={toDate}
+                                title="To Date"
+                                onChange={(e) => setToDate(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="h-6 w-px bg-gray-100 hidden sm:block" />
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Type:</span>
+                        <Select value={filterDocType} onValueChange={setFilterDocType}>
+                            <SelectTrigger className="w-36 h-9 text-xs">
+                                <SelectValue placeholder="All Types" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Types</SelectItem>
+                                <SelectItem value="Tax Invoice">Tax Invoice</SelectItem>
+                                <SelectItem value="Quotation">Quotation</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">User:</span>
+                        <Select value={filterUser} onValueChange={setFilterUser}>
+                            <SelectTrigger className="w-40 h-9 text-xs text-left ">
+                                <SelectValue placeholder="All Users" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Users</SelectItem>
+                                {uniqueUsers.map(user => (
+                                    <SelectItem key={user} value={user}>{user}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Client:</span>
+                        <Select value={filterClient} onValueChange={setFilterClient}>
+                            <SelectTrigger className="w-80 h-9 text-xs text-left">
+                                <SelectValue placeholder="All Clients" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Clients</SelectItem>
+                                {uniqueClients.map(client => (
+                                    <SelectItem key={client} value={client}>{client}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={resetFilters}
+                        disabled={!searchTerm && !fromDate && !toDate && filterDocType === 'all' && filterUser === 'all' && filterClient === 'all'}
+                        className="text-gray-500 hover:text-gray-700 h-9 ml-auto"
+                    >
+                        Reset Filters
+                    </Button>
                 </div>
             </div>
 
