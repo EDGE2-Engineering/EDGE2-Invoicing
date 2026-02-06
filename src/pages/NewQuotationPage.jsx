@@ -42,6 +42,7 @@ import { format } from 'date-fns';
 import { getSiteContent } from '@/data/config';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useToast } from '@/components/ui/use-toast';
+import { sendTelegramNotification } from '@/lib/notifier';
 
 const STORAGE_KEY = 'quotation_draft';
 
@@ -312,6 +313,19 @@ const NewQuotationPage = () => {
                 title: "Success",
                 description: savedRecordId ? "Record updated successfully." : "Record saved successfully."
             });
+
+            // Send Telegram Notification
+            try {
+                const action = savedRecordId ? "Updated" : "Created";
+                const emoji = savedRecordId ? "📝" : "📄";
+                const message = `${emoji} *${documentType} ${action}*\n\n` +
+                    `Number: \`${quoteDetails.quoteNumber}\`\n` +
+                    `Client: \`${quoteDetails.clientName}\`\n` +
+                    `${action} By: \`${user.fullName}\``;
+                await sendTelegramNotification(message);
+            } catch (notifyErr) {
+                console.error('Error sending Telegram notification:', notifyErr);
+            }
         } catch (err) {
             console.error('Error saving record:', err);
 

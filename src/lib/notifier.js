@@ -1,15 +1,9 @@
 import { TG_NOTIFIER_CONFIG } from '@/data/config';
 
-let lastNotificationTime = 0;
-
 export const sendTelegramNotification = async (message) => {
-    const { BOT_TOKEN, CHAT_ID, RATE_LIMIT_MS } = TG_NOTIFIER_CONFIG;
+    const { BOT_TOKEN, CHAT_ID } = TG_NOTIFIER_CONFIG;
 
     if (!BOT_TOKEN || BOT_TOKEN.startsWith("YOUR_") || !CHAT_ID) return;
-
-    const now = Date.now();
-    if (now - lastNotificationTime < (RATE_LIMIT_MS || 60000)) return;
-    lastNotificationTime = now;
 
     try {
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {

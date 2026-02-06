@@ -32,6 +32,7 @@ import {
 import { Plus, Pencil, UserMinus, UserCheck, Shield, User as UserIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { sendTelegramNotification } from '@/lib/notifier';
 
 const AdminUsersManager = () => {
     const { user: currentUser } = useAuth();
@@ -122,6 +123,18 @@ const AdminUsersManager = () => {
                 title: `User ${newStatus ? 'Activated' : 'Deactivated'}`,
                 description: `The user has been successfully ${newStatus ? 'activated' : 'deactivated'}.`
             });
+
+            // Send Telegram Notification
+            try {
+                const action = newStatus ? "Activated" : "Deactivated";
+                const emoji = newStatus ? "🔓" : "🔒";
+                const message = `${emoji} *User ${action}*\n\n` +
+                    `Username: \`${userToToggle.username}\`\n` +
+                    `By: \`${currentUser.full_name}\``;
+                await sendTelegramNotification(message);
+            } catch (notifyErr) {
+                console.error('Error sending Telegram notification:', notifyErr);
+            }
         } catch (error) {
             toast({
                 title: 'Error',
@@ -160,6 +173,20 @@ const AdminUsersManager = () => {
 
                 if (error) throw error;
                 toast({ title: 'User Created', description: 'New user added successfully.' });
+            }
+
+            // Send Telegram Notification
+            try {
+                const action = editingUser ? "Updated" : "Added";
+                const emoji = editingUser ? "✏️" : "👤";
+                const message = `${emoji} *User ${action}*\n\n` +
+                    `Username: \`${formData.username}\`\n` +
+                    `Full Name: \`${formData.full_name}\`\n` +
+                    `Role: \`${formData.role}\`\n` +
+                    `${action} By: \`${currentUser.full_name}\``;
+                await sendTelegramNotification(message);
+            } catch (notifyErr) {
+                console.error('Error sending Telegram notification:', notifyErr);
             }
 
             setIsDialogOpen(false);
