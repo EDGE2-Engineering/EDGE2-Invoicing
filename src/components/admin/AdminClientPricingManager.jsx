@@ -20,20 +20,37 @@ const AdminClientPricingManager = () => {
     const [selectedClientId, setSelectedClientId] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('services');
+    const [pendingPrices, setPendingPrices] = useState({});
+
+    useEffect(() => {
+        setPendingPrices({});
+    }, [selectedClientId]);
 
     const selectedClient = clients.find(c => c.id === selectedClientId);
 
     const filteredServices = services.filter(s =>
-        s.serviceType.toLowerCase().includes(searchTerm.toLowerCase())
+        s.serviceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.hsnCode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredTests = tests.filter(t =>
         t.testType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.materials.toLowerCase().includes(searchTerm.toLowerCase())
+        t.materials.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.hsnCode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handlePriceChange = async (itemId, price, type) => {
+    const handlePendingPriceChange = (itemId, value) => {
+        setPendingPrices(prev => ({
+            ...prev,
+            [itemId]: value
+        }));
+    };
+
+    const handleSavePrice = async (itemId, type) => {
         if (!selectedClientId) return;
+
+        const price = pendingPrices[itemId];
+        if (price === undefined) return;
 
         try {
             if (type === 'service') {
@@ -41,6 +58,14 @@ const AdminClientPricingManager = () => {
             } else {
                 await updateClientTestPrice(selectedClientId, itemId, Number(price));
             }
+
+            // Clear pending status on success
+            setPendingPrices(prev => {
+                const next = { ...prev };
+                delete next[itemId];
+                return next;
+            });
+
             toast({
                 title: "Price updated",
                 description: `Successfully updated price for the client.`,
@@ -109,7 +134,7 @@ const AdminClientPricingManager = () => {
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <Input
                                 className="pl-10"
-                                placeholder="Search by name or material..."
+                                placeholder="Search by name, material or HSN..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -166,22 +191,35 @@ const AdminClientPricingManager = () => {
                                                         <Input
                                                             type="number"
                                                             placeholder={`₹${service.price}`}
-                                                            value={clientPrice ?? ''}
-                                                            onChange={(e) => handlePriceChange(service.id, e.target.value, 'service')}
-                                                            className={clientPrice ? "border-primary/50 bg-primary/5 shadow-sm" : "border-gray-200"}
+                                                            value={pendingPrices[service.id] !== undefined ? pendingPrices[service.id] : (clientPrice ?? '')}
+                                                            onChange={(e) => handlePendingPriceChange(service.id, e.target.value)}
+                                                            className={(clientPrice || pendingPrices[service.id] !== undefined) ? "border-primary/50 bg-primary/5 shadow-sm" : "border-gray-200"}
                                                         />
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
-                                                        {clientPrice && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => handleRemovePrice(service.id, 'service')}
-                                                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </Button>
-                                                        )}
+                                                        <div className="flex justify-end gap-2">
+                                                            {pendingPrices[service.id] !== undefined && String(pendingPrices[service.id]) !== String(clientPrice ?? '') && (
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => handleSavePrice(service.id, 'service')}
+                                                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                                                    title="Save Price for Client"
+                                                                >
+                                                                    <Save className="w-4 h-4 mr-1" />
+                                                                </Button>
+                                                            )}
+                                                            {clientPrice && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => handleRemovePrice(service.id, 'service')}
+                                                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                                    title="Remove custom price"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             );
@@ -218,22 +256,34 @@ const AdminClientPricingManager = () => {
                                                         <Input
                                                             type="number"
                                                             placeholder={`₹${test.price}`}
-                                                            value={clientPrice ?? ''}
-                                                            onChange={(e) => handlePriceChange(test.id, e.target.value, 'test')}
-                                                            className={clientPrice ? "border-primary/50 bg-primary/5 shadow-sm" : "border-gray-200"}
+                                                            value={pendingPrices[test.id] !== undefined ? pendingPrices[test.id] : (clientPrice ?? '')}
+                                                            onChange={(e) => handlePendingPriceChange(test.id, e.target.value)}
+                                                            className={(clientPrice || pendingPrices[test.id] !== undefined) ? "border-primary/50 bg-primary/5 shadow-sm" : "border-gray-200"}
                                                         />
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
-                                                        {clientPrice && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => handleRemovePrice(test.id, 'test')}
-                                                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </Button>
-                                                        )}
+                                                        <div className="flex justify-end gap-2">
+                                                            {pendingPrices[test.id] !== undefined && String(pendingPrices[test.id]) !== String(clientPrice ?? '') && (
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => handleSavePrice(test.id, 'test')}
+                                                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                                                >
+                                                                    <Save className="w-4 h-4 mr-1" /> Save
+                                                                </Button>
+                                                            )}
+                                                            {clientPrice && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => handleRemovePrice(test.id, 'test')}
+                                                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                                    title="Remove custom price"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             );

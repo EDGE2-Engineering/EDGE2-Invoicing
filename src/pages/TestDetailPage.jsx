@@ -46,7 +46,7 @@ const TestDetailPage = () => {
     return (
         <>
             <Helmet>
-                <title>{test.testType} | EDGE2 Invoicing</title>
+                <title>{test.testType} | EDGE2 Easy Billing</title>
                 <meta name="description" content={`Test: ${test.testType}`} />
             </Helmet>
 

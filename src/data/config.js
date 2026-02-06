@@ -1,0 +1,27 @@
+
+export const initialSiteContent = {
+    global: {
+        siteName: "Easy Billing",
+        contactPhone: "+919999999999",
+        contactEmail: "edge2@gmail.com",
+        address: "EDGE2 - Easy Billing, Karnataka",
+        footerAbout: "EDGE2 - Easy Billing"
+    },
+    pagination: {
+        // Very conservative - first page has header, client details, totals, bank details, payment terms
+        itemsPerFirstPage: 6,
+        // Continuation pages have more space (just header + table)
+        itemsPerContinuationPage: 7
+    }
+};
+
+export const getSiteContent = () => {
+    const stored = localStorage.getItem('site_content');
+    if (stored) return JSON.parse(stored);
+    return initialSiteContent;
+};
+
+export const saveSiteContent = (content) => {
+    localStorage.setItem('site_content', JSON.stringify(content));
+    window.dispatchEvent(new Event('storage-content'));
+};

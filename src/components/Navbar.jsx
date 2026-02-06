@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Lock, FileText, Settings, LogOut, User } from 'lucide-react';
-import { initialSiteContent } from '@/data/siteContent';
+import { initialSiteContent } from '@/data/config';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 
@@ -62,11 +62,11 @@ const Navbar = () => {
                 className="h-8 w-auto"
               />
             </div>
-            <span className="text-xl font-bold text-gray-900 hidden sm:inline-block">
-              {content.global?.siteName || "Invoicing"}
+            <span className="text-lg font-bold text-gray-900 hidden sm:inline-block">
+              {content.global?.siteName || "Easy Billing"}
             </span>
             <span className="text-sm font-bold text-gray-900 sm:hidden">
-              {content.global?.siteName || "Invoicing"}
+              {content.global?.siteName || "Easy Billing"}
             </span>
           </Link>
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ClipboardCheck } from 'lucide-react';
-import { initialSiteContent } from '@/data/siteContent';
+import { initialSiteContent } from '@/data/config';
 
 const Footer = () => {
   const content = initialSiteContent;
@@ -14,7 +14,7 @@ const Footer = () => {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <ClipboardCheck className="w-8 h-8" />
-              <span className="text-xl font-bold">{content.global?.siteName || "EDGE2 Invoicing"}</span>
+              <span className="text-xl font-bold">{content.global?.siteName || "EDGE2 Easy Billing"}</span>
             </div>
             <p className="text-gray-400 mb-4 text-sm leading-relaxed">
               {content.global?.footerAbout}
@@ -22,7 +22,7 @@ const Footer = () => {
           </div>
         </div> */}
 
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+        <div className="pt-0 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
           {/* <p>&copy; {new Date().getFullYear()} {content.global?.siteName}. All rights reserved.</p> */}
           <p>&copy; {new Date().getFullYear()} EDGE2 Engineering Solutions India Pvt. Ltd. All rights reserved.</p>
         </div>

@@ -1,4 +1,4 @@
-# EDGE2 Invoicing
+# EDGE2 Easy Billing
 
 <!-- - Create a Supabase project
 - Run `setup.sql` on Supabase. Go to your Supabase project -> SQL Editor -> Run SQL

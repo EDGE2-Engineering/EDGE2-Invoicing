@@ -46,7 +46,7 @@ const ServiceDetailPage = () => {
     return (
         <>
             <Helmet>
-                <title>{service.serviceType} | EDGE2 Invoicing</title>
+                <title>{service.serviceType} | EDGE2 Easy Billing</title>
                 <meta name="description" content={`Service: ${service.serviceType}`} />
             </Helmet>
 

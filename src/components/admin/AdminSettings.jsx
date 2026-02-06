@@ -119,10 +119,10 @@ const AdminSettings = () => {
     const handleFullBackup = () => {
         // Collect all local storage keys related to data
         const data = {
-            products: JSON.parse(localStorage.getItem('edge2invoicing_products') || '[]'),
-            siteContent: JSON.parse(localStorage.getItem('edge2invoicing_content') || '{}'),
-            pageImages: JSON.parse(localStorage.getItem('edge2invoicing_images') || '{}'),
-            blogs: JSON.parse(localStorage.getItem('edge2invoicing_blogs') || '[]'),
+            products: JSON.parse(localStorage.getItem('edge2Easy Billing_products') || '[]'),
+            siteContent: JSON.parse(localStorage.getItem('edge2Easy Billing_content') || '{}'),
+            pageImages: JSON.parse(localStorage.getItem('edge2Easy Billing_images') || '{}'),
+            blogs: JSON.parse(localStorage.getItem('edge2Easy Billing_blogs') || '[]'),
             timestamp: new Date().toISOString(),
             version: '1.0'
         };
@@ -155,10 +155,10 @@ const AdminSettings = () => {
             try {
                 const backup = JSON.parse(event.target.result);
 
-                if (backup.products) localStorage.setItem('edge2invoicing_products', JSON.stringify(backup.products));
-                if (backup.siteContent) localStorage.setItem('edge2invoicing_content', JSON.stringify(backup.siteContent));
-                if (backup.pageImages) localStorage.setItem('edge2invoicing_images', JSON.stringify(backup.pageImages));
-                if (backup.blogs) localStorage.setItem('edge2invoicing_blogs', JSON.stringify(backup.blogs));
+                if (backup.products) localStorage.setItem('edge2Easy Billing_products', JSON.stringify(backup.products));
+                if (backup.siteContent) localStorage.setItem('edge2Easy Billing_content', JSON.stringify(backup.siteContent));
+                if (backup.pageImages) localStorage.setItem('edge2Easy Billing_images', JSON.stringify(backup.pageImages));
+                if (backup.blogs) localStorage.setItem('edge2Easy Billing_blogs', JSON.stringify(backup.blogs));
 
                 toast({ title: "Restore Successful", description: "Site data has been restored. Reloading..." });
                 setTimeout(() => window.location.reload(), 1500);

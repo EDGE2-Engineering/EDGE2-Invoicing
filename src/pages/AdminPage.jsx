@@ -56,7 +56,7 @@ const AdminPage = () => {
     return (
       <>
         <Helmet>
-          <title>Reset Password | EDGE2 Invoicing</title>
+          <title>Reset Password | EDGE2 Easy Billing</title>
         </Helmet>
         <UpdatePassword />
       </>
@@ -67,7 +67,7 @@ const AdminPage = () => {
     return (
       <>
         <Helmet>
-          <title>Admin Login | EDGE2 Invoicing</title>
+          <title>Admin Login | EDGE2 Easy Billing</title>
         </Helmet>
         <AdminLogin onLoginSuccess={handleLoginSuccess} />
       </>
@@ -77,7 +77,7 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Helmet>
-        <title>Settings | EDGE2 Invoicing</title>
+        <title>Settings | EDGE2 Easy Billing</title>
       </Helmet>
 
       <Navbar />
@@ -148,18 +148,13 @@ const AdminPage = () => {
                 <LayoutDashboard className="w-4 h-4" /> Client Pricing
               </TabsTrigger>
 
-              <TabsTrigger
-                value="app_settings"
-                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
-              >
-                <Settings className="w-4 h-4" /> App Settings
-              </TabsTrigger>
+              
 
               <TabsTrigger
                 value="saved_records"
                 className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
-                <Save className="w-4 h-4" /> Saved Records
+                <Save className="w-4 h-4" /> Billing History
               </TabsTrigger>
 
               <TabsTrigger
@@ -168,7 +163,12 @@ const AdminPage = () => {
               >
                 <UserCog className="w-4 h-4" /> Users
               </TabsTrigger>
-
+              <TabsTrigger
+                value="app_settings"
+                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" /> App Settings
+              </TabsTrigger>
             </TabsList>
           </div>
 

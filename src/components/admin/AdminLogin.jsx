@@ -40,10 +40,10 @@ const AdminLogin = ({ onLoginSuccess }) => {
             <img
               src={`${import.meta.env.BASE_URL}edge2-logo.png`}
               alt="EDGE2 Logo"
-              className="h-12 w-auto object-contain"
+              className="h-16 w-auto object-contain"
             />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">EDGE2 Invoicing</h1>
+          <h1 className="text-xl font-bold text-gray-900">Easy Billing</h1>
           <p className="text-gray-500 mt-2 text-sm">Sign in to with your username and password</p>
         </div>
 

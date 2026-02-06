@@ -39,7 +39,7 @@ import {
 import ReactSelect from 'react-select';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
-import { getSiteContent } from '@/data/siteContent';
+import { getSiteContent } from '@/data/config';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useToast } from '@/components/ui/use-toast';
 
