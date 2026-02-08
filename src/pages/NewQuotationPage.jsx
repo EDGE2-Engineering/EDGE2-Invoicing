@@ -1,12 +1,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { Plus, Trash2, Printer, FileText, ArrowLeft, X, Save, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Printer, FileText, ArrowLeft, X, Save, Loader2, CreditCard } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useServices } from '@/contexts/ServicesContext';
 import { useTests } from '@/contexts/TestsContext';
@@ -140,7 +141,11 @@ const NewQuotationPage = () => {
                         phone: '',
                         date: format(new Date(), 'yyyy-MM-dd'),
                         quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`,
-                        generatedBy: parsed.quoteDetails.generatedBy || ''
+
+                        generatedBy: parsed.quoteDetails.generatedBy || '',
+                        paymentDate: parsed.quoteDetails.paymentDate || '',
+                        paymentMode: parsed.quoteDetails.paymentMode || '',
+                        bankDetails: parsed.quoteDetails.bankDetails || ''
                     },
                     items: parsed.items || [],
                     documentType: parsed.documentType || 'Quotation',
@@ -162,7 +167,11 @@ const NewQuotationPage = () => {
                 phone: '',
                 date: format(new Date(), 'yyyy-MM-dd'),
                 quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`,
-                generatedBy: user?.fullName || ''
+
+                generatedBy: user?.fullName || '',
+                paymentDate: '',
+                paymentMode: '',
+                bankDetails: ''
             },
             items: [],
             documentType: 'Quotation',
@@ -275,6 +284,9 @@ const NewQuotationPage = () => {
                 quote_number: quoteDetails.quoteNumber,
                 document_type: documentType,
                 client_name: quoteDetails.clientName,
+                payment_date: quoteDetails.paymentDate || null,
+                payment_mode: quoteDetails.paymentMode || null,
+                bank_details: quoteDetails.bankDetails || null,
                 content: {
                     quoteDetails,
                     items,
@@ -366,7 +378,11 @@ const NewQuotationPage = () => {
             phone: '',
             date: format(new Date(), 'yyyy-MM-dd'),
             quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`,
-            generatedBy: user?.fullName || ''
+
+            generatedBy: user?.fullName || '',
+            paymentDate: '',
+            paymentMode: '',
+            bankDetails: ''
         });
         setItems([]);
         setDocumentType('Quotation');
@@ -738,6 +754,55 @@ const NewQuotationPage = () => {
                             </div>
                         </div>
 
+                        {/* Payment Received Details Section - Only for Tax Invoice */}
+                        {documentType === 'Tax Invoice' && (
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
+                                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                                    <CreditCard className="w-5 h-5 mr-2 text-primary" />
+                                    Payment Received Details
+                                </h2>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label>Payment Received Date</Label>
+                                            <Input
+                                                type="date"
+                                                value={quoteDetails.paymentDate || ''}
+                                                onChange={e => setQuoteDetails({ ...quoteDetails, paymentDate: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label>Mode of Payment</Label>
+                                            <Select
+                                                value={quoteDetails.paymentMode || ''}
+                                                onValueChange={(value) => setQuoteDetails({ ...quoteDetails, paymentMode: value })}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select Mode" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Cash">Cash</SelectItem>
+                                                    <SelectItem value="Cheque">Cheque</SelectItem>
+                                                    <SelectItem value="NEFT/RTGS">NEFT/RTGS</SelectItem>
+                                                    <SelectItem value="UPI">UPI</SelectItem>
+                                                    <SelectItem value="Other">Other</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label>Bank / Transaction Details</Label>
+                                        <Textarea
+                                            value={quoteDetails.bankDetails || ''}
+                                            onChange={e => setQuoteDetails({ ...quoteDetails, bankDetails: e.target.value })}
+                                            placeholder="Enter bank name, cheque number, or transaction ID"
+                                            rows={2}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Add Item Card */}
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                             <h2 className="text-lg font-semibold mb-4 flex items-center">
@@ -929,6 +994,7 @@ const NewQuotationPage = () => {
                                                         <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">HSN</th>
                                                         <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Price</th>
                                                         <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Qty</th>
+                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Unit</th>
                                                         <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-15">Total</th>
                                                         <th className="w-10 print:hidden"></th>
                                                     </tr>
@@ -971,7 +1037,8 @@ const NewQuotationPage = () => {
                                                                 </td>
                                                                 <td className="py-2 px-2 text-left text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.hsnCode || '—'}</td>
                                                                 <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">₹{item.price}</td>
-                                                                <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.qty} {item.unit}</td>
+                                                                <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.qty}</td>
+                                                                <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.unit}</td>
                                                                 <td className="py-2 px-2 text-right text-gray-900 font-medium text-xs align-top border-r border-l border-gray-200">₹{item.total.toLocaleString()}</td>
                                                                 <td className="text-right print:hidden align-top">
                                                                     <button
@@ -1060,7 +1127,7 @@ const NewQuotationPage = () => {
                                                         <tbody>
                                                             <tr>
                                                                 <td className="py-1 font-semibold w-32">Name:</td>
-                                                                <td className="py-1">Edge2 Engineering Solutions India Pvt. Ltd.</td>
+                                                                <td className="py-1">EDGE2 Engineering Solutions India Pvt. Ltd.</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className="py-1 font-semibold">A/c. No:</td>
@@ -1097,6 +1164,31 @@ const NewQuotationPage = () => {
                                                     </table>
                                                 </div>
                                             </div>
+
+                                            {/* Payment Received Details - Only for Tax Invoice */}
+                                            {documentType === 'Tax Invoice' && quoteDetails.paymentDate && (
+                                                <div className="mt-6 pt-4 border-t">
+                                                    <h2 className="font-semibold text-left mb-3 text-sm">Payment Received Details</h2>
+                                                    <table className="w-full text-xs border-collapse">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold w-40">Payment Received Date:</td>
+                                                                <td className="py-1">{format(new Date(quoteDetails.paymentDate), 'dd MMM yyyy')}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 font-semibold">Mode of Payment:</td>
+                                                                <td className="py-1">{quoteDetails.paymentMode}</td>
+                                                            </tr>
+                                                            {quoteDetails.bankDetails && (
+                                                                <tr>
+                                                                    <td className="py-1 font-semibold">Transaction Details:</td>
+                                                                    <td className="py-1">{quoteDetails.bankDetails}</td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
 
                                             {/* Payment Terms */}
                                             <div className="mt-6 pt-4 border-t">

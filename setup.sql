@@ -377,6 +377,9 @@ create table if not exists public.saved_records (
   quote_number text unique not null,
   document_type text not null, -- 'Tax Invoice' or 'Quotation'
   client_name text,
+  payment_date date,
+  payment_mode text,
+  bank_details text,
   content jsonb not null, -- Stores quoteDetails, items, discount, etc.
   created_by uuid references public.app_users(id),
   created_at timestamp with time zone default now(),
