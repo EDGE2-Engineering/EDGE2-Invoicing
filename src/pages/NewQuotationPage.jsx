@@ -187,7 +187,7 @@ const NewQuotationPage = () => {
     const [newItemType, setNewItemType] = useState('service'); // 'service' or 'test'
     const [selectedItemId, setSelectedItemId] = useState('');
     const [qty, setQty] = useState(1);
-    const [documentType, setDocumentType] = useState(initialState.documentType); // 'Tax Invoice' or 'Quotation'
+    const [documentType, setDocumentType] = useState(initialState.documentType); // 'Tax Invoice', 'Quotation', or 'Proforma Invoice'
     const [discount, setDiscount] = useState(initialState.discount);
     const [comboboxOpen, setComboboxOpen] = useState(false);
     const [searchValue, setSearchValue] = useState('');
@@ -603,6 +603,7 @@ const NewQuotationPage = () => {
                                     <SelectContent>
                                         <SelectItem value="Tax Invoice">Tax Invoice</SelectItem>
                                         <SelectItem value="Quotation">Quotation</SelectItem>
+                                        <SelectItem value="Proforma Invoice">Proforma Invoice</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -982,10 +983,10 @@ const NewQuotationPage = () => {
                                                             <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
                                                                 Client
                                                             </h3>
-                                                            <p className="font-bold text-gray-900 text-xs">{quoteDetails.clientName || 'Client Name'}</p>
+                                                            <p className="font-bold text-gray-900 text-xs">{quoteDetails.clientName || '-'}</p>
                                                             <p className="text-gray-600 whitespace-pre-wrap text-xs">{quoteDetails.clientAddress}</p>
-                                                            <p className="text-gray-600 mt-1 text-xs">Email: {quoteDetails.email}</p>
-                                                            <p className="text-gray-600 text-xs">Phone: {quoteDetails.phone}</p>
+                                                            <p className="text-gray-600 mt-1 text-xs">Email: {quoteDetails.email || '-'}</p>
+                                                            <p className="text-gray-600 text-xs">Phone: {quoteDetails.phone || '-'}</p>
                                                         </div>
 
                                                         {/* Column 2: Contractor */}
@@ -993,7 +994,7 @@ const NewQuotationPage = () => {
                                                             <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
                                                                 Contractor
                                                             </h3>
-                                                            <p className="font-bold text-gray-900 text-xs">{quoteDetails.contractorName || 'Contractor Name'}</p>
+                                                            <p className="font-bold text-gray-900 text-xs">{quoteDetails.contractorName || '-'}</p>
                                                             <p className="text-gray-600 whitespace-pre-wrap text-xs">{quoteDetails.contractorAddress}</p>
                                                         </div>
 
@@ -1002,7 +1003,7 @@ const NewQuotationPage = () => {
                                                             <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
                                                                 Project Details
                                                             </h3>
-                                                            <p className="font-bold text-gray-900 text-xs">{quoteDetails.projectName || 'Project Name'}</p>
+                                                            <p className="font-bold text-gray-900 text-xs">{quoteDetails.projectName || '-'}</p>
                                                             <p className="text-gray-600 whitespace-pre-wrap text-xs">{quoteDetails.projectAddress}</p>
                                                         </div>
                                                     </div>

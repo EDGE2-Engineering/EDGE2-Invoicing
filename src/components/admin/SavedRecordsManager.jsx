@@ -274,6 +274,7 @@ const SavedRecordsManager = () => {
                                         <SelectItem value="all">All Types</SelectItem>
                                         <SelectItem value="Tax Invoice">Tax Invoice</SelectItem>
                                         <SelectItem value="Quotation">Quotation</SelectItem>
+                                        <SelectItem value="Proforma Invoice">Proforma Invoice</SelectItem>
                                     </SelectContent>
                                 </Select>
 
@@ -377,8 +378,10 @@ const SavedRecordsManager = () => {
                                         </td>
                                         <td className="py-3 px-4">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${record.document_type === 'Tax Invoice'
-                                                ? 'bg-blue-100 text-blue-800'
-                                                : 'bg-green-100 text-green-800'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : record.document_type === 'Proforma Invoice'
+                                                        ? 'bg-purple-100 text-purple-800'
+                                                        : 'bg-green-100 text-green-800'
                                                 }`}>
                                                 {record.document_type}
                                             </span>
