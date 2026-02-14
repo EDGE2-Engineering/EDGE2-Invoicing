@@ -306,84 +306,107 @@ const AdminTestsManager = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex flex-col md:flex-row items-center gap-4 flex-1">
-                    <div className="relative w-full sm:w-72">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                            placeholder="Search tests..."
-                            className="pl-10"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+            <div className="flex flex-col gap-4">
+                {/* Search Row */}
+                <div className="relative w-full">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                        placeholder="Search tests..."
+                        className="pl-10 w-full h-12 text-sm bg-gray-50/50 border-gray-200 rounded-xl focus:ring-primary focus:border-primary transition-all shadow-sm"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
 
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Filters:</span>
-                        <Select value={filterMaterial} onValueChange={setFilterMaterial}>
-                            <SelectTrigger className="w-44 h-10 text-xs text-left">
-                                <SelectValue placeholder="All Materials" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {uniqueMaterials.map(m => (
-                                    <SelectItem key={m} value={m}>{m === 'all' ? 'All Materials' : m}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                {/* Filters and Actions Row */}
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Filter</span>
+                            <Select value={filterMaterial} onValueChange={setFilterMaterial}>
+                                <SelectTrigger className="w-44 h-10 text-xs bg-gray-50/50 border-gray-200 rounded-lg">
+                                    <SelectValue placeholder="Materials" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {uniqueMaterials.map(m => (
+                                        <SelectItem key={m} value={m}>{m === 'all' ? 'All Materials' : m}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Sort</span>
+                            <Select value={sortField} onValueChange={setSortField}>
+                                <SelectTrigger className="w-32 h-10 text-xs bg-gray-50/50 border-gray-200 rounded-lg">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="name">Name</SelectItem>
+                                    <SelectItem value="materials">Materials</SelectItem>
+                                    <SelectItem value="price">Price</SelectItem>
+                                    <SelectItem value="hsn">HSN</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-10 w-10 border-gray-200 bg-gray-50/50 rounded-lg"
+                                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                                title={`Order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
+                            >
+                                {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+                            </Button>
+                        </div>
 
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Sort By:</span>
-                        <Select value={sortField} onValueChange={setSortField}>
-                            <SelectTrigger className="w-32 h-10 text-xs text-left">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="name">Name</SelectItem>
-                                <SelectItem value="materials">Materials</SelectItem>
-                                <SelectItem value="price">Price</SelectItem>
-                                <SelectItem value="hsn">HSN</SelectItem>
-                            </SelectContent>
-                        </Select>
                         <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-10 w-10 border-gray-200"
-                            onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                            title={`Order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
+                            variant="ghost"
+                            size="sm"
+                            onClick={resetAll}
+                            disabled={!searchTerm && sortField === 'name' && sortOrder === 'asc' && filterMaterial === 'all'}
+                            className="text-gray-400 hover:text-red-500 h-10 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
                         >
-                            {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+                            Reset
                         </Button>
                     </div>
 
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={resetAll}
-                        disabled={!searchTerm && sortField === 'name' && sortOrder === 'asc' && filterMaterial === 'all'}
-                        className="text-gray-400 hover:text-red-500 h-10 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
-                    >
-                        Reset All
-                    </Button>
-                </div>
-                <div className="flex gap-2 w-full sm:w-auto">
-                    <input
-                        type="file"
-                        ref={fileImportRef}
-                        onChange={handleImportFile}
-                        accept=".json"
-                        className="hidden"
-                    />
-                    <Button variant="outline" onClick={handleImportClick} className="flex-1 sm:flex-none border-gray-300">
-                        <Upload className="w-4 h-4 mr-2" /> Import
-                    </Button>
-                    <Button variant="outline" onClick={handleExport} className="flex-1 sm:flex-none border-gray-300">
-                        <Download className="w-4 h-4 mr-2" /> Export
-                    </Button>
-                    <Button onClick={handleAddNew} className="flex-1 sm:flex-none bg-primary hover:bg-primary-dark text-white">
-                        <Plus className="w-4 h-4 mr-2" /> Add Test
-                    </Button>
+<div className="w-full flex justify-end">
+    <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 bg-gray-100/50 p-1 rounded-xl">
+            <input
+                type="file"
+                ref={fileImportRef}
+                onChange={handleImportFile}
+                accept=".json"
+                className="hidden"
+            />
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleImportClick}
+                className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
+            >
+                <Upload className="w-3.5 h-3.5 mr-2" /> Import
+            </Button>
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleExport}
+                className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
+            >
+                <Download className="w-3.5 h-3.5 mr-2" /> Export
+            </Button>
+        </div>
+
+        <Button
+            onClick={handleAddNew}
+            className="bg-primary hover:bg-primary-dark text-white h-10 px-4 rounded-xl shadow-sm text-xs font-semibold"
+        >
+            <Plus className="w-4 h-4 mr-2" /> Add Test
+        </Button>
+    </div>
+</div>
+
                 </div>
             </div>
 

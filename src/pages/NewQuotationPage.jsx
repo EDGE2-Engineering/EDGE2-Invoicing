@@ -109,6 +109,21 @@ const numberToWords = (num) => {
     return result + ' Only';
 };
 
+// Helper function to validate document number
+const validateDocNumber = (number) => {
+    if (!number) return "Document number is required";
+    if (!number.startsWith('EESIPL')) {
+        return "Document number must start with 'EESIPL'";
+    }
+    if (/\s/.test(number)) {
+        return "Document number cannot contain spaces";
+    }
+    if (!/^[A-Za-z0-9/]+$/.test(number)) {
+        return "Document number can only contain letters, numbers, and '/'";
+    }
+    return "";
+};
+
 const NewQuotationPage = () => {
     const { services, clientServicePrices } = useServices();
     const { tests, clientTestPrices } = useTests();
@@ -183,6 +198,7 @@ const NewQuotationPage = () => {
     const initialState = loadSavedState();
 
     const [quoteDetails, setQuoteDetails] = useState(initialState.quoteDetails);
+    const [docNumberError, setDocNumberError] = useState('');
     const [items, setItems] = useState(initialState.items);
     const [newItemType, setNewItemType] = useState('service'); // 'service' or 'test'
     const [selectedItemId, setSelectedItemId] = useState('');
@@ -227,6 +243,11 @@ const NewQuotationPage = () => {
             setQuoteDetails(prev => ({ ...prev, generatedBy: user.fullName }));
         }
     }, [user, quoteDetails.generatedBy]);
+
+    // Validate document number whenever it changes
+    useEffect(() => {
+        setDocNumberError(validateDocNumber(quoteDetails.quoteNumber));
+    }, [quoteDetails.quoteNumber]);
 
     // Load record from Supabase if ID is present
     useEffect(() => {
@@ -274,6 +295,18 @@ const NewQuotationPage = () => {
             toast({
                 title: "Authentication Required",
                 description: "You must be logged in to save to the database.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        // Validate document number before saving
+        const error = validateDocNumber(quoteDetails.quoteNumber);
+        if (error) {
+            setDocNumberError(error);
+            toast({
+                title: "Invalid Document Number",
+                description: error,
                 variant: "destructive"
             });
             return;
@@ -425,6 +458,18 @@ const NewQuotationPage = () => {
     });
 
     const triggerPrint = async () => {
+        // Validate document number before printing
+        const error = validateDocNumber(quoteDetails.quoteNumber);
+        if (error) {
+            setDocNumberError(error);
+            toast({
+                title: "Invalid Document Number",
+                description: error,
+                variant: "destructive"
+            });
+            return;
+        }
+
         try {
             const message = `🖨️ *Print/PDF Action*\n\n` +
                 `Document: \`${documentType}\`\n` +
@@ -612,9 +657,16 @@ const NewQuotationPage = () => {
                                     <Label>{documentType} Number</Label>
                                     <Input
                                         value={quoteDetails.quoteNumber}
-                                        onChange={e => setQuoteDetails({ ...quoteDetails, quoteNumber: e.target.value })}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            setQuoteDetails({ ...quoteDetails, quoteNumber: val });
+                                        }}
                                         placeholder="Enter number"
+                                        className={docNumberError ? "border-red-500 focus-visible:ring-red-500" : ""}
                                     />
+                                    {docNumberError && (
+                                        <p className="text-xs text-red-500 mt-1">{docNumberError}</p>
+                                    )}
                                 </div>
                             </div>
                             {/* <h2 className="text-lg font-semibold mb-4 flex items-center">

@@ -122,52 +122,59 @@ const AdminPage = () => {
 
               <TabsTrigger
                 value="services"
-                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+                title="Services"
+                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
                 <Home className="w-4 h-4" /> Services
               </TabsTrigger>
 
               <TabsTrigger
                 value="tests"
-                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+                title="Tests"
+                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
                 <FileText className="w-4 h-4" /> Tests
               </TabsTrigger>
 
               <TabsTrigger
                 value="clients"
-                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+                title="Clients"
+                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
                 <User className="w-4 h-4" /> Clients
               </TabsTrigger>
 
               <TabsTrigger
                 value="pricing"
-                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+                title="Client Pricing"
+                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
-                <LayoutDashboard className="w-4 h-4" /> Client Pricing
+                <LayoutDashboard className="w-4 h-4" /> Pricing
               </TabsTrigger>
 
-              
+
 
               <TabsTrigger
                 value="saved_records"
-                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+                title="Billing History"
+                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
-                <Save className="w-4 h-4" /> Billing History
+                <Save className="w-4 h-4" /> Records
               </TabsTrigger>
 
               <TabsTrigger
                 value="users"
-                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+                title="User Management"
+                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
                 <UserCog className="w-4 h-4" /> Users
               </TabsTrigger>
               <TabsTrigger
                 value="app_settings"
-                className="px-6 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+                title="App Settings"
+                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
-                <Settings className="w-4 h-4" /> App Settings
+                <Settings className="w-4 h-4" /> Others
               </TabsTrigger>
             </TabsList>
           </div>
