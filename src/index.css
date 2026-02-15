@@ -135,11 +135,6 @@
     min-height: auto !important;
   }
 
-  /* Hide everything except the print container */
-  body>*:not(#printable-quote-root) {
-    display: none !important;
-  }
-
   #printable-quote-root {
     display: block !important;
     width: 210mm;
