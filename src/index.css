@@ -160,26 +160,30 @@
     box-shadow: none;
     margin: 0;
     width: 210mm;
-    /* Slightly reduced height to prevent single-pixel overflows triggering new pages on some devices */
-    height: 296mm;
-    min-height: 296mm;
-    max-height: 296mm;
+
+    /* AGGRESSIVE FIX: Reduce height significantly to account for tablet browser margins */
+    height: 280mm !important;
+    min-height: 280mm !important;
+    max-height: 280mm !important;
+
     padding: 10mm;
-    /* Increased padding for better spacing */
-    padding-bottom: 20mm;
-    /* Adjusted for footer space */
-    /* Adjusted for footer space */
+    padding-bottom: 0;
+    /* Remove padding bottom, let footer sit at bottom */
+
     page-break-after: always;
     page-break-inside: avoid;
+    break-inside: avoid;
+
+    /* Return to Block layout for predictability */
+    display: block !important;
+
     float: none;
-    overflow: hidden;
+    overflow: hidden !important;
+    /* Critical: Cut off anything that overflows */
     border: none;
     visibility: visible;
     position: relative;
-    /* Reset any transforms from screen media queries */
     transform: none !important;
-    display: block !important;
-    /* Fix: Remove flex context to ensure absolute footer works strictly */
   }
 
   .a4-container:last-child {
@@ -213,9 +217,15 @@
 
   /* Ensure content wrapper doesn't overflow in print */
   .a4-content-wrapper {
-    overflow: hidden;
-    /* Adjusted for new height and padding */
-    max-height: calc(296mm - 40mm);
+    overflow: hidden !important;
+    display: block;
+    /* Reduced content height to clear the footer area safely */
+    max-height: 245mm !important;
+  }
+
+  .a4-page-content {
+    display: block;
+    overflow: hidden !important;
   }
 }
 
@@ -230,19 +240,16 @@
   font-size: 10px;
   color: #6b7280;
   flex-shrink: 0;
+  height: auto;
 }
 
 @media print {
   .a4-page-footer {
-    position: absolute;
-    bottom: 10mm;
-    /* Increased bottom margin for safety */
+    position: absolute !important;
+    bottom: 0 !important;
     left: 10mm;
-    /* Match container padding */
     right: 10mm;
-    /* Match container padding */
     width: auto;
-    margin-top: 0;
   }
 }
 
