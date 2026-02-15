@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -226,16 +227,18 @@ const AdminServicesManager = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4 pb-8">
                     <div className="space-y-2">
-                        <Label>Service Type</Label>
-                        <Input
-                            value={editingService.serviceType}
-                            onChange={(e) => handleChange('serviceType', e.target.value)}
-                            placeholder="e.g. Drilling Upto 10m"
-                        />
+                            <Label>Service Type</Label>
+                            <Textarea
+                                rows={2}
+                                value={editingService.serviceType}
+                                onChange={(e) => handleChange('serviceType', e.target.value)}
+                                placeholder="e.g. Drilling Upto 10m"
+                            />
                     </div>
-
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <Label>Price (<Rupee />)</Label>
                         <Input
@@ -244,7 +247,6 @@ const AdminServicesManager = () => {
                             onChange={(e) => handleChange('price', Number(e.target.value))}
                         />
                     </div>
-
                     <div className="space-y-2">
                         <Label>Unit</Label>
                         <Input

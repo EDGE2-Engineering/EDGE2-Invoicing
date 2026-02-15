@@ -4,7 +4,7 @@ import { useReactToPrint } from 'react-to-print';
 import { Plus, Trash2, Printer, FileText, ArrowLeft, X, Save, Loader2, CreditCard } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -603,11 +603,13 @@ const NewQuotationPage = () => {
     const totalPages = totalQuotationPages + STATIC_PAGES_COUNT;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Navbar />
+        <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+            <div className="shrink-0">
+                <Navbar />
+            </div>
 
-            <div className="container mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-6">
+            <div className="flex-1 flex flex-col min-h-0 container mx-auto px-4 py-4">
+                <div className="flex justify-between items-center mb-4 shrink-0">
                     <div className="flex items-center gap-4">
                         {!isStandard() && (
                             <Link to="/" className="text-gray-500 hover:text-gray-900">
@@ -634,7 +636,7 @@ const NewQuotationPage = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+                <div className="flex-1 overflow-y-auto min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-2 pb-8 pr-2 custom-scrollbar">
                     {/* Left Column: Editor */}
                     <div className="lg:col-span-1 space-y-2">
                         {/* Client Details Card */}
@@ -739,7 +741,8 @@ const NewQuotationPage = () => {
                                 </div>
                                 <div>
                                     <Label>Client Address</Label>
-                                    <Input
+                                    <Textarea
+                                        className="min-h-[100px]"
                                         value={quoteDetails.clientAddress}
                                         onChange={e => setQuoteDetails({ ...quoteDetails, clientAddress: e.target.value })}
                                         placeholder="Enter client address"
@@ -747,7 +750,8 @@ const NewQuotationPage = () => {
                                 </div>
                                 <div className="pt-2 border-t">
                                     <Label>Contractor Name</Label>
-                                    <Input
+                                    <Textarea
+                                        className="min-h-[100px]"
                                         value={quoteDetails.contractorName}
                                         onChange={e => setQuoteDetails({ ...quoteDetails, contractorName: e.target.value })}
                                         placeholder="Enter contractor name"
@@ -755,7 +759,8 @@ const NewQuotationPage = () => {
                                 </div>
                                 <div>
                                     <Label>Contractor Address</Label>
-                                    <Input
+                                    <Textarea
+                                        className="min-h-[100px]"
                                         value={quoteDetails.contractorAddress}
                                         onChange={e => setQuoteDetails({ ...quoteDetails, contractorAddress: e.target.value })}
                                         placeholder="Enter contractor address"
@@ -763,7 +768,8 @@ const NewQuotationPage = () => {
                                 </div>
                                 <div className="pt-2 border-t">
                                     <Label>Project Name</Label>
-                                    <Input
+                                    <Textarea
+                                        className="min-h-[100px]"
                                         value={quoteDetails.projectName}
                                         onChange={e => setQuoteDetails({ ...quoteDetails, projectName: e.target.value })}
                                         placeholder="Enter project name"
@@ -771,7 +777,8 @@ const NewQuotationPage = () => {
                                 </div>
                                 <div>
                                     <Label>Project Address</Label>
-                                    <Input
+                                    <Textarea
+                                        className="min-h-[100px]"
                                         value={quoteDetails.projectAddress}
                                         onChange={e => setQuoteDetails({ ...quoteDetails, projectAddress: e.target.value })}
                                         placeholder="Enter project address"
@@ -1445,7 +1452,7 @@ const NewQuotationPage = () => {
                     </div>
                 </div>
             </div>
-            <Footer />
+
 
             {/* Clear Confirmation Dialog */}
             <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>

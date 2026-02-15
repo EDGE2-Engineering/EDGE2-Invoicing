@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Edit2, Plus, Trash2, Clock, Tag, CheckCircle2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+
 import { Helmet } from 'react-helmet-async';
 import { useTests } from '@/contexts/TestsContext';
 import Rupee from '../components/Rupee';
@@ -31,7 +31,7 @@ const TestDetailPage = () => {
                 <div className="container mx-auto px-4 py-12 text-center">
                     <p>Loading test details...</p>
                 </div>
-                <Footer />
+
             </>
         );
     }
@@ -44,7 +44,7 @@ const TestDetailPage = () => {
                     <h2 className="text-2xl font-bold text-gray-900">Test not found</h2>
                     <Link to="/" className="text-primary hover:underline mt-4 inline-block">Return to Dashboard</Link>
                 </div>
-                <Footer />
+
             </>
         );
     }
@@ -118,7 +118,7 @@ const TestDetailPage = () => {
                 </div>
             </div>
 
-            <Footer />
+
         </>
     );
 };

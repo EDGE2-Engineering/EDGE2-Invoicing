@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { sendTelegramNotification } from '@/lib/notifier';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -177,7 +178,8 @@ const AdminClientsManager = () => {
                 <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
                         <Label>Client Name</Label>
-                        <Input
+                        <Textarea
+                            rows={2}
                             value={editingClient.clientName || ''}
                             onChange={(e) => handleChange('clientName', e.target.value)}
                             placeholder="Enter client name"
@@ -185,7 +187,8 @@ const AdminClientsManager = () => {
                     </div>
                     <div className="space-y-2">
                         <Label>Address</Label>
-                        <Input
+                        <Textarea
+                            rows={2}
                             value={editingClient.clientAddress || ''}
                             onChange={(e) => handleChange('clientAddress', e.target.value)}
                             placeholder="Enter client address"

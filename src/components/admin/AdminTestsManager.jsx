@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -233,16 +234,18 @@ const AdminTestsManager = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4 pb-8">
                     <div className="space-y-2">
                         <Label>Test Type</Label>
-                        <Input
+                        <Textarea
+                            rows={2}
                             value={editingTest.testType}
                             onChange={(e) => handleChange('testType', e.target.value)}
-                            placeholder="e.g. Organic Impurities Analysis"
-                        />
+                        placeholder="e.g. Organic Impurities Analysis"
+                    />
                     </div>
-
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <Label>Materials</Label>
                         <Input
@@ -421,10 +424,8 @@ const AdminTestsManager = () => {
                     <tbody>
     {sortedTests.map((test) => (
         <tr key={test.id} className="border-b hover:bg-gray-50 transition-colors">
-            
             <td className="py-3 px-4">
                 <div className="flex flex-wrap items-center gap-6 text-sm text-gray-700">
-                    
                     <p className="font-medium text-gray-900">
                         {test.testType}
                     </p>

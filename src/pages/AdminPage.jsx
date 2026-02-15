@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, LayoutDashboard, Home, FileText, User, Save, Loader2, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -213,7 +213,7 @@ const AdminPage = () => {
         </Tabs>
       </main >
 
-      <Footer />
+
     </div >
   );
 };
