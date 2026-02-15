@@ -428,8 +428,7 @@ const SavedRecordsManager = () => {
                 <span className="font-semibold text-gray-900">Client:</span>{' '}
                 {record.client_name || '-'}</div>
             <div className="font-semibold text-blue-900">
-              <Rupee />
-              {calculateRecordTotal(record).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <span className="font-semibold text-gray-900">Total:</span> <Rupee />{calculateRecordTotal(record).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         </td>
