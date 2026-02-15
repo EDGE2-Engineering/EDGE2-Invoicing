@@ -229,13 +229,13 @@ const AdminServicesManager = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-4 pb-8">
                     <div className="space-y-2">
-                            <Label>Service Type</Label>
-                            <Textarea
-                                rows={2}
-                                value={editingService.serviceType}
-                                onChange={(e) => handleChange('serviceType', e.target.value)}
-                                placeholder="e.g. Drilling Upto 10m"
-                            />
+                        <Label>Service Type</Label>
+                        <Textarea
+                            rows={2}
+                            value={editingService.serviceType}
+                            onChange={(e) => handleChange('serviceType', e.target.value)}
+                            placeholder="e.g. Drilling Upto 10m"
+                        />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -341,9 +341,9 @@ const AdminServicesManager = () => {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Filter</span>
+                            <span className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">Filter</span>
                             <Select value={filterUnit} onValueChange={setFilterUnit}>
-                                <SelectTrigger className="w-32 h-10 text-xs bg-gray-50/50 border-gray-200 rounded-lg">
+                                <SelectTrigger className="w-32 h-10 text-sm bg-gray-50/50 border-gray-200 rounded-lg">
                                     <SelectValue placeholder="Units" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -355,9 +355,9 @@ const AdminServicesManager = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Sort</span>
+                            <span className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">Sort</span>
                             <Select value={sortField} onValueChange={setSortField}>
-                                <SelectTrigger className="w-32 h-10 text-xs bg-gray-50/50 border-gray-200 rounded-lg">
+                                <SelectTrigger className="w-32 h-10 text-sm bg-gray-50/50 border-gray-200 rounded-lg">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -382,48 +382,48 @@ const AdminServicesManager = () => {
                             size="sm"
                             onClick={resetAll}
                             disabled={!searchTerm && sortField === 'name' && sortOrder === 'asc' && filterUnit === 'all'}
-                            className="text-gray-400 hover:text-red-500 h-10 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
+                            className="text-gray-400 hover:text-red-500 h-10 text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
                         >
                             Reset
                         </Button>
                     </div>
-<div className="w-full flex justify-end">
-    <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 bg-gray-100/50 p-1 rounded-xl">
-            <input
-                type="file"
-                ref={fileImportRef}
-                onChange={handleImportFile}
-                accept=".json"
-                className="hidden"
-            />
-            <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleImportClick}
-                className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
-            >
-                <Upload className="w-3.5 h-3.5 mr-2" /> Import
-            </Button>
+                    <div className="w-full flex justify-end">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex items-center gap-2 bg-gray-100/50 p-1 rounded-xl">
+                                <input
+                                    type="file"
+                                    ref={fileImportRef}
+                                    onChange={handleImportFile}
+                                    accept=".json"
+                                    className="hidden"
+                                />
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleImportClick}
+                                    className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
+                                >
+                                    <Upload className="w-3.5 h-3.5 mr-2" /> Import
+                                </Button>
 
-            <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleExport}
-                className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
-            >
-                <Download className="w-3.5 h-3.5 mr-2" /> Export
-            </Button>
-        </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleExport}
+                                    className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
+                                >
+                                    <Download className="w-3.5 h-3.5 mr-2" /> Export
+                                </Button>
+                            </div>
 
-        <Button
-            onClick={handleAddNew}
-            className="bg-primary hover:bg-primary-dark text-white h-10 px-4 rounded-xl shadow-sm text-xs font-semibold"
-        >
-            <Plus className="w-4 h-4 mr-2" /> Add Service
-        </Button>
-    </div>
-</div>
+                            <Button
+                                onClick={handleAddNew}
+                                className="bg-primary hover:bg-primary-dark text-white h-10 px-4 rounded-xl shadow-sm text-xs font-semibold"
+                            >
+                                <Plus className="w-4 h-4 mr-2" /> Add Service
+                            </Button>
+                        </div>
+                    </div>
 
                 </div>
             </div>

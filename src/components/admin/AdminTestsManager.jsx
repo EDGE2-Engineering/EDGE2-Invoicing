@@ -241,8 +241,8 @@ const AdminTestsManager = () => {
                             rows={2}
                             value={editingTest.testType}
                             onChange={(e) => handleChange('testType', e.target.value)}
-                        placeholder="e.g. Organic Impurities Analysis"
-                    />
+                            placeholder="e.g. Organic Impurities Analysis"
+                        />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -325,9 +325,9 @@ const AdminTestsManager = () => {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Filter</span>
+                            <span className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">Filter</span>
                             <Select value={filterMaterial} onValueChange={setFilterMaterial}>
-                                <SelectTrigger className="w-44 h-10 text-xs bg-gray-50/50 border-gray-200 rounded-lg">
+                                <SelectTrigger className="w-44 h-10 text-sm bg-gray-50/50 border-gray-200 rounded-lg">
                                     <SelectValue placeholder="Materials" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -339,9 +339,9 @@ const AdminTestsManager = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Sort</span>
+                            <span className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">Sort</span>
                             <Select value={sortField} onValueChange={setSortField}>
-                                <SelectTrigger className="w-32 h-10 text-xs bg-gray-50/50 border-gray-200 rounded-lg">
+                                <SelectTrigger className="w-32 h-10 text-sm bg-gray-50/50 border-gray-200 rounded-lg">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -367,48 +367,48 @@ const AdminTestsManager = () => {
                             size="sm"
                             onClick={resetAll}
                             disabled={!searchTerm && sortField === 'name' && sortOrder === 'asc' && filterMaterial === 'all'}
-                            className="text-gray-400 hover:text-red-500 h-10 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
+                            className="text-gray-400 hover:text-red-500 h-10 text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
                         >
                             Reset
                         </Button>
                     </div>
 
-<div className="w-full flex justify-end">
-    <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 bg-gray-100/50 p-1 rounded-xl">
-            <input
-                type="file"
-                ref={fileImportRef}
-                onChange={handleImportFile}
-                accept=".json"
-                className="hidden"
-            />
-            <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleImportClick}
-                className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
-            >
-                <Upload className="w-3.5 h-3.5 mr-2" /> Import
-            </Button>
-            <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleExport}
-                className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
-            >
-                <Download className="w-3.5 h-3.5 mr-2" /> Export
-            </Button>
-        </div>
+                    <div className="w-full flex justify-end">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex items-center gap-2 bg-gray-100/50 p-1 rounded-xl">
+                                <input
+                                    type="file"
+                                    ref={fileImportRef}
+                                    onChange={handleImportFile}
+                                    accept=".json"
+                                    className="hidden"
+                                />
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleImportClick}
+                                    className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
+                                >
+                                    <Upload className="w-3.5 h-3.5 mr-2" /> Import
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleExport}
+                                    className="h-9 px-3 text-xs text-gray-600 hover:bg-white hover:shadow-sm transition-all rounded-lg"
+                                >
+                                    <Download className="w-3.5 h-3.5 mr-2" /> Export
+                                </Button>
+                            </div>
 
-        <Button
-            onClick={handleAddNew}
-            className="bg-primary hover:bg-primary-dark text-white h-10 px-4 rounded-xl shadow-sm text-xs font-semibold"
-        >
-            <Plus className="w-4 h-4 mr-2" /> Add Test
-        </Button>
-    </div>
-</div>
+                            <Button
+                                onClick={handleAddNew}
+                                className="bg-primary hover:bg-primary-dark text-white h-10 px-4 rounded-xl shadow-sm text-xs font-semibold"
+                            >
+                                <Plus className="w-4 h-4 mr-2" /> Add Test
+                            </Button>
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -422,51 +422,51 @@ const AdminTestsManager = () => {
                         </tr>
                     </thead>
                     <tbody>
-    {sortedTests.map((test) => (
-        <tr key={test.id} className="border-b hover:bg-gray-50 transition-colors">
-            <td className="py-3 px-4">
-                <div className="flex flex-wrap items-center gap-6 text-sm text-gray-700">
-                    <p className="font-medium text-gray-900">
-                        {test.testType}
-                    </p>
-                    <div className="w-full"></div>
-                    <p>
-                        <span className="font-semibold text-gray-900">Materials:</span>{' '}
-                        {test.materials}
-                    </p>
+                        {sortedTests.map((test) => (
+                            <tr key={test.id} className="border-b hover:bg-gray-50 transition-colors">
+                                <td className="py-3 px-4">
+                                    <div className="flex flex-wrap items-center gap-6 text-sm text-gray-700">
+                                        <p className="font-medium text-gray-900">
+                                            {test.testType}
+                                        </p>
+                                        <div className="w-full"></div>
+                                        <p>
+                                            <span className="font-semibold text-gray-900">Materials:</span>{' '}
+                                            {test.materials}
+                                        </p>
 
-                    <p>
-                        <span className="font-semibold text-gray-900">Method:</span>{' '}
-                        {test.testMethodSpecification || '-'}
-                    </p>
+                                        <p>
+                                            <span className="font-semibold text-gray-900">Method:</span>{' '}
+                                            {test.testMethodSpecification || '-'}
+                                        </p>
 
-                    <p>
-                        <span className="font-semibold text-gray-900">Price:</span>{' '}
-                        <Rupee />{test.price.toLocaleString()}
-                    </p>
+                                        <p>
+                                            <span className="font-semibold text-gray-900">Price:</span>{' '}
+                                            <Rupee />{test.price.toLocaleString()}
+                                        </p>
 
-                    <p>
-                        <span className="font-semibold text-gray-900">HSN Code:</span>{' '}
-                        {test.hsnCode || '-'}
-                    </p>
+                                        <p>
+                                            <span className="font-semibold text-gray-900">HSN Code:</span>{' '}
+                                            {test.hsnCode || '-'}
+                                        </p>
 
-                </div>
-            </td>
+                                    </div>
+                                </td>
 
-            <td className="py-1 px-1 text-right">
-                <div className="flex justify-end space-x-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(test)}>
-                        <Edit className="w-4 h-4 text-gray-600" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(test)}>
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
-                </div>
-            </td>
+                                <td className="py-1 px-1 text-right">
+                                    <div className="flex justify-end space-x-2">
+                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(test)}>
+                                            <Edit className="w-4 h-4 text-gray-600" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(test)}>
+                                            <Trash2 className="w-4 h-4 text-red-500" />
+                                        </Button>
+                                    </div>
+                                </td>
 
-        </tr>
-    ))}
-</tbody>
+                            </tr>
+                        ))}
+                    </tbody>
 
                 </table>
             </div>
