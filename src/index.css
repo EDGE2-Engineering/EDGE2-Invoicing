@@ -168,6 +168,7 @@
     /* Increased padding for better spacing */
     padding-bottom: 20mm;
     /* Adjusted for footer space */
+    /* Adjusted for footer space */
     page-break-after: always;
     page-break-inside: avoid;
     float: none;
@@ -177,6 +178,8 @@
     position: relative;
     /* Reset any transforms from screen media queries */
     transform: none !important;
+    display: block !important;
+    /* Fix: Remove flex context to ensure absolute footer works strictly */
   }
 
   .a4-container:last-child {
