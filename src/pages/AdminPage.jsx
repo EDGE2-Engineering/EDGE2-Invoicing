@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/Navbar';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, LayoutDashboard, Home, FileText, User, Save, Loader2, UserCog, Plus, Database, HandHeart, IndianRupee, Ruler, BriefcaseBusiness } from 'lucide-react';
+import { Settings, LayoutDashboard, Home, FileText, User, Save, Loader2, UserCog, Plus, Database, HandHeart, IndianRupee, Ruler, BriefcaseBusiness, Hash, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import AdminServicesManager from '@/components/admin/AdminServicesManager.jsx';
@@ -16,6 +16,7 @@ import AdminClientPricingManager from '@/components/admin/AdminClientPricingMana
 import AdminUsersManager from '@/components/admin/AdminUsersManager.jsx';
 import SavedRecordsManager from '@/components/admin/SavedRecordsManager.jsx';
 import AdminUnitTypesManager from '@/components/admin/AdminUnitTypesManager.jsx';
+import AdminHSNCodesManager from '@/components/admin/AdminHSNCodesManager.jsx';
 
 import AdminLogin from '@/components/admin/AdminLogin';
 import UpdatePassword from '@/components/admin/UpdatePassword';
@@ -110,6 +111,7 @@ const AdminPage = () => {
               <option value="saved_records">Saved Records</option>
               <option value="users">User Management</option>
               <option value="unit_types">Unit Types</option>
+              <option value="hsn_codes">HSN Codes</option>
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -144,6 +146,13 @@ const AdminPage = () => {
                 <Ruler className="w-4 h-4" /> Units
               </TabsTrigger>
               <TabsTrigger
+                value="hsn_codes"
+                title="Codes"
+                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+              >
+                <Hash className="w-4 h-4" /> Codes
+              </TabsTrigger>
+              <TabsTrigger
                 value="clients"
                 title="Clients"
                 className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
@@ -155,7 +164,14 @@ const AdminPage = () => {
                 title="Client Pricing"
                 className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
-              <IndianRupee className="w-4 h-4" /> Pricing
+                <IndianRupee className="w-4 h-4" /> Pricing
+              </TabsTrigger>
+              <TabsTrigger
+                value="app_settings"
+                title="App Settings"
+                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+              >
+                <CreditCard className="w-4 h-4" /> Payment
               </TabsTrigger>
               <TabsTrigger
                 value="saved_records"
@@ -164,20 +180,12 @@ const AdminPage = () => {
               >
                 <Database className="w-4 h-4" /> Records
               </TabsTrigger>
-
               <TabsTrigger
                 value="users"
                 title="User Management"
                 className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
               >
                 <UserCog className="w-4 h-4" /> Users
-              </TabsTrigger>
-              <TabsTrigger
-                value="app_settings"
-                title="App Settings"
-                className="px-4 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
-              >
-                <Settings className="w-4 h-4" /> Others
               </TabsTrigger>
             </TabsList>
           </div>
@@ -216,6 +224,10 @@ const AdminPage = () => {
 
           <TabsContent value="unit_types" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <AdminUnitTypesManager />
+          </TabsContent>
+
+          <TabsContent value="hsn_codes" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AdminHSNCodesManager />
           </TabsContent>
         </Tabs>
       </main >

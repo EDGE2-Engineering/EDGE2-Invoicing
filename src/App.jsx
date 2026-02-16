@@ -9,6 +9,7 @@ import { TestsProvider } from '@/contexts/TestsContext';
 import { ClientsProvider } from '@/contexts/ClientsContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { UnitTypesProvider } from '@/contexts/UnitTypesContext';
+import { HSNCodesProvider } from '@/contexts/HSNCodesContext';
 
 import ServiceDetailPage from '@/pages/ServiceDetailPage.jsx';
 import TestDetailPage from '@/pages/TestDetailPage.jsx';
@@ -27,45 +28,47 @@ function App() {
               <ClientsProvider>
                 <SettingsProvider>
                   <UnitTypesProvider>
-                    <Router>
-                      <Helmet>
-                        <link rel="preconnect" href="https://fonts.googleapis.com" />
-                        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-                      </Helmet>
-                      <div className="min-h-screen bg-[#F5F1ED]">
-                        <Routes>
-                          <Route path="/" element={<AdminPage />} />
-                          <Route
-                            path="/new-quotation"
-                            element={
-                              <ProtectedRoute>
-                                <NewQuotationPage />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/service/:id"
-                            element={
-                              <ProtectedRoute>
-                                <ServiceDetailPage />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/test/:id"
-                            element={
-                              <ProtectedRoute>
-                                <TestDetailPage />
-                              </ProtectedRoute>
-                            }
-                          />
-                          {/* Redirect old admin route to root */}
-                          <Route path="/admin" element={<Navigate to="/" replace />} />
-                        </Routes>
-                        <Toaster />
-                      </div>
-                    </Router>
+                    <HSNCodesProvider>
+                      <Router>
+                        <Helmet>
+                          <link rel="preconnect" href="https://fonts.googleapis.com" />
+                          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+                        </Helmet>
+                        <div className="min-h-screen bg-[#F5F1ED]">
+                          <Routes>
+                            <Route path="/" element={<AdminPage />} />
+                            <Route
+                              path="/new-quotation"
+                              element={
+                                <ProtectedRoute>
+                                  <NewQuotationPage />
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/service/:id"
+                              element={
+                                <ProtectedRoute>
+                                  <ServiceDetailPage />
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/test/:id"
+                              element={
+                                <ProtectedRoute>
+                                  <TestDetailPage />
+                                </ProtectedRoute>
+                              }
+                            />
+                            {/* Redirect old admin route to root */}
+                            <Route path="/admin" element={<Navigate to="/" replace />} />
+                          </Routes>
+                          <Toaster />
+                        </div>
+                      </Router>
+                    </HSNCodesProvider>
                   </UnitTypesProvider>
                 </SettingsProvider>
               </ClientsProvider>

@@ -5,6 +5,7 @@ import Rupee from '../Rupee';
 import { useServices } from '@/contexts/ServicesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUnitTypes } from '@/contexts/UnitTypesContext';
+import { useHSNCodes } from '@/contexts/HSNCodesContext';
 import { sendTelegramNotification } from '@/lib/notifier';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,7 @@ import {
 const AdminServicesManager = () => {
     const { services, updateService, addService, deleteService, setServices } = useServices();
     const { unitTypes } = useUnitTypes();
+    const { hsnCodes } = useHSNCodes();
     const { user } = useAuth();
     const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
@@ -324,11 +326,21 @@ const AdminServicesManager = () => {
 
                     <div className="space-y-2">
                         <Label>HSN Code</Label>
-                        <Input
+                        <Select
                             value={editingService.hsnCode || ''}
-                            onChange={(e) => handleChange('hsnCode', e.target.value)}
-                            placeholder="e.g. 998346"
-                        />
+                            onValueChange={(value) => handleChange('hsnCode', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select HSN code" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {hsnCodes.map((hsn) => (
+                                    <SelectItem key={hsn.id} value={hsn.code} className="text-sm">
+                                        {hsn.code} - {hsn.description}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>

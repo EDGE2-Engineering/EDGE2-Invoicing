@@ -4,6 +4,7 @@ import { Plus, Edit, Trash2, Save, Search, Download, Upload, AlertCircle, SortAs
 import Rupee from '../Rupee';
 import { useTests } from '@/contexts/TestsContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useHSNCodes } from '@/contexts/HSNCodesContext';
 import { sendTelegramNotification } from '@/lib/notifier';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ import {
 
 const AdminTestsManager = () => {
     const { tests, updateTest, addTest, deleteTest, setTests } = useTests();
+    const { hsnCodes } = useHSNCodes();
     const { user } = useAuth();
     const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
@@ -296,11 +298,21 @@ const AdminTestsManager = () => {
 
                     <div className="space-y-2">
                         <Label>HSN Code</Label>
-                        <Input
+                        <Select
                             value={editingTest.hsnCode || ''}
-                            onChange={(e) => handleChange('hsnCode', e.target.value)}
-                            placeholder="e.g. 998346"
-                        />
+                            onValueChange={(value) => handleChange('hsnCode', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select HSN code" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {hsnCodes.map((hsn) => (
+                                    <SelectItem key={hsn.id} value={hsn.code}>
+                                        {hsn.code} - {hsn.description}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>

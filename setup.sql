@@ -428,3 +428,37 @@ INSERT INTO public.service_unit_types (unit_type) VALUES
     ('LS'),
     ('Per Meter'),
     ('Per Bore hole / Per sample');
+
+
+-- -----------------------------------------------------------------------------
+-- 12. Table: hsn_sac_codes
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE public.hsn_sac_codes (
+    id SERIAL PRIMARY KEY,
+    code TEXT NOT NULL,
+    description TEXT NOT NULL
+);
+
+alter table public.hsn_sac_codes enable row level security;
+
+create policy "HSN/SAC codes are viewable by everyone"
+  on public.hsn_sac_codes for select
+  using ( true );
+
+create policy "Allow public management of HSN/SAC codes"
+  on public.hsn_sac_codes for all
+  using ( true )
+  with check ( true );
+
+INSERT INTO public.hsn_sac_codes (code, description) VALUES
+    ('998314', 'Geotechnical investigation services'),
+    ('998315', 'Geological survey services'),
+    ('998316', 'Environmental impact assessment services'),
+    ('998317', 'Surveying and mapping services'),
+    ('998318', 'Laboratory testing services'),
+    ('998319', 'Other technical testing and analysis services'),
+    ('998320', 'Other professional, technical and trade services');
+
+update tests set hsn_code = '998318' where true;
+update services set hsn_code = '998314' where true;
