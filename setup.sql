@@ -452,13 +452,8 @@ create policy "Allow public management of HSN/SAC codes"
   with check ( true );
 
 INSERT INTO public.hsn_sac_codes (code, description) VALUES
-    ('998314', 'Geotechnical investigation services'),
-    ('998315', 'Geological survey services'),
-    ('998316', 'Environmental impact assessment services'),
-    ('998317', 'Surveying and mapping services'),
-    ('998318', 'Laboratory testing services'),
-    ('998319', 'Other technical testing and analysis services'),
-    ('998320', 'Other professional, technical and trade services');
+    ('998346', 'General testing and analysis'),
+    ('995432', 'Construction-related site testing services');
 
-update tests set hsn_code = '998318' where true;
-update services set hsn_code = '998314' where true;
+update tests set hsn_code = '998346' where true;
+update services set hsn_code = '995432' where true;
