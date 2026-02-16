@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { Plus, Trash2, Printer, FileText, ArrowLeft, X, Save, Loader2, CreditCard } from 'lucide-react';
+import { Plus, Trash2, Printer, FileText, ArrowLeft, X, Save, Loader2, CreditCard, ChevronUp, ChevronDown } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 
@@ -541,6 +541,25 @@ const NewQuotationPage = () => {
     const handleDeleteItem = (rowId) => {
         setItems(prev => prev.filter(item => item.id !== rowId));
     };
+
+    const handleMoveItemUp = (index) => {
+        if (index === 0) return; // Already at the top
+        setItems(prev => {
+            const newItems = [...prev];
+            [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
+            return newItems;
+        });
+    };
+
+    const handleMoveItemDown = (index) => {
+        if (index === items.length - 1) return; // Already at the bottom
+        setItems(prev => {
+            const newItems = [...prev];
+            [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+            return newItems;
+        });
+    };
+
 
     const calculateTotal = () => {
         return items.reduce((sum, item) => sum + item.total, 0);
@@ -1150,12 +1169,31 @@ const NewQuotationPage = () => {
                                                                 <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.unit}</td>
                                                                 <td className="py-2 px-2 text-right text-gray-900 font-medium text-xs align-top border-r border-l border-gray-200"><Rupee />{item.total.toLocaleString()}</td>
                                                                 <td className="text-right print:hidden align-top">
-                                                                    <button
-                                                                        onClick={() => handleDeleteItem(item.id)}
-                                                                        className="text-red-400 hover:text-red-600 p-1"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </button>
+                                                                    <div className="flex items-center justify-end gap-1">
+                                                                        <button
+                                                                            onClick={() => handleMoveItemUp(slNo - 1)}
+                                                                            disabled={slNo === 1}
+                                                                            className="text-gray-400 hover:text-gray-600 p-1 disabled:opacity-30 transition-colors"
+                                                                            title="Move Up"
+                                                                        >
+                                                                            <ChevronUp className="w-4 h-4" />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleMoveItemDown(slNo - 1)}
+                                                                            disabled={slNo === items.length}
+                                                                            className="text-gray-400 hover:text-gray-600 p-1 disabled:opacity-30 transition-colors"
+                                                                            title="Move Down"
+                                                                        >
+                                                                            <ChevronDown className="w-4 h-4" />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleDeleteItem(item.id)}
+                                                                            className="text-red-400 hover:text-red-600 p-1 transition-colors"
+                                                                            title="Delete"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         );
@@ -1255,8 +1293,8 @@ const NewQuotationPage = () => {
                                             EDGE2 Engineering Solutions India Pvt. Ltd.
                                         </span>
                                     </div>
-                                    <div className="a4-page-content">
-                                        <div className="text-gray-500 text-sm">
+                                    <div className="a4-page-content flex flex-col">
+                                        <div className="text-gray-500 text-sm flex-1">
 
                                             {/* Bank + Signatory (Grid) */}
                                             <div className="grid grid-cols-2 gap-8 mt-2 text-left text-xs">
@@ -1267,23 +1305,23 @@ const NewQuotationPage = () => {
                                                         <tbody>
                                                             <tr>
                                                                 <td className="py-1 font-semibold w-32">Name:</td>
-                                                                <td className="py-1">EDGE2 Engineering Solutions India Pvt. Ltd.</td>
+                                                                <td className="py-1">{settings?.bank_account_holder_name || 'EDGE2 Engineering Solutions India Pvt. Ltd.'}</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className="py-1 font-semibold">A/c. No:</td>
-                                                                <td className="py-1">560321000022687</td>
+                                                                <td className="py-1">{settings?.bank_account_number || '560321000022687'}</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className="py-1 font-semibold">IFSC Code:</td>
-                                                                <td className="py-1">UBIN0907634</td>
+                                                                <td className="py-1">{settings?.ifsc_code || 'UBIN0907634'}</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className="py-1 font-semibold">Branch:</td>
-                                                                <td className="py-1">Bangalore - Peenya</td>
+                                                                <td className="py-1">{settings?.branch_name || 'Bangalore - Peenya'}</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className="py-1 font-semibold">Bank:</td>
-                                                                <td className="py-1">Union Bank of India</td>
+                                                                <td className="py-1">{settings?.bank_name || 'Union Bank of India'}</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -1291,15 +1329,15 @@ const NewQuotationPage = () => {
 
                                                 {/* Authorized Signatory */}
                                                 <div className="flex flex-col items-center">
-                                                    <h2 className="font-semibold mb-2 text-sm">Authorized Signatory</h2>
+                                                    <h2 className="font-semibold mb-20 text-sm">Authorized Signatory</h2>
                                                     <table className="w-full text-sm border-collapse">
                                                         <tbody>
-                                                            {/* <tr>
-                                                        <td className="py-1">For EDGE2 Engineering Solutions India Pvt. Ltd.</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="py-1 h-10"></td>
-                                                    </tr> */}
+                                                            <tr>
+                                                                <td className="py-1">For EDGE2 Engineering Solutions India Pvt. Ltd.</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="py-1 h-10"></td>
+                                                            </tr>
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -1339,19 +1377,23 @@ const NewQuotationPage = () => {
                                             {/* Payment Terms */}
                                             <div className="mt-6 pt-4 border-t">
                                                 <h2 className="font-semibold text-left mb-3">Payment Terms:</h2>
-                                                <ul className="list-disc pl-5 text-xs">
-                                                    <li>
-                                                        Advance Payment of 60% + GST ({taxTotalPercent}%) along with Work order
-                                                        as mobilization advance.
-                                                    </li>
-                                                    <li>
-                                                        Mobilization of Men and Machines shall be done in 3–5 days after the
-                                                        confirmation of Advance Payment.
-                                                    </li>
-                                                    <li>
-                                                        Balance Payment to be done after completion of field work.
-                                                    </li>
-                                                </ul>
+                                                {settings?.payment_terms ? (
+                                                    <div className="text-xs whitespace-pre-wrap">{settings.payment_terms}</div>
+                                                ) : (
+                                                    <ul className="list-disc pl-5 text-xs">
+                                                        <li>
+                                                            Advance Payment of 60% + GST ({taxTotalPercent}%) along with Work order
+                                                            as mobilization advance.
+                                                        </li>
+                                                        <li>
+                                                            Mobilization of Men and Machines shall be done in 3–5 days after the
+                                                            confirmation of Advance Payment.
+                                                        </li>
+                                                        <li>
+                                                            Balance Payment to be done after completion of field work.
+                                                        </li>
+                                                    </ul>
+                                                )}
                                             </div>
 
                                         </div>
