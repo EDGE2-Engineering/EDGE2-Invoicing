@@ -427,12 +427,12 @@ const SavedRecordsManager = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="text-left py-2 px-4 font-semibold text-sm text-gray-600">Document #</th>
-                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600">Created On</th>
-                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600">Client</th>
-                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600">Total Amount</th>
-                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600">Created By</th>
-                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600">Document Type</th>
+                <th className="text-left py-2 px-4 font-semibold text-sm text-gray-600 pr-2">Document #</th>
+                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600 pr-2">Created On</th>
+                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600 pr-2">Client</th>
+                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600 pr-2">Total Amount</th>
+                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600 pr-2">Created By</th>
+                <th className="text-left py-0 px-0 font-semibold text-sm text-gray-600 pr-2">Document Type</th>
                 <th className="text-right py-3 px-4 font-semibold text-sm text-gray-600">Actions</th>
               </tr>
             </thead>
