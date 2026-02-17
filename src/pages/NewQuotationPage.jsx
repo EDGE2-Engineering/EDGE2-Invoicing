@@ -14,6 +14,7 @@ import { useTests } from '@/contexts/TestsContext';
 import { useClients } from '@/contexts/ClientsContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTermsAndConditions } from '@/contexts/TermsAndConditionsContext';
 import Rupee from '@/components/Rupee';
 import {
     Select,
@@ -129,6 +130,7 @@ const NewQuotationPage = () => {
     const { tests, clientTestPrices } = useTests();
     const { clients } = useClients();
     const { settings } = useSettings();
+    const { terms } = useTermsAndConditions();
     const { user, isStandard } = useAuth();
     const { toast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -162,7 +164,8 @@ const NewQuotationPage = () => {
                         paymentDate: parsed.quoteDetails.paymentDate || '',
                         paymentMode: parsed.quoteDetails.paymentMode || '',
                         paymentAmount: parsed.quoteDetails.paymentAmount || '',
-                        bankDetails: parsed.quoteDetails.bankDetails || ''
+                        bankDetails: parsed.quoteDetails.bankDetails || '',
+                        selectedTcTypes: parsed.quoteDetails.selectedTcTypes || []
                     },
                     items: parsed.items || [],
                     documentType: parsed.documentType || 'Quotation',
@@ -189,7 +192,8 @@ const NewQuotationPage = () => {
                 paymentDate: '',
                 paymentMode: '',
                 paymentAmount: '',
-                bankDetails: ''
+                bankDetails: '',
+                selectedTcTypes: []
             },
             items: [],
             documentType: 'Quotation',
@@ -419,7 +423,8 @@ const NewQuotationPage = () => {
             paymentDate: '',
             paymentMode: '',
             paymentAmount: '',
-            bankDetails: ''
+            bankDetails: '',
+            selectedTcTypes: []
         });
         setItems([]);
         setDocumentType('Quotation');
@@ -567,8 +572,10 @@ const NewQuotationPage = () => {
 
     // Dynamic pagination: Split items across pages
     const siteContent = getSiteContent();
-    const ITEMS_PER_FIRST_PAGE = siteContent.pagination?.itemsPerFirstPage || 5;
-    const ITEMS_PER_CONTINUATION_PAGE = siteContent.pagination?.itemsPerContinuationPage || 6;
+    const ITEMS_PER_FIRST_PAGE = siteContent.pagination?.itemsPerFirstPage || 6;
+    const ITEMS_PER_CONTINUATION_PAGE = siteContent.pagination?.itemsPerContinuationPage || 7;
+    const TC_ITEMS_PER_FIRST_PAGE = siteContent.pagination?.tcItemsFirstPage || 12;
+    const TC_ITEMS_PER_CONTINUATION_PAGE = siteContent.pagination?.tcItemsContinuationPage || 16;
 
     const paginateItems = () => {
         const pages = [];
@@ -615,14 +622,101 @@ const NewQuotationPage = () => {
                 pageNum++;
             }
         }
+        return pages;
+    };
+
+    const paginateTerms = () => {
+        if (!quoteDetails.selectedTcTypes || quoteDetails.selectedTcTypes.length === 0) {
+            return [{
+                items: [],
+                pageNumber: 1,
+                isFirstPage: true
+            }]; // Empty page if nothing selected
+        }
+
+        const pages = [];
+        const totalTypes = quoteDetails.selectedTcTypes.length;
+        let currentTypeIndex = 0;
+
+        // Logic: Pagination is based on number of T&C Types (groups), not individual lines.
+        // Page 1 gets TC_ITEMS_PER_FIRST_PAGE types.
+        // Subsequent pages get TC_ITEMS_PER_CONTINUATION_PAGE types.
+
+        // --- First Page ---
+        const firstPageLimit = TC_ITEMS_PER_FIRST_PAGE;
+        const firstPageTypes = quoteDetails.selectedTcTypes.slice(0, firstPageLimit);
+        const firstPageItems = [];
+
+        firstPageTypes.forEach(type => {
+            const typeTerms = terms.filter(t => t.type === type);
+            if (typeTerms.length > 0) {
+                if (type !== 'general' && type !== 'General') {
+                    firstPageItems.push({ type: 'header', text: type, id: `header-${type}` });
+                }
+                typeTerms.forEach(term => {
+                    firstPageItems.push({ type: 'term', text: term.text, id: term.id });
+                });
+                firstPageItems.push({ type: 'spacer', id: `spacer-${type}` });
+            }
+        });
+        // Remove last spacer for this page
+        if (firstPageItems.length > 0 && firstPageItems[firstPageItems.length - 1].type === 'spacer') {
+            firstPageItems.pop();
+        }
+
+        pages.push({
+            items: firstPageItems,
+            pageNumber: 1,
+            isFirstPage: true
+        });
+
+        currentTypeIndex = firstPageLimit;
+
+        // --- Continuation Pages ---
+        while (currentTypeIndex < totalTypes) {
+            const contLimit = TC_ITEMS_PER_CONTINUATION_PAGE;
+            const pageTypes = quoteDetails.selectedTcTypes.slice(currentTypeIndex, currentTypeIndex + contLimit);
+            const pageItems = [];
+
+            pageTypes.forEach(type => {
+                const typeTerms = terms.filter(t => t.type === type);
+                if (typeTerms.length > 0) {
+                    if (type !== 'general' && type !== 'General') {
+                        pageItems.push({ type: 'header', text: type, id: `header-${type}` });
+                    }
+                    typeTerms.forEach(term => {
+                        pageItems.push({ type: 'term', text: term.text, id: term.id });
+                    });
+                    pageItems.push({ type: 'spacer', id: `spacer-${type}` });
+                }
+            });
+
+            // Remove last spacer
+            if (pageItems.length > 0 && pageItems[pageItems.length - 1].type === 'spacer') {
+                pageItems.pop();
+            }
+
+            pages.push({
+                items: pageItems,
+                pageNumber: pages.length + 1,
+                isFirstPage: false
+            });
+
+            currentTypeIndex += contLimit;
+        }
 
         return pages;
     };
 
+
+
     const itemPages = paginateItems();
-    const totalQuotationPages = itemPages.length;
-    const STATIC_PAGES_COUNT = 3; // Bank Details + Terms & Conditions + Technicals
-    const totalPages = totalQuotationPages + STATIC_PAGES_COUNT;
+    const totalItemPages = itemPages.length;
+
+    const tcPages = paginateTerms();
+    // Total pages calculation
+    // 1 for Technicals (hardcoded for now as per original code 'Page 3: Technicals')
+    const totalPages = totalItemPages + tcPages.length + 1;
 
     return (
         <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
@@ -990,6 +1084,67 @@ const NewQuotationPage = () => {
                                 <Button onClick={handleAddItem} className="w-full" disabled={!selectedItemId}>
                                     Add Item
                                 </Button>
+                            </div>
+                        </div>
+
+                        {/* Terms & Conditions Selection Card */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <h2 className="text-lg font-semibold mb-4 flex items-center">
+                                <FileText className="w-5 h-5 mr-2 text-primary" />
+                                Terms & Conditions
+                            </h2>
+                            <div className="space-y-4">
+                                <Label>Select T&C Types</Label>
+                                <ReactSelect
+                                    isMulti
+                                    options={[...new Set(terms.map(t => t.type))].filter(Boolean).sort().map(type => ({
+                                        value: type,
+                                        label: type
+                                    }))}
+                                    value={quoteDetails.selectedTcTypes?.map(type => ({ value: type, label: type })) || []}
+                                    onChange={(selectedOptions) => {
+                                        setQuoteDetails({
+                                            ...quoteDetails,
+                                            selectedTcTypes: selectedOptions ? selectedOptions.map(opt => opt.value) : []
+                                        });
+                                    }}
+                                    placeholder="Select T&C types..."
+                                    className="mt-1"
+                                    classNamePrefix="react-select"
+                                    styles={{
+                                        control: (base) => ({
+                                            ...base,
+                                            borderColor: '#e5e7eb',
+                                            borderRadius: '0.75rem',
+                                            paddingTop: '2px',
+                                            paddingBottom: '2px',
+                                            boxShadow: 'none',
+                                            '&:hover': {
+                                                borderColor: '#3b82f6'
+                                            }
+                                        }),
+                                        multiValue: (base) => ({
+                                            ...base,
+                                            backgroundColor: '#eff6ff',
+                                            borderRadius: '0.375rem',
+                                        }),
+                                        multiValueLabel: (base) => ({
+                                            ...base,
+                                            color: '#1e40af',
+                                        }),
+                                        multiValueRemove: (base) => ({
+                                            ...base,
+                                            color: '#1e40af',
+                                            ':hover': {
+                                                backgroundColor: '#dbeafe',
+                                                color: '#1e3a8a',
+                                            },
+                                        }),
+                                    }}
+                                />
+                                <p className="text-xs text-gray-500">
+                                    Selected T&C types will be displayed in the preview grouped by type.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -1401,71 +1556,76 @@ const NewQuotationPage = () => {
                                         {/* Page Footer */}
                                         <div className="a4-page-footer">
                                             <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
-                                            <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalQuotationPages + 1} of {totalPages}</span>
+                                            <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalItemPages + 1} of {totalPages}</span>
                                         </div>
                                     </div>
                                 </div>
 
 
-                                {/* Page 2: Terms & Conditions */}
-                                <div className="a4-container">
-                                    {/* Watermark */}
-                                    <div
-                                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                                        style={{
-                                            transform: 'rotate(-55deg)',
-                                            zIndex: 0
-                                        }}
-                                    >
-                                        <span
+                                {/* Page: Terms & Conditions (Dynamic Pagination) */}
+                                {tcPages.map((tcPage, tcIndex) => (
+                                    <div key={`tc-page-${tcIndex}`} className="a4-container">
+                                        {/* Watermark */}
+                                        <div
+                                            className="absolute inset-0 flex items-center justify-center pointer-events-none"
                                             style={{
-                                                fontSize: '42pt',
-                                                fontWeight: 700,
-                                                color: 'rgba(0,0,0,0.02)',
-                                                whiteSpace: 'nowrap'
+                                                transform: 'rotate(-55deg)',
+                                                zIndex: 0
                                             }}
                                         >
-                                            EDGE2 Engineering Solutions India Pvt. Ltd.
-                                        </span>
-                                    </div>
-                                    <div className="a4-page-content">
-                                        <div className="text-center text-gray-500 text-sm">
-                                            <h2 className="font-semibold text-left text-lg mb-4">Terms & Conditions</h2>
-                                            <div className="text-left text-xs">
-                                                <ul className="list-disc space-y-2">
-                                                    <li>You will give free access to our Engineer / Technicians/Machines for carrying out assigned job at your site.</li>
-                                                    <li>Borehole location free from underground services shall be provided by you. We are not responsible for any damage to underground services.</li>
-                                                    <li>You will provide water for drilling and demostic purpose at site, free of cost.</li>
-                                                    <li>We require measurable site layout drawing for Borehole location drawing.</li>
-                                                    <li>UDS sampling will be done at every 1.0 m interval below EGL wherever possible, SPT Test will be conducted at every 1.5 m interval, thereafter or change in soil strata. Further sampling and testing will be performed based on the geotechnical attributes of the subsoil with an engineer's judgment appointed from Edge2.</li>
-                                                    <li>Drilling in Granite, boulders or gravels will be charged 3000.00 Rs per meter if it occurs at Ground Level. Such strata are challenging to drill and drilling may have to be terminated in some cases, in such scenarios if drilling stops and client wants another borehole to be drilled, It will be charged extra.</li>
-                                                    <li>Any quantities exceeding the quantities mentioned above will be subject to additional charges.</li>
-                                                    <li>These rates are excluding all bentonite charges &  Steel Casing required for drilling. For the cases of excessive seepage, or borehole collapse the required bentonite and casing will be charged Extra.</li>
-                                                    <li>Billing will be made based on actual items involved in drilling and testing as per site conditions.</li>
-                                                    <li>The rates quoted in this offer are valid only for the quantum of this scope of quotation. If there is any reduction in the quantity, the rates are subject to an increase accordingly and present quotation stands invalid.</li>
-                                                    <li>All the underground utility services shall be checked and marked by the client prior to start of the testing. We shall not be responsible for any damage caused to them during field activity.</li>
-                                                    <li>If our men and equipment are idle for want of test location clearance, delays in appropriate permissions, delays in providing execution requisites, delays in payments or delays in providing the requisites in clients scope etc. an idling charge, delay in on ground location of all points etc. of Rs 6500.00 shall pay extra per day per machine.</li>
-                                                    <li>Client's site representative shall receive our Engineer at nearest Bus Station so as to avoid delays in search of site location.</li>
-                                                    <li>After submission of draft report client will comment on report within 3 days & give confirmation of final report within 5 days of submission of draft report.</li>
-                                                    <li>Above quotation is valid for 15 days from date of submission.</li>
-                                                    <li>Rates given above will be subjected to appropriate taxes as applicable.</li>
-                                                    <li>Above quotation refers to the expenses for the assigned work only. All the other requirements such as entry passes, registrations, barricades, traffic safety cone etc. for our mens to work at site shall be in client scope.  If there are any special safety norms beyond gloves, shoes, and helmets, the client should inform the team in advance.</li>
-                                                    <li>We need proper access to site (for mobilization), proper permissions from the authorities for drilling at site, complete locations of drilling on ground as well as on plan well before the commencement of the work and sufficient working space before the commencement of the work.</li>
-                                                    <li>If any work at the factory then all the safety norms related documents are arranged by the client.</li>
-                                                    <li>Any specific terms or requirements pertaining to COVID 19 shall be readily mentioned in the scope of the work before accepting the quotations. If such requirements are raised after finalization/ at commencement/ during execution of work additional expenses attributed to those will be charged extra.</li>
-                                                    <li>Responsibilities pertaining to underground utilities will be borne by the client, and locations of execution shall be chosen by the client accordingly.</li>
-                                                    <li>If any objections occur through public or social activities or illegal matters during execution of the work, Edge2 Engineering Solutions India  Pvt. Ltd.  will not be responsible, all the responsibility will be taken by the Client. At the same time similar possibilities shall also be clearly mentioned by the client well before the commencement of work to  Edge2 Engineering Solutions India  Pvt. Ltd., failing to which the client will be responsible for all the losses incurred to men and equipment of Edge2.</li>
-                                                </ul>
+                                            <span
+                                                style={{
+                                                    fontSize: '42pt',
+                                                    fontWeight: 700,
+                                                    color: 'rgba(0,0,0,0.02)',
+                                                    whiteSpace: 'nowrap'
+                                                }}
+                                            >
+                                                EDGE2 Engineering Solutions India Pvt. Ltd.
+                                            </span>
+                                        </div>
+                                        <div className="a4-page-content">
+                                            <div className="text-left text-gray-500 text-sm">
+                                                <h2 className="font-semibold text-lg mb-4 text-center">
+                                                    {tcIndex === 0 ? "Terms & Conditions" : "Terms & Conditions (Continued)"}
+                                                </h2>
+
+                                                {tcPage.items.length === 0 ? (
+                                                    <div className="text-center italic text-gray-400 py-10">
+                                                        No Terms & Conditions selected.
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-1">
+                                                        {tcPage.items.map((item, idx) => {
+                                                            if (item.type === 'header') {
+                                                                return (
+                                                                    <h3 key={item.id} className="font-semibold text-gray-800 text-sm mt-4 mb-2">
+                                                                        {item.text}
+                                                                    </h3>
+                                                                );
+                                                            } else if (item.type === 'term') {
+                                                                return (
+                                                                    <div key={item.id} className="flex gap-2 text-xs leading-relaxed mb-1">
+                                                                        <span className="whitespace-pre-line pl-2">{item.text}</span>
+                                                                    </div>
+                                                                );
+                                                            } else if (item.type === 'spacer') {
+                                                                return <div key={item.id} className="h-2"></div>;
+                                                            }
+                                                            return null;
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Page Footer */}
-                                    <div className="a4-page-footer">
-                                        <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
-                                        <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalQuotationPages + 2} of {totalPages}</span>
+                                        {/* Page Footer */}
+                                        <div className="a4-page-footer">
+                                            <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
+                                            <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalItemPages + 2 + tcIndex} of {totalPages}</span>
+                                        </div>
                                     </div>
-                                </div>
+                                ))}
 
                                 {/* Page 3: Technicals */}
                                 <div className="a4-container">
@@ -1519,7 +1679,7 @@ const NewQuotationPage = () => {
                                     {/* Page Footer */}
                                     <div className="a4-page-footer">
                                         <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
-                                        <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalQuotationPages + 3} of {totalPages}</span>
+                                        <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalPages} of {totalPages}</span>
                                     </div>
                                 </div>
                             </div>

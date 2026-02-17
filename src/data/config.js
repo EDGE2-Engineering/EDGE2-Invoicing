@@ -11,7 +11,10 @@ export const initialSiteContent = {
         // Very conservative - first page has header, client details, totals, bank details, payment terms
         itemsPerFirstPage: 6,
         // Continuation pages have more space (just header + table)
-        itemsPerContinuationPage: 7
+        itemsPerContinuationPage: 7,
+        // T&C Pagination
+        tcItemsFirstPage: 2,
+        tcItemsContinuationPage: 3
     }
 };
 

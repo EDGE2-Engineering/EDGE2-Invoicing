@@ -455,5 +455,157 @@ INSERT INTO public.hsn_sac_codes (code, description) VALUES
     ('998346', 'General testing and analysis'),
     ('995432', 'Construction-related site testing services');
 
-update tests set hsn_code = '998346' where true;
+update terms_and_conditions set hsn_code = '998346' where true;
 update services set hsn_code = '995432' where true;
+
+-- -----------------------------------------------------------------------------
+-- 13. Table: terms_and_conditions
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE public.terms_and_conditions (
+    id SERIAL PRIMARY KEY,
+    text TEXT NOT NULL,
+    type TEXT NOT NULL,
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
+alter table public.terms_and_conditions enable row level security;
+
+create policy "Terms and conditions are viewable by everyone"
+  on public.terms_and_conditions for select
+  using ( true );
+
+create policy "Allow public management of terms and conditions"
+  on public.terms_and_conditions for all
+  using ( true )
+  with check ( true );
+
+INSERT INTO public.terms_and_conditions (text, type) VALUES
+(
+'1. A minimum of Twenty (20) samples is required for testing. The Company reserves the right to reject or withhold testing of any samples that do not meet this minimum sample requirement.
+2. The Client must clearly mention the Brand and Type of Brick at the time of submitting samples. The Company shall not be responsible for any errors, delays, or discrepancies in test results arising due to failure to provide proper details in advance.
+3. The minimum number of days required for the test is 4–5 days.
+4. Billing will be made based on the actual quantity involved in testing.
+5. The above quotation is valid for 15 days from the date of submission.
+6. Rates given above will be subject to applicable taxes.
+7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Bricks'
+),
+(
+'1. A minimum of 20 kg of samples is required for testing. The Company reserves the right to reject or withhold testing of any quantity that does not meet this minimum sample requirement.
+2. The Client must clearly mention the Brand and Grade at the time of submitting samples. The Company shall not be responsible for any errors, delays, or discrepancies in test results arising due to failure to provide proper details in advance.
+3. The minimum number of days required for the test is 28 days (the preliminary report can be submitted on the 7th day).
+4. Billing will be made based on the actual quantity involved in testing.
+5. The above quotation is valid for 15 days from the date of submission.
+6. Rates given above will be subject to applicable taxes.
+7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Cement & GGBS'
+),
+(
+'1. A minimum of 30 kg of sample is required for testing. The Company reserves the right to reject or withhold testing of any sample that does not meet this minimum sample requirement.
+2. The Client must clearly mention the Grade at the time of submitting samples. The Company shall not be responsible for any errors, delays, or discrepancies in test results arising due to failure to provide proper details in advance.
+3. The minimum number of days required for the test is 5–6 days.
+4. Billing will be made based on the actual quantity involved in testing.
+5. The above quotation is valid for 15 days from the date of submission.
+6. Rates given above will be subject to applicable taxes.
+7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Granular Sub Base (GSB)'
+),
+(
+'1. A minimum of Ten (10) samples is required for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
+2. The minimum number of days required for the test is 5–6 days.
+3. Billing will be made based on the actual number of sets involved in testing.
+4. The above quotation is valid for 15 days from the date of submission.
+5. Rates given above will be subject to applicable taxes.
+6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'AAC/ACC Block'
+),
+(
+'1. A minimum of 30 kg of sample is required for testing. The Company reserves the right to reject or withhold testing of any sample that does not meet this minimum sample requirement.
+2. The minimum number of days required for the test is 5–6 days.
+3. Billing will be made based on the actual quantity involved in testing.
+4. The above quotation is valid for 15 days from the date of submission.
+5. Rates given above will be subject to applicable taxes.
+6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'WET MIX MACADAM (WMM)'
+),
+(
+'1. A minimum of Three (3) samples is required for each diameter for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
+2. The Client must clearly mention the Brand and Grade at the time of submitting samples. The Company shall not be responsible for any errors, delays, or discrepancies in test results arising due to failure to provide proper details in advance.
+3. The minimum number of days required for the test is 2 days.
+4. Billing will be made based on the actual number of diameters involved in testing.
+5. The above quotation is valid for 15 days from the date of submission.
+6. Rates given above will be subject to applicable taxes.
+7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Steel Testing'
+),
+(
+'1. A minimum of Fourteen (14) samples is required for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
+2. The minimum number of days required for the test is 4–5 days.
+3. Billing will be made based on the actual number of sets involved in testing.
+4. The above quotation is valid for 15 days from the date of submission.
+5. Rates given above will be subject to applicable taxes.
+6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Solid Block'
+),
+(
+'1. A minimum of Three (3) samples is required for each set for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
+2. The Client must clearly mention the grade of concrete at the time of submitting samples. The Company shall not be responsible for any errors, delays, or discrepancies in test results arising due to failure to provide proper details in advance.
+3. The minimum number of days required for the test is 4–5 days.
+4. Billing will be made based on the actual number of sets involved in testing.
+5. The above quotation is valid for 15 days from the date of submission.
+6. Rates given above will be subject to applicable taxes.
+7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Concrete Core'
+),
+(
+'1. A minimum of Three (3) samples is required for each testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
+2. The Client must clearly mention the grade of concrete at the time of submitting samples. The Company shall not be responsible for any errors, delays, or discrepancies in test results arising due to failure to provide proper details in advance.
+3. The minimum number of days required for the test is 3–4 days.
+4. Billing will be made based on the actual number of sets involved in testing.
+5. The above quotation is valid for 15 days from the date of submission.
+6. Rates given above will be subject to applicable taxes.
+7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Paver Blocks'
+),
+(
+'1. A minimum of 10 kg of sample is required for testing. The Company reserves the right to reject or withhold testing of any sample that does not meet this minimum sample requirement.
+2. The minimum number of days required for the test is 4–5 days.
+3. Billing will be made based on the actual quantity involved in testing.
+4. The above quotation is valid for 15 days from the date of submission.
+5. Rates given above will be subject to applicable taxes.
+6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Fine Aggregate'
+),
+(
+'1. A minimum of Three (3) samples is required for each set for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
+2. The Client must clearly mention the exact date of casting and grade of concrete at the time of submitting samples. The Company shall not be responsible for any errors, delays, or discrepancies in test results arising due to failure to provide proper details in advance.
+3. The minimum number of days required for the test is 2 days.
+4. Billing will be made based on the actual number of sets involved in testing.
+5. The above quotation is valid for 15 days from the date of submission.
+6. Rates given above will be subject to applicable taxes.
+7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Concrete Cube / ACT Cube'
+),
+(
+'1. A minimum of 30 kg of sample is required for testing. The Company reserves the right to reject or withhold testing of any sample that does not meet this minimum sample requirement.
+2. The minimum number of days required for the test is 5–6 days.
+3. Billing will be made based on the actual quantity involved in testing.
+4. The above quotation is valid for 15 days from the date of submission.
+5. Rates given above will be subject to applicable taxes.
+6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
+7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
+'Coarse Aggregate'
+);
