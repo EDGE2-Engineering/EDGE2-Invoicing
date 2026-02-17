@@ -9,9 +9,9 @@ export const initialSiteContent = {
     },
     pagination: {
         // Very conservative - first page has header, client details, totals, bank details, payment terms
-        itemsPerFirstPage: 6,
+        itemsPerFirstPage: 4,
         // Continuation pages have more space (just header + table)
-        itemsPerContinuationPage: 7,
+        itemsPerContinuationPage: 5,
         // T&C Pagination
         tcItemsFirstPage: 3,
         tcItemsContinuationPage: 3

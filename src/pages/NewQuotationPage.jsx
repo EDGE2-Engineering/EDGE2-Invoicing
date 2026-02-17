@@ -924,11 +924,12 @@ const NewQuotationPage = () => {
                                     <div>
                                         <Label>Date</Label>
                                         <Input
-                                            className="text-left"
                                             type="date"
+                                            className="relative pr-10"
                                             value={quoteDetails.date}
                                             onChange={e => setQuoteDetails({ ...quoteDetails, date: e.target.value })}
                                         />
+
                                     </div>
                                     <div>
                                         <Label>Discount (%)</Label>
@@ -1238,7 +1239,7 @@ const NewQuotationPage = () => {
                                                         </div>
 
                                                         {/* Column 2: Contractor */}
-                                                        <div className="space-y-1 border-l pl-6">
+                                                        <div className="space-y-1 border-l pl-2">
                                                             <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
                                                                 Contractor
                                                             </h3>
@@ -1247,7 +1248,7 @@ const NewQuotationPage = () => {
                                                         </div>
 
                                                         {/* Column 3: Project */}
-                                                        <div className="space-y-1 border-l pl-6">
+                                                        <div className="space-y-1 border-l pl-2">
                                                             <h3 className="text-gray-500 font-semibold uppercase tracking-wide border-b pb-1 mb-2">
                                                                 Project Details
                                                             </h3>
@@ -1272,13 +1273,13 @@ const NewQuotationPage = () => {
                                             <table className="w-full mb-8 mt-2">
                                                 <thead>
                                                     <tr>
-                                                        <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-5">Sl No.</th>
-                                                        <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs">Description</th>
-                                                        <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">HSN/SAC</th>
-                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Price</th>
-                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Qty</th>
-                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-12">Unit</th>
-                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-2 font-semibold text-gray-600 text-xs w-15">Total</th>
+                                                        <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-1 font-semibold text-gray-600 text-xs w-5">Sl No.</th>
+                                                        <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-1 font-semibold text-gray-600 text-xs">Description</th>
+                                                        <th className="text-left border-r border-t border-b border-l border-gray-200 py-3 px-1 font-semibold text-gray-600 text-xs w-1">HSN/SAC</th>
+                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-1 font-semibold text-gray-600 text-xs w-12">Price Per Unit</th>
+                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-1 font-semibold text-gray-600 text-xs w-12">Unit</th>
+                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-1 font-semibold text-gray-600 text-xs w-2">Qty</th>
+                                                        <th className="text-right border-r border-t border-b border-l border-gray-200 py-3 px-1 font-semibold text-gray-600 text-xs w-15">Total</th>
                                                         <th className="w-10 print:hidden"></th>
                                                     </tr>
                                                 </thead>
@@ -1290,10 +1291,10 @@ const NewQuotationPage = () => {
 
                                                         return (
                                                             <tr key={item.id} className="border-b border-gray-50">
-                                                                <td className="py-3 px-2 text-gray-500 text-xs align-top border-r border-l border-gray-200">{slNo}.</td>
-                                                                <td className="py-2 px-2 text-gray-900 align-top border-r border-l border-gray-200">
+                                                                <td className="py-3 px-1 text-gray-500 text-xs align-top border-r border-l border-gray-200">{slNo}.</td>
+                                                                <td className="py-2 px-1 text-gray-900 align-top border-r border-l border-gray-200">
                                                                     <p className="font-small text-xs">{item.description}</p>
-                                                                    <p className="text-xs text-gray-500 capitalize">{item.type}</p>
+                                                                    <p className="text-xs text-gray-500 capitalize italic" style={{ fontSize: '10px' }}>{item.type}</p>
                                                                     {item.type === 'service' && (
                                                                         (() => {
                                                                             const values = [
@@ -1318,11 +1319,11 @@ const NewQuotationPage = () => {
                                                                         })()
                                                                     )}
                                                                 </td>
-                                                                <td className="py-2 px-2 text-left text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.hsnCode || '—'}</td>
-                                                                <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200"><Rupee />{item.price}</td>
-                                                                <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.qty}</td>
-                                                                <td className="py-2 px-2 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.unit}</td>
-                                                                <td className="py-2 px-2 text-right text-gray-900 font-medium text-xs align-top border-r border-l border-gray-200"><Rupee />{item.total.toLocaleString()}</td>
+                                                                <td className="py-2 px-1 text-left text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.hsnCode || '—'}</td>
+                                                                <td className="py-2 px-1 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200"><Rupee />{item.price}</td>
+                                                                <td className="py-2 px-1 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.unit}</td>
+                                                                <td className="py-2 px-1 text-right text-gray-600 font-medium text-xs align-top border-r border-l border-gray-200">{item.qty}</td>
+                                                                <td className="py-2 px-1 text-right text-gray-900 font-medium text-xs align-top border-r border-l border-gray-200"><Rupee />{item.total.toLocaleString()}</td>
                                                                 <td className="text-right print:hidden align-top">
                                                                     <div className="flex items-center justify-end gap-1">
                                                                         <button
