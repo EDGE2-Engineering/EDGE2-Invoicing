@@ -823,11 +823,10 @@ const NewQuotationPage = () => {
                                     <Label>Date</Label>
                                     <Input
                                         type="date"
-                                        className="relative pr-10"
+                                        style={{ width: '100%' , paddingInline: '17%'}}
                                         value={quoteDetails.date}
                                         onChange={e => setQuoteDetails({ ...quoteDetails, date: e.target.value })}
                                     />
-
                                 </div>
                                 <div>
                                     <Label>Discount (%)</Label>

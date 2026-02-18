@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, ExternalLink, FileText, Loader2, AlertCircle, ArrowUpDown, SortAsc, SortDesc } from 'lucide-react';
+import { Search, Trash2, ExternalLink, FileText, Loader2, AlertCircle, ArrowUpDown, SortAsc, SortDesc, Calendar } from 'lucide-react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -269,10 +269,11 @@ const SavedRecordsManager = () => {
 
                 {/* Row 1 – Date Range */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5 bg-gray-50/50 p-1 rounded-lg border border-gray-100 focus-within:border-primary/30 transition-colors">
+                  <div className="flex items-center gap-2 bg-gray-50/50 p-1 px-3 rounded-lg border border-gray-100 focus-within:border-primary/30 transition-colors">
+                    <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
                     <Input
                       type="date"
-                      className="w-auto min-w-[150px] h-9 text-sm border-none bg-transparent focus-visible:ring-0 cursor-pointer"
+                      className="w-auto min-w-[130px] h-9 text-sm border-none bg-transparent focus-visible:ring-0 cursor-pointer p-0"
                       value={fromDate}
                       title="From Date"
                       onChange={(e) => setFromDate(e.target.value)}
@@ -280,7 +281,7 @@ const SavedRecordsManager = () => {
                     <span className="text-gray-300 font-light px-1">to</span>
                     <Input
                       type="date"
-                      className="w-auto min-w-[150px] h-9 text-sm border-none bg-transparent focus-visible:ring-0 cursor-pointer"
+                      className="w-auto min-w-[130px] h-9 text-sm border-none bg-transparent focus-visible:ring-0 cursor-pointer p-0"
                       value={toDate}
                       title="To Date"
                       onChange={(e) => setToDate(e.target.value)}
@@ -466,11 +467,11 @@ const SavedRecordsManager = () => {
                           {/* <span className="mx-4"></span> */}
                           {/* <span className="font-semibold text-gray-900 font-bold text-sm">Created By:</span>{' '}
                           <span className="font-semibold text-blue-600 font-semibold text-sm"> {record.app_users?.full_name || '-'}</span> */}
-                          </div>
+                        </div>
                         <div>
                           {/* <span className="font-semibold text-gray-900 font-bold text-sm">For Client:</span>{' '}
                           <span className="font-semibold text-blue-600 font-semibold text-sm"> {record.client_name || '-'}</span> */}
-                          </div>
+                        </div>
                         <div className="font-semibold text-blue-900">
                           {/* <span className="font-semibold text-gray-900 font-bold text-sm">Total Amount:</span> <span className="font-semibold text-blue-600 font-semibold text-sm"> <Rupee />{calculateRecordTotal(record).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> */}
                         </div>
@@ -478,32 +479,32 @@ const SavedRecordsManager = () => {
                     </td>
 
                     <td className="justify-left items-center">
-                       <span className="text-black font-regular text-sm"> {format(new Date(record.created_at), 'dd MMM yyyy')}</span>
+                      <span className="text-black font-regular text-sm"> {format(new Date(record.created_at), 'dd MMM yyyy')}</span>
                     </td>
 
                     <td className="justify-left items-center">
-                       <span className="text-black font-regular text-sm"> {record.client_name || '-'}</span>
+                      <span className="text-black font-regular text-sm"> {record.client_name || '-'}</span>
                     </td>
 
                     <td className="justify-left items-center">
-                         <span className="text-black font-regular text-sm"> <Rupee />{calculateRecordTotal(record).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                       </span>
+                      <span className="text-black font-regular text-sm"> <Rupee />{calculateRecordTotal(record).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </td>
 
                     <td className="justify-left items-center">
-                         <span className="text-black font-regular text-sm"> {record.app_users?.full_name || '-'}
-                       </span>
+                      <span className="text-black font-regular text-sm"> {record.app_users?.full_name || '-'}
+                      </span>
                     </td>
 
                     <td className="justify-left items-center">
-                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${record.document_type === 'Tax Invoice'
-                          ? 'bg-blue-100 text-blue-800'
-                          : record.document_type === 'Proforma Invoice'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-green-100 text-green-800'
-                          }`}>
-                          {record.document_type}
-                        </span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${record.document_type === 'Tax Invoice'
+                        ? 'bg-blue-100 text-blue-800'
+                        : record.document_type === 'Proforma Invoice'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-green-100 text-green-800'
+                        }`}>
+                        {record.document_type}
+                      </span>
                     </td>
 
                     {/* Actions */}
