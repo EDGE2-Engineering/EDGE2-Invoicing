@@ -126,14 +126,6 @@ export const TestsProvider = ({ children }) => {
     }, [tests]);
 
     const updateTest = async (updatedTest) => {
-        if (updatedTest.hsnCode) {
-            const existingWithSameHsn = tests.find(
-                t => t.id !== updatedTest.id && t.hsnCode === updatedTest.hsnCode
-            );
-            if (existingWithSameHsn) {
-                throw new Error(`HSN code "${updatedTest.hsnCode}" is already used by another test: "${existingWithSameHsn.testType}"`);
-            }
-        }
 
         setTests(prev => prev.map(t => t.id === updatedTest.id ? updatedTest : t));
         try {
@@ -148,14 +140,6 @@ export const TestsProvider = ({ children }) => {
     };
 
     const addTest = async (newTest) => {
-        if (newTest.hsnCode) {
-            const existingWithSameHsn = tests.find(
-                t => t.hsnCode === newTest.hsnCode
-            );
-            if (existingWithSameHsn) {
-                throw new Error(`HSN code "${newTest.hsnCode}" is already used by another test: "${existingWithSameHsn.testType}"`);
-            }
-        }
 
         const tempId = newTest.id || `tst_${Date.now()}`;
         const testWithId = { ...newTest, id: tempId, created_at: new Date().toISOString() };

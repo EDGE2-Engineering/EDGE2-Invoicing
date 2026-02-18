@@ -128,14 +128,6 @@ export const ServicesProvider = ({ children }) => {
     }, [services]);
 
     const updateService = async (updatedService) => {
-        if (updatedService.hsnCode) {
-            const existingWithSameHsn = services.find(
-                s => s.id !== updatedService.id && s.hsnCode === updatedService.hsnCode
-            );
-            if (existingWithSameHsn) {
-                throw new Error(`HSN code "${updatedService.hsnCode}" is already used by another service: "${existingWithSameHsn.serviceType}"`);
-            }
-        }
 
         const previousServices = [...services];
         setServices(prev => prev.map(s => s.id === updatedService.id ? updatedService : s));
@@ -169,14 +161,6 @@ export const ServicesProvider = ({ children }) => {
     };
 
     const addService = async (newService) => {
-        if (newService.hsnCode) {
-            const existingWithSameHsn = services.find(
-                s => s.hsnCode === newService.hsnCode
-            );
-            if (existingWithSameHsn) {
-                throw new Error(`HSN code "${newService.hsnCode}" is already used by another service: "${existingWithSameHsn.serviceType}"`);
-            }
-        }
 
         const tempId = newService.id || `srv_${Date.now()}`;
         const serviceWithId = { ...newService, id: tempId, created_at: new Date().toISOString() };
