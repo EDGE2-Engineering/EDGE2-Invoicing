@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/Navbar';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, LayoutDashboard, Home, FileText, User, Save, Loader2, UserCog, Plus, Database, HandHeart, IndianRupee, Ruler, BriefcaseBusiness, Hash, CreditCard } from 'lucide-react';
+import { Settings, LayoutDashboard, Home, FileText, User, Save, Loader2, UserCog, Plus, Database, HandHeart, IndianRupee, Ruler, BriefcaseBusiness, Hash, CreditCard, TestTube, Axe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import AdminServicesManager from '@/components/admin/AdminServicesManager.jsx';
@@ -18,6 +18,7 @@ import SavedRecordsManager from '@/components/admin/SavedRecordsManager.jsx';
 import AdminUnitTypesManager from '@/components/admin/AdminUnitTypesManager.jsx';
 import AdminHSNCodesManager from '@/components/admin/AdminHSNCodesManager.jsx';
 import AdminTermsManager from '@/components/admin/AdminTermsManager.jsx';
+import AdminTechnicalsManager from '@/components/admin/AdminTechnicalsManager.jsx';
 
 import AdminLogin from '@/components/admin/AdminLogin';
 import UpdatePassword from '@/components/admin/UpdatePassword';
@@ -114,6 +115,7 @@ const AdminPage = () => {
               <option value="unit_types">Unit Types</option>
               <option value="hsn_codes">HSN Codes</option>
               <option value="terms">T&C</option>
+              <option value="technicals">Technicals</option>
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -138,7 +140,7 @@ const AdminPage = () => {
                 title="Tests"
                 className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
               >
-                <FileText className="w-4 h-4" /> Tests
+                <TestTube className="w-4 h-4" /> Tests
               </TabsTrigger>
               <TabsTrigger
                 value="unit_types"
@@ -181,6 +183,13 @@ const AdminPage = () => {
                 className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
               >
                 <FileText className="w-4 h-4" /> T&C
+              </TabsTrigger>
+              <TabsTrigger
+                value="technicals"
+                title="Technicals"
+                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+              >
+                <Axe className="w-4 h-4" /> Technicals
               </TabsTrigger>
               <TabsTrigger
                 value="saved_records"
@@ -240,6 +249,10 @@ const AdminPage = () => {
 
           <TabsContent value="terms" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <AdminTermsManager />
+          </TabsContent>
+
+          <TabsContent value="technicals" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AdminTechnicalsManager />
           </TabsContent>
         </Tabs>
       </main >

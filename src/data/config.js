@@ -14,7 +14,10 @@ export const initialSiteContent = {
         itemsPerContinuationPage: 5,
         // T&C Pagination
         tcItemsFirstPage: 3,
-        tcItemsContinuationPage: 3
+        tcItemsContinuationPage: 3,
+        // Technicals Pagination
+        techItemsFirstPage: 3,
+        techItemsContinuationPage: 3
     }
 };
 

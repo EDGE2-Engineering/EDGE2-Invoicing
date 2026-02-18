@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { Plus, Trash2, Printer, FileText, ArrowLeft, X, Save, Loader2, CreditCard, ChevronUp, ChevronDown, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Printer, FileText, ArrowLeft, X, Save, Loader2, CreditCard, ChevronUp, ChevronDown, AlertCircle, Axe, TestTube, BriefcaseBusiness } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 
@@ -15,6 +15,7 @@ import { useClients } from '@/contexts/ClientsContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTermsAndConditions } from '@/contexts/TermsAndConditionsContext';
+import { useTechnicals } from '@/contexts/TechnicalsContext';
 import Rupee from '@/components/Rupee';
 import {
     Select,
@@ -131,6 +132,7 @@ const NewQuotationPage = () => {
     const { clients } = useClients();
     const { settings } = useSettings();
     const { terms } = useTermsAndConditions();
+    const { technicals } = useTechnicals();
     const { user, isStandard } = useAuth();
     const { toast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -166,7 +168,8 @@ const NewQuotationPage = () => {
                         paymentMode: parsed.quoteDetails.paymentMode || '',
                         paymentAmount: parsed.quoteDetails.paymentAmount || '',
                         bankDetails: parsed.quoteDetails.bankDetails || '',
-                        selectedTcTypes: parsed.quoteDetails.selectedTcTypes || []
+                        selectedTcTypes: parsed.quoteDetails.selectedTcTypes || [],
+                        selectedTechTypes: parsed.quoteDetails.selectedTechTypes || []
                     },
                     items: parsed.items || [],
                     documentType: parsed.documentType || 'Quotation',
@@ -196,7 +199,8 @@ const NewQuotationPage = () => {
                 paymentMode: '',
                 paymentAmount: '',
                 bankDetails: '',
-                selectedTcTypes: []
+                selectedTcTypes: [],
+                selectedTechTypes: []
             },
             items: [],
             documentType: 'Quotation',
@@ -606,6 +610,8 @@ const NewQuotationPage = () => {
     const ITEMS_PER_CONTINUATION_PAGE = siteContent.pagination?.itemsPerContinuationPage || 7;
     const TC_ITEMS_PER_FIRST_PAGE = siteContent.pagination?.tcItemsFirstPage || 12;
     const TC_ITEMS_PER_CONTINUATION_PAGE = siteContent.pagination?.tcItemsContinuationPage || 16;
+    const TECH_ITEMS_PER_FIRST_PAGE = siteContent.pagination?.techItemsFirstPage || 12;
+    const TECH_ITEMS_PER_CONTINUATION_PAGE = siteContent.pagination?.techItemsContinuationPage || 16;
 
     const paginateItems = () => {
         const pages = [];
@@ -738,15 +744,85 @@ const NewQuotationPage = () => {
         return pages;
     };
 
+    const paginateTechnicals = () => {
+        if (!quoteDetails.selectedTechTypes || quoteDetails.selectedTechTypes.length === 0) {
+            return [];
+        }
+
+        const pages = [];
+        const totalTypes = quoteDetails.selectedTechTypes.length;
+        let currentTypeIndex = 0;
+
+        // --- First Page ---
+        const firstPageLimit = TECH_ITEMS_PER_FIRST_PAGE;
+        const firstPageTypes = quoteDetails.selectedTechTypes.slice(0, firstPageLimit);
+        const firstPageItems = [];
+
+        firstPageTypes.forEach(type => {
+            const typeTech = (technicals || []).filter(t => t.type === type);
+            if (typeTech.length > 0) {
+                firstPageItems.push({ type: 'header', text: type, id: `header-${type}` });
+                typeTech.forEach(tech => {
+                    firstPageItems.push({ type: 'tech', text: tech.text, id: tech.id });
+                });
+                firstPageItems.push({ type: 'spacer', id: `spacer-${type}` });
+            }
+        });
+
+        if (firstPageItems.length > 0 && firstPageItems[firstPageItems.length - 1].type === 'spacer') {
+            firstPageItems.pop();
+        }
+
+        pages.push({
+            items: firstPageItems,
+            pageNumber: 1,
+            isFirstPage: true
+        });
+
+        currentTypeIndex = firstPageLimit;
+
+        // --- Continuation Pages ---
+        while (currentTypeIndex < totalTypes) {
+            const contLimit = TECH_ITEMS_PER_CONTINUATION_PAGE;
+            const pageTypes = quoteDetails.selectedTechTypes.slice(currentTypeIndex, currentTypeIndex + contLimit);
+            const pageItems = [];
+
+            pageTypes.forEach(type => {
+                const typeTech = (technicals || []).filter(t => t.type === type);
+                if (typeTech.length > 0) {
+                    pageItems.push({ type: 'header', text: type, id: `header-${type}` });
+                    typeTech.forEach(tech => {
+                        pageItems.push({ type: 'tech', text: tech.text, id: tech.id });
+                    });
+                    pageItems.push({ type: 'spacer', id: `spacer-${type}` });
+                }
+            });
+
+            if (pageItems.length > 0 && pageItems[pageItems.length - 1].type === 'spacer') {
+                pageItems.pop();
+            }
+
+            pages.push({
+                items: pageItems,
+                pageNumber: pages.length + 1,
+                isFirstPage: false
+            });
+
+            currentTypeIndex += contLimit;
+        }
+
+        return pages;
+    };
 
 
     const itemPages = paginateItems();
     const totalItemPages = itemPages.length;
 
     const tcPages = paginateTerms();
+    const techPages = paginateTechnicals();
+
     // Total pages calculation
-    // 1 for Technicals (hardcoded for now as per original code 'Page 3: Technicals')
-    const totalPages = totalItemPages + tcPages.length + 1;
+    const totalPages = totalItemPages + tcPages.length + techPages.length;
 
     return (
         <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
@@ -823,7 +899,7 @@ const NewQuotationPage = () => {
                                     <Label>Date</Label>
                                     <Input
                                         type="date"
-                                        style={{ width: '100%' , paddingInline: '17%'}}
+                                        style={{ width: '100%', paddingInline: '17%' }}
                                         value={quoteDetails.date}
                                         onChange={e => setQuoteDetails({ ...quoteDetails, date: e.target.value })}
                                     />
@@ -849,7 +925,7 @@ const NewQuotationPage = () => {
                                 <div>
                                     <Label>Client Name</Label>
                                     <Select
-                                        
+
                                         value={clientNameSelection}
                                         onValueChange={(value) => {
                                             setClientNameSelection(value);
@@ -1109,16 +1185,16 @@ const NewQuotationPage = () => {
                                     <Button
                                         variant={newItemType === 'service' ? 'default' : 'outline'}
                                         onClick={() => { setNewItemType('service'); setSelectedItemId(''); }}
-                                        className="w-full"
+                                        className="w-full flex items-center gap-2"
                                     >
-                                        Service
+                                        <BriefcaseBusiness className="w-4 h-4" /> Service
                                     </Button>
                                     <Button
                                         variant={newItemType === 'test' ? 'default' : 'outline'}
                                         onClick={() => { setNewItemType('test'); setSelectedItemId(''); }}
-                                        className="w-full"
+                                        className="w-full flex items-center gap-2"
                                     >
-                                        Test
+                                        <TestTube className="w-4 h-4" /> Test
                                     </Button>
                                 </div>
 
@@ -1234,8 +1310,66 @@ const NewQuotationPage = () => {
                                         }),
                                     }}
                                 />
+                            </div>
+                        </div>
+
+                        {/* Technicals Selection Card */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mt-4">
+                            <h2 className="text-lg font-semibold mb-4 flex items-center">
+                                <Axe className="w-5 h-5 mr-2 text-primary" />
+                                Technicals
+                            </h2>
+                            <div className="space-y-4">
+                                <Label>Select Technical Types</Label>
+                                <ReactSelect
+                                    isMulti
+                                    options={[...new Set(technicals.map(t => t.type))].filter(Boolean).sort().map(type => ({
+                                        value: type,
+                                        label: type
+                                    }))}
+                                    value={quoteDetails.selectedTechTypes?.map(type => ({ value: type, label: type })) || []}
+                                    onChange={(selectedOptions) => {
+                                        setQuoteDetails({
+                                            ...quoteDetails,
+                                            selectedTechTypes: selectedOptions ? selectedOptions.map(opt => opt.value) : []
+                                        });
+                                    }}
+                                    placeholder="Select Technical types..."
+                                    className="mt-1 text-sm"
+                                    classNamePrefix="react-select"
+                                    styles={{
+                                        control: (base) => ({
+                                            ...base,
+                                            borderColor: '#e5e7eb',
+                                            borderRadius: '0.75rem',
+                                            paddingTop: '2px',
+                                            paddingBottom: '2px',
+                                            boxShadow: 'none',
+                                            '&:hover': {
+                                                borderColor: '#3b82f6'
+                                            }
+                                        }),
+                                        multiValue: (base) => ({
+                                            ...base,
+                                            backgroundColor: '#f0fdf4',
+                                            borderRadius: '0.375rem',
+                                        }),
+                                        multiValueLabel: (base) => ({
+                                            ...base,
+                                            color: '#166534',
+                                        }),
+                                        multiValueRemove: (base) => ({
+                                            ...base,
+                                            color: '#166534',
+                                            ':hover': {
+                                                backgroundColor: '#dcfce7',
+                                                color: '#14532d',
+                                            },
+                                        }),
+                                    }}
+                                />
                                 <p className="text-xs text-gray-500">
-                                    Selected T&C types will be displayed in the preview grouped by type.
+                                    Selected technicals will be displayed in the preview grouped by type.
                                 </p>
                             </div>
                         </div>
@@ -1692,9 +1826,12 @@ const NewQuotationPage = () => {
                                                         {tcPage.items.map((item, idx) => {
                                                             if (item.type === 'header') {
                                                                 return (
-                                                                    <h3 key={item.id} className="font-semibold text-gray-800 text-sm mt-4 mb-2">
-                                                                        {item.text}
-                                                                    </h3>
+                                                                    // <h3 key={item.id} className="font-semibold text-gray-800 text-sm mt-4 mb-2">
+                                                                    //     {item.text}
+                                                                    // </h3>
+                                                                    <h3 key={item.id} className="font-bold text-sm text-gray-800 border-l-4 border-primary pl-2 mb-2">
+                                                                {item.text}
+                                                            </h3>
                                                                 );
                                                             } else if (item.type === 'term') {
                                                                 return (
@@ -1720,63 +1857,63 @@ const NewQuotationPage = () => {
                                     </div>
                                 ))}
 
-                                {/* Page 3: Technicals */}
-                                <div className="a4-container">
-                                    {/* Watermark */}
-                                    <div
-                                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                                        style={{
-                                            transform: 'rotate(-55deg)',
-                                            zIndex: 0
-                                        }}
-                                    >
-                                        <span
+                                {/* Dynamic Technicals Pages */}
+                                {techPages.map((page, techIndex) => (
+                                    <div key={`tech-page-${page.pageNumber}`} className="a4-container">
+                                        {/* Watermark */}
+                                        <div
+                                            className="absolute inset-0 flex items-center justify-center pointer-events-none"
                                             style={{
-                                                fontSize: '42pt',
-                                                fontWeight: 700,
-                                                color: 'rgba(0,0,0,0.02)',
-                                                whiteSpace: 'nowrap'
+                                                transform: 'rotate(-55deg)',
+                                                zIndex: 0
                                             }}
                                         >
-                                            EDGE2 Engineering Solutions India Pvt. Ltd.
-                                        </span>
-                                    </div>
-                                    <div className="a4-page-content">
-                                        <div className="text-center text-gray-500 text-sm">
-                                            <h2 className="font-semibold text-lg mb-4 text-center">
-                                                Technicals
-                                            </h2>
-                                            <div className="text-left text-xs">
-                                                <ul className="list-disc space-y-2 ">
-                                                    <li>All the field investigation work will be carried out as per IS1892:1979 and relevant Indian Standards.</li>
-                                                    <li>Boring / drilling in all kinds of soils will be carried out , the diameter of borehole shall be min 150/100 mm.</li>
-                                                    <li>The standard penetrations tests will be conducted as per IS 2131-1981 at depths 1.0/1.5 intervals</li>
-                                                    <li>The Undisturbed / Disturebed soil will be taken at every 1.0/1.5m or at wherever strata changes by using 100 mm diameter, 400 mm long thin walled Shellby tubes.  The ends of the tubes shall be sealed with wax  and marked properly.  If UDS is not obtained due to hard strata or sandy strata, the same is  replaced by SPT.  The depth at which UDS collected and nos. of samples collected shall be recorded in borelogs.</li>
-                                                    <li>Bulk disturbed samples will be collected wherever UDS cannot be taken at every 1.0 m/1.5m intervals or wherever change of strata is encountered.</li>
-                                                    <li>The standing water table level (if encountered) and location cordinates will be recorded during field investigations in  the bore logs.</li>
-                                                    <li>The laboratory tests will be carried out as per relevant IS codes.</li>
-                                                    <li>Submission of technical report: The technical report will be submitted including detailed borelogs, discussions, recommendations regarding Safe Bearing capacity as per IS 6403 – 1982, IS 8009 Part I – 1980, IS 12070 - 1987</li>
-                                                </ul>
-                                            </div>
-                                            <h2 className="font-semibold text-left text-sm mt-6 mb-3">Auger</h2>
-                                            <div className="text-left text-xs">
-                                                <ul className="list-disc space-y-2">
-                                                    <li>The Undisturbed / Disturebed soil will be taken at every 1.0/1.5m or at wherever strata changes by using 100 mm diameter, 400 mm long thin walled Shellby tubes.  The ends of the tubes shall be sealed with wax  and marked properly.  If UDS is not obtained due to hard strata or sandy strata,the same is  replaced by SPT.  The depth at which UDS collected and nos. of samples collected shall be recorded in borelogs.</li>
-                                                    <li>Bulk disturbed samples will be collected wherever UDS cannot be taken at every 1m/1.5m intervals or wherever change of strata is encountered.</li>
-                                                    <li>The standing water table level (if encountered) and location cordinates will be recorded during field investigations in the bore logs.</li>
-                                                    <li>The laboratory tests will be carried out as per relevant IS codes.</li>
-                                                    <li>Submission of technical report.The technical report will be submitted including detailed borelogs, discussions, recommendations regarding Safe Bearing capacity as per IS 6403 – 1982, IS 8009 Part I – 1980, IS 12070 - 1987.</li>
-                                                </ul>
+                                            <span
+                                                style={{
+                                                    fontSize: '42pt',
+                                                    fontWeight: 700,
+                                                    color: 'rgba(0,0,0,0.02)',
+                                                    whiteSpace: 'nowrap'
+                                                }}
+                                            >
+                                                EDGE2 Engineering Solutions India Pvt. Ltd.
+                                            </span>
+                                        </div>
+                                        <div className="a4-page-content">
+                                            {page.isFirstPage && (
+                                                <h2 className="font-semibold text-lg mb-6 text-center pb-2">
+                                                    Technicals
+                                                </h2>
+                                            )}
+                                            <div className="space-y-4">
+                                                {page.items.map((item) => {
+                                                    if (item.type === 'header') {
+                                                        return (
+                                                            <h3 key={item.id} className="font-bold text-sm text-gray-800 border-l-4 border-primary pl-2 mb-2">
+                                                                {item.text}
+                                                            </h3>
+                                                        );
+                                                    } else if (item.type === 'tech') {
+                                                        return (
+                                                            <div key={item.id} className="text-xs text-gray-700 leading-relaxed mb-1 pl-2">
+                                                                <p className="whitespace-pre-wrap">{item.text}</p>
+                                                            </div>
+                                                        );
+                                                    } else if (item.type === 'spacer') {
+                                                        return <div key={item.id} className="h-4"></div>;
+                                                    }
+                                                    return null;
+                                                })}
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Page Footer */}
-                                    <div className="a4-page-footer">
-                                        <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
-                                        <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalPages} of {totalPages}</span>
+                                        {/* Page Footer */}
+                                        <div className="a4-page-footer">
+                                            <span>EDGE2 Engineering Solutions India Pvt. Ltd.</span>
+                                            <span>{documentType} #{quoteDetails.quoteNumber} | Page {totalItemPages + tcPages.length + (techIndex + 1)} of {totalPages}</span>
+                                        </div>
                                     </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>
