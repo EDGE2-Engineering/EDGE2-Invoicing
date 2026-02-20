@@ -503,37 +503,37 @@ const AdminServicesManager = () => {
                             <tr key={service.id} className="border-b hover:bg-gray-50 transition-colors">
                                 <td className="py-3 px-4">
                                     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-700">
-                                        <p className="font-medium text-gray-900">
+                                        <p className="font-bold text-gray-900 ">
                                             {service.serviceType}
                                         </p>
                                         <div className="w-full"></div>
                                         <p>
-                                            <span className="font-semibold text-gray-900">Price:</span>{' '}
+                                            <span className="font-semibold text-blue-900">Price:</span>{' '}
                                             <Rupee />{service.price.toLocaleString()}
                                         </p>
 
                                         <p>
-                                            <span className="font-semibold text-gray-900">Unit:</span>{' '}
+                                            <span className="font-semibold text-blue-900">Unit:</span>{' '}
                                             {service.unit}
                                         </p>
 
                                         <p>
-                                            <span className="font-semibold text-gray-900">Method:</span>{' '}
+                                            <span className="font-semibold text-blue-900">Method:</span>{' '}
                                             {service.methodOfSampling || 'NA'}
                                         </p>
 
                                         <p>
-                                            <span className="font-semibold text-gray-900"># BHs:</span>{' '}
+                                            <span className="font-semibold text-blue-900"># BHs:</span>{' '}
                                             {service.numBHs ?? 0}
                                         </p>
 
                                         <p>
-                                            <span className="font-semibold text-gray-900">Measure:</span>{' '}
+                                            <span className="font-semibold text-blue-900">Measure:</span>{' '}
                                             {service.measure || 'NA'}
                                         </p>
 
                                         <p>
-                                            <span className="font-semibold text-gray-900">HSN Code:</span>{' '}
+                                            <span className="font-semibold text-blue-900">HSN Code:</span>{' '}
                                             {service.hsnCode || '-'}
                                         </p>
                                     </div>

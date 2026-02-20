@@ -4,6 +4,7 @@ import { useReactToPrint } from 'react-to-print';
 import { Plus, Trash2, Printer, FileText, ArrowLeft, X, Save, Loader2, CreditCard, ChevronUp, ChevronDown, AlertCircle, Axe, TestTube, BriefcaseBusiness } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import { generateDocIDByDocType } from '@/utils/docUtils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -161,7 +162,7 @@ const NewQuotationPage = () => {
                         phone: '',
                         name: parsed.quoteDetails.name || '',
                         date: format(new Date(), 'yyyy-MM-dd'),
-                        quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`,
+                        quoteNumber: generateDocIDByDocType(parsed.documentType || 'Quotation'),
 
                         generatedBy: parsed.quoteDetails.generatedBy || '',
                         paymentDate: parsed.quoteDetails.paymentDate || '',
@@ -192,7 +193,7 @@ const NewQuotationPage = () => {
                 phone: '',
                 name: '',
                 date: format(new Date(), 'yyyy-MM-dd'),
-                quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`,
+                quoteNumber: generateDocIDByDocType('Quotation'),
 
                 generatedBy: user?.fullName || '',
                 paymentDate: '',
@@ -217,7 +218,7 @@ const NewQuotationPage = () => {
     const [newItemType, setNewItemType] = useState('service'); // 'service' or 'test'
     const [selectedItemId, setSelectedItemId] = useState('');
     const [qty, setQty] = useState(1);
-    const [documentType, setDocumentType] = useState(initialState.documentType); // 'Tax Invoice', 'Quotation', or 'Proforma Invoice'
+    const [documentType, setDocumentType] = useState(initialState.documentType); // 'Tax Invoice', 'Quotation', 'Proforma Invoice', 'Purchase Order', or 'Delivery Challan'
     const [discount, setDiscount] = useState(initialState.discount);
     const [comboboxOpen, setComboboxOpen] = useState(false);
     const [searchValue, setSearchValue] = useState('');
@@ -450,7 +451,7 @@ const NewQuotationPage = () => {
             email: '',
             phone: '',
             date: format(new Date(), 'yyyy-MM-dd'),
-            quoteNumber: `EESIPL/${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`,
+            quoteNumber: generateDocIDByDocType('Quotation'),
 
             generatedBy: user?.fullName || '',
             paymentDate: '',
@@ -865,7 +866,10 @@ const NewQuotationPage = () => {
                         <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
                             <div className="mb-2">
                                 <Label>Document Type</Label>
-                                <Select value={documentType} onValueChange={setDocumentType}>
+                                <Select value={documentType} onValueChange={(newType) => {
+                                    setDocumentType(newType);
+                                    setQuoteDetails(prev => ({ ...prev, quoteNumber: generateDocIDByDocType(newType) }));
+                                }}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select Type" />
                                     </SelectTrigger>
@@ -873,6 +877,8 @@ const NewQuotationPage = () => {
                                         <SelectItem value="Tax Invoice">Tax Invoice</SelectItem>
                                         <SelectItem value="Quotation">Quotation</SelectItem>
                                         <SelectItem value="Proforma Invoice">Proforma Invoice</SelectItem>
+                                        <SelectItem value="Purchase Order">Purchase Order</SelectItem>
+                                        <SelectItem value="Delivery Challan">Delivery Challan</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -1830,8 +1836,8 @@ const NewQuotationPage = () => {
                                                                     //     {item.text}
                                                                     // </h3>
                                                                     <h3 key={item.id} className="font-bold text-sm text-gray-800 border-l-4 border-primary pl-2 mb-2">
-                                                                {item.text}
-                                                            </h3>
+                                                                        {item.text}
+                                                                    </h3>
                                                                 );
                                                             } else if (item.type === 'term') {
                                                                 return (

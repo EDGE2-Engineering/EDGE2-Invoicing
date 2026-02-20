@@ -476,27 +476,27 @@ const AdminTestsManager = () => {
                             <tr key={test.id} className="border-b hover:bg-gray-50 transition-colors">
                                 <td className="py-3 px-4">
                                     <div className="flex flex-wrap items-center gap-6 text-sm text-gray-700">
-                                        <p className="font-medium text-gray-900">
+                                        <p className="font-bold text-gray-900">
                                             {test.testType}
                                         </p>
                                         <div className="w-full"></div>
                                         <p>
-                                            <span className="font-semibold text-gray-900">Materials:</span>{' '}
+                                            <span className="font-semibold text-blue-900">Materials:</span>{' '}
                                             {test.materials}
                                         </p>
 
                                         <p>
-                                            <span className="font-semibold text-gray-900">Method:</span>{' '}
+                                            <span className="font-semibold text-blue-900">Method:</span>{' '}
                                             {test.testMethodSpecification || '-'}
                                         </p>
 
                                         <p>
-                                            <span className="font-semibold text-gray-900">Price:</span>{' '}
+                                            <span className="font-semibold text-blue-900">Price:</span>{' '}
                                             <Rupee />{test.price.toLocaleString()}
                                         </p>
 
                                         <p>
-                                            <span className="font-semibold text-gray-900">HSN Code:</span>{' '}
+                                            <span className="font-semibold text-blue-900">HSN Code:</span>{' '}
                                             {test.hsnCode || '-'}
                                         </p>
 

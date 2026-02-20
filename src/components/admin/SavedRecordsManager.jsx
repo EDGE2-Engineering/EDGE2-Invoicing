@@ -300,6 +300,8 @@ const SavedRecordsManager = () => {
                       <SelectItem value="Tax Invoice">Tax Invoice</SelectItem>
                       <SelectItem value="Quotation">Quotation</SelectItem>
                       <SelectItem value="Proforma Invoice">Proforma Invoice</SelectItem>
+                      <SelectItem value="Purchase Order">Purchase Order</SelectItem>
+                      <SelectItem value="Delivery Challan">Delivery Challan</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -501,7 +503,11 @@ const SavedRecordsManager = () => {
                         ? 'bg-blue-100 text-blue-800'
                         : record.document_type === 'Proforma Invoice'
                           ? 'bg-purple-100 text-purple-800'
-                          : 'bg-green-100 text-green-800'
+                          : record.document_type === 'Purchase Order'
+                            ? 'bg-orange-100 text-orange-800'
+                            : record.document_type === 'Delivery Challan'
+                              ? 'bg-teal-100 text-teal-800'
+                              : 'bg-green-100 text-green-800'
                         }`}>
                         {record.document_type}
                       </span>
