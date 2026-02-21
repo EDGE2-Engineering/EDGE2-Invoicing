@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import Rupee from '../Rupee';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -44,6 +45,7 @@ const SavedRecordsManager = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { settings } = useSettings();
+  const { user, isStandard } = useAuth();
 
   const taxCGST = settings?.tax_cgst ? Number(settings.tax_cgst) : 9;
   const taxSGST = settings?.tax_sgst ? Number(settings.tax_sgst) : 9;
@@ -69,10 +71,15 @@ const SavedRecordsManager = () => {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('saved_records')
-        .select('*, app_users(full_name)')
-        .order('created_at', { ascending: false });
+        .select('*, app_users(full_name)');
+
+      if (isStandard()) {
+        query = query.eq('created_by', user.id);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       setRecords(data || []);
@@ -305,19 +312,21 @@ const SavedRecordsManager = () => {
                     </SelectContent>
                   </Select>
 
-                  <Select value={filterUser} onValueChange={setFilterUser}>
-                    <SelectTrigger className="w-36 h-9 text-sm bg-gray-50/50 border-gray-200 rounded-lg focus:ring-1 focus:ring-primary/20">
-                      <SelectValue placeholder="All Users" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Users</SelectItem>
-                      {uniqueUsers.map(user => (
-                        <SelectItem key={user} value={user}>
-                          {user}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {!isStandard() && (
+                    <Select value={filterUser} onValueChange={setFilterUser}>
+                      <SelectTrigger className="w-36 h-9 text-sm bg-gray-50/50 border-gray-200 rounded-lg focus:ring-1 focus:ring-primary/20">
+                        <SelectValue placeholder="All Users" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Users</SelectItem>
+                        {uniqueUsers.map(user => (
+                          <SelectItem key={user} value={user}>
+                            {user}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
                   <Select value={filterClient} onValueChange={setFilterClient}>
                     <SelectTrigger className="w-72 h-9 text-sm bg-gray-50/50 border-gray-200 rounded-lg text-left focus:ring-1 focus:ring-primary/20">
@@ -354,7 +363,7 @@ const SavedRecordsManager = () => {
                     <SelectItem value="date">Date Created</SelectItem>
                     <SelectItem value="total">Total Amount</SelectItem>
                     <SelectItem value="client">Client Name</SelectItem>
-                    <SelectItem value="user">Created By</SelectItem>
+                    {!isStandard() && <SelectItem value="user">Created By</SelectItem>}
                   </SelectContent>
                 </Select>
 

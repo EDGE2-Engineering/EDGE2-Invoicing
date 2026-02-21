@@ -39,10 +39,10 @@ const AdminPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (isStandard()) {
-      navigate('/doc');
+    if (isStandard() && mainTab !== 'saved_records') {
+      navigate('/settings/saved_records');
     }
-  }, [user, navigate]);
+  }, [user, navigate, mainTab, isStandard]);
 
   useEffect(() => {
     if (tab) {
@@ -117,17 +117,17 @@ const AdminPage = () => {
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none appearance-none"
             >
 
-              <option value="services">Services</option>
-              <option value="tests">Tests</option>
-              <option value="clients">Clients</option>
-              <option value="pricing">Client Pricing</option>
-              <option value="app_settings">App Settings</option>
+              {!isStandard() && <option value="services">Services</option>}
+              {!isStandard() && <option value="tests">Tests</option>}
+              {!isStandard() && <option value="clients">Clients</option>}
+              {!isStandard() && <option value="pricing">Client Pricing</option>}
+              {!isStandard() && <option value="app_settings">App Settings</option>}
               <option value="saved_records">Saved Records</option>
-              <option value="users">User Management</option>
-              <option value="unit_types">Unit Types</option>
-              <option value="hsn_codes">HSN Codes</option>
-              <option value="terms">T&C</option>
-              <option value="technicals">Technicals</option>
+              {!isStandard() && <option value="users">User Management</option>}
+              {!isStandard() && <option value="unit_types">Unit Types</option>}
+              {!isStandard() && <option value="hsn_codes">HSN Codes</option>}
+              {!isStandard() && <option value="terms">T&C</option>}
+              {!isStandard() && <option value="technicals">Technicals</option>}
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -140,69 +140,73 @@ const AdminPage = () => {
           <div className="hidden md:flex justify-center">
             <TabsList className="bg-white p-1 border border-gray-200 rounded-xl shadow-sm h-auto inline-flex">
 
-              <TabsTrigger
-                value="services"
-                title="Services"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <HandHeart className="w-4 h-4" /> Services
-              </TabsTrigger>
-              <TabsTrigger
-                value="tests"
-                title="Tests"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <TestTube className="w-4 h-4" /> Tests
-              </TabsTrigger>
-              <TabsTrigger
-                value="unit_types"
-                title="Units"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <Ruler className="w-4 h-4" /> Units
-              </TabsTrigger>
-              <TabsTrigger
-                value="hsn_codes"
-                title="Codes"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <Hash className="w-4 h-4" /> Codes
-              </TabsTrigger>
-              <TabsTrigger
-                value="clients"
-                title="Clients"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <BriefcaseBusiness className="w-4 h-4" /> Clients
-              </TabsTrigger>
-              <TabsTrigger
-                value="pricing"
-                title="Client Pricing"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <IndianRupee className="w-4 h-4" /> Pricing
-              </TabsTrigger>
-              <TabsTrigger
-                value="payment_settings"
-                title="Payment Settings"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <CreditCard className="w-4 h-4" /> Payment
-              </TabsTrigger>
-              <TabsTrigger
-                value="terms"
-                title="Terms & Conditions"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <FileText className="w-4 h-4" /> T&C
-              </TabsTrigger>
-              <TabsTrigger
-                value="technicals"
-                title="Technicals"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <Axe className="w-4 h-4" /> Technicals
-              </TabsTrigger>
+              {!isStandard() && (
+                <>
+                  <TabsTrigger
+                    value="services"
+                    title="Services"
+                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                  >
+                    <HandHeart className="w-4 h-4" /> Services
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="tests"
+                    title="Tests"
+                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                  >
+                    <TestTube className="w-4 h-4" /> Tests
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="unit_types"
+                    title="Units"
+                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                  >
+                    <Ruler className="w-4 h-4" /> Units
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="hsn_codes"
+                    title="Codes"
+                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                  >
+                    <Hash className="w-4 h-4" /> Codes
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="clients"
+                    title="Clients"
+                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                  >
+                    <BriefcaseBusiness className="w-4 h-4" /> Clients
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="pricing"
+                    title="Client Pricing"
+                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                  >
+                    <IndianRupee className="w-4 h-4" /> Pricing
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="payment_settings"
+                    title="Payment Settings"
+                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                  >
+                    <CreditCard className="w-4 h-4" /> Payment
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="terms"
+                    title="Terms & Conditions"
+                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                  >
+                    <FileText className="w-4 h-4" /> T&C
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="technicals"
+                    title="Technicals"
+                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                  >
+                    <Axe className="w-4 h-4" /> Technicals
+                  </TabsTrigger>
+                </>
+              )}
               <TabsTrigger
                 value="saved_records"
                 title="Previously Saved Records"
@@ -210,13 +214,15 @@ const AdminPage = () => {
               >
                 <Database className="w-4 h-4" /> Records
               </TabsTrigger>
-              <TabsTrigger
-                value="users"
-                title="User Management"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <UserCog className="w-4 h-4" /> Users
-              </TabsTrigger>
+              {!isStandard() && (
+                <TabsTrigger
+                  value="users"
+                  title="User Management"
+                  className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                >
+                  <UserCog className="w-4 h-4" /> Users
+                </TabsTrigger>
+              )}
             </TabsList>
           </div>
 

@@ -23,7 +23,7 @@ import {
 
 const Navbar = ({ isDirty = false, isSaving = false }) => {
   const navigate = useNavigate();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, isStandard } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
@@ -43,10 +43,13 @@ const Navbar = ({ isDirty = false, isSaving = false }) => {
   };
 
   const navItems = [
-    { path: '/doc/new', label: 'Create', icon: FileText, roles: ['admin'] },
-    { path: '/settings/services', label: 'Settings', icon: Settings, roles: ['admin'] }
+    { path: '/doc/new', label: 'Create', icon: FileText, roles: ['admin', 'standard'] },
+    { path: '/settings/services', label: 'Settings', icon: Settings, roles: ['admin', 'standard'] }
   ].filter(item => {
-    return !item.roles || (item.roles.includes('admin') && isAdmin());
+    if (!item.roles) return true;
+    if (item.roles.includes('admin') && isAdmin()) return true;
+    if (item.roles.includes('standard') && isStandard()) return true;
+    return false;
   });
 
   const isActive = (path) => {
