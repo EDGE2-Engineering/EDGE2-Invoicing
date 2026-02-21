@@ -4,21 +4,17 @@ import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/Navbar';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, LayoutDashboard, Home, FileText, User, Save, Loader2, UserCog, Plus, Database, HandHeart, IndianRupee, Ruler, BriefcaseBusiness, Hash, CreditCard, TestTube, Axe } from 'lucide-react';
+import { Settings, LayoutDashboard, Home, FileText, User, Save, Loader2, UserCog, Plus, Database, HandHeart, IndianRupee, Ruler, BriefcaseBusiness, Hash, CreditCard, TestTube, Axe, Package, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import AdminServicesManager from '@/components/admin/AdminServicesManager.jsx';
 import AdminTestsManager from '@/components/admin/AdminTestsManager.jsx';
 import AdminClientsManager from '@/components/admin/AdminClientsManager.jsx';
-
-import AdminSettingsManager from '@/components/admin/AdminSettingsManager.jsx';
 import AdminClientPricingManager from '@/components/admin/AdminClientPricingManager.jsx';
 import AdminUsersManager from '@/components/admin/AdminUsersManager.jsx';
 import SavedRecordsManager from '@/components/admin/SavedRecordsManager.jsx';
-import AdminUnitTypesManager from '@/components/admin/AdminUnitTypesManager.jsx';
-import AdminHSNCodesManager from '@/components/admin/AdminHSNCodesManager.jsx';
-import AdminTermsManager from '@/components/admin/AdminTermsManager.jsx';
-import AdminTechnicalsManager from '@/components/admin/AdminTechnicalsManager.jsx';
+import AdminSystemSettings from '@/components/admin/AdminSystemSettings.jsx';
+import MaterialInwardManager from '@/components/admin/MaterialInwardManager';
 
 import AdminLogin from '@/components/admin/AdminLogin';
 import UpdatePassword from '@/components/admin/UpdatePassword';
@@ -30,7 +26,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 const AdminPage = () => {
-  const { user, loading, logout, isStandard } = useAuth();
+  const { user, loading, logout, isAdmin, isStandard } = useAuth();
   const { tab } = useParams();
   const navigate = useNavigate();
   const [mainTab, setMainTab] = useState(tab || 'services');
@@ -39,7 +35,8 @@ const AdminPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (isStandard() && mainTab !== 'saved_records') {
+    const allowedTabs = ['saved_records', 'inward_register'];
+    if (isStandard() && !allowedTabs.includes(mainTab)) {
       navigate('/settings/saved_records');
     }
   }, [user, navigate, mainTab, isStandard]);
@@ -99,13 +96,6 @@ const AdminPage = () => {
       <Navbar />
 
       <main className="flex-grow container mx-auto px-4 py-0 relative">
-        {/* <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Settings</h1>
-            <p className="text-gray-500 mt-1">Manage everything</p>
-          </div>
-        </div> */}
-
         <Tabs value={mainTab} onValueChange={handleTabChange} className="w-full space-y-4">
           {/* Mobile View: Select Dropdown */}
           <div className="block md:hidden relative">
@@ -116,18 +106,14 @@ const AdminPage = () => {
               onChange={(e) => handleTabChange(e.target.value)}
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none appearance-none"
             >
-
+              {!isStandard() && <option value="inward_register">Inward Register</option>}
+              <option value="saved_records">Saved Records</option>
               {!isStandard() && <option value="services">Services</option>}
               {!isStandard() && <option value="tests">Tests</option>}
               {!isStandard() && <option value="clients">Clients</option>}
               {!isStandard() && <option value="pricing">Client Pricing</option>}
-              {!isStandard() && <option value="app_settings">App Settings</option>}
-              <option value="saved_records">Saved Records</option>
+              {!isStandard() && <option value="system">System Settings</option>}
               {!isStandard() && <option value="users">User Management</option>}
-              {!isStandard() && <option value="unit_types">Unit Types</option>}
-              {!isStandard() && <option value="hsn_codes">HSN Codes</option>}
-              {!isStandard() && <option value="terms">T&C</option>}
-              {!isStandard() && <option value="technicals">Technicals</option>}
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -139,7 +125,22 @@ const AdminPage = () => {
           {/* Desktop View: Tabs List */}
           <div className="hidden md:flex justify-center">
             <TabsList className="bg-white p-1 border border-gray-200 rounded-xl shadow-sm h-auto inline-flex">
-
+              {!isStandard() && (
+                <TabsTrigger
+                  value="inward_register"
+                  title="Material Inward Register"
+                  className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                >
+                  <Package className="w-4 h-4" /> Inward
+                </TabsTrigger>
+              )}
+              <TabsTrigger
+                value="saved_records"
+                title="Previously Saved Records"
+                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+              >
+                <Database className="w-4 h-4" /> Records
+              </TabsTrigger>
               {!isStandard() && (
                 <>
                   <TabsTrigger
@@ -157,20 +158,6 @@ const AdminPage = () => {
                     <TestTube className="w-4 h-4" /> Tests
                   </TabsTrigger>
                   <TabsTrigger
-                    value="unit_types"
-                    title="Units"
-                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                  >
-                    <Ruler className="w-4 h-4" /> Units
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="hsn_codes"
-                    title="Codes"
-                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                  >
-                    <Hash className="w-4 h-4" /> Codes
-                  </TabsTrigger>
-                  <TabsTrigger
                     value="clients"
                     title="Clients"
                     className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
@@ -185,47 +172,23 @@ const AdminPage = () => {
                     <IndianRupee className="w-4 h-4" /> Pricing
                   </TabsTrigger>
                   <TabsTrigger
-                    value="payment_settings"
-                    title="Payment Settings"
+                    value="system"
+                    title="System Settings"
                     className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
                   >
-                    <CreditCard className="w-4 h-4" /> Payment
+                    <Cpu className="w-4 h-4" /> System
                   </TabsTrigger>
                   <TabsTrigger
-                    value="terms"
-                    title="Terms & Conditions"
+                    value="users"
+                    title="User Management"
                     className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
                   >
-                    <FileText className="w-4 h-4" /> T&C
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="technicals"
-                    title="Technicals"
-                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                  >
-                    <Axe className="w-4 h-4" /> Technicals
+                    <UserCog className="w-4 h-4" /> Users
                   </TabsTrigger>
                 </>
               )}
-              <TabsTrigger
-                value="saved_records"
-                title="Previously Saved Records"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <Database className="w-4 h-4" /> Records
-              </TabsTrigger>
-              {!isStandard() && (
-                <TabsTrigger
-                  value="users"
-                  title="User Management"
-                  className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                >
-                  <UserCog className="w-4 h-4" /> Users
-                </TabsTrigger>
-              )}
             </TabsList>
           </div>
-
 
           <TabsContent value="services" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <AdminServicesManager />
@@ -243,39 +206,23 @@ const AdminPage = () => {
             <AdminClientPricingManager />
           </TabsContent>
 
-
-
-          <TabsContent value="payment_settings" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <AdminSettingsManager />
-          </TabsContent>
-
           <TabsContent value="saved_records" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <SavedRecordsManager />
+          </TabsContent>
+
+          <TabsContent value="inward_register" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <MaterialInwardManager />
           </TabsContent>
 
           <TabsContent value="users" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <AdminUsersManager />
           </TabsContent>
 
-          <TabsContent value="unit_types" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <AdminUnitTypesManager />
-          </TabsContent>
-
-          <TabsContent value="hsn_codes" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <AdminHSNCodesManager />
-          </TabsContent>
-
-          <TabsContent value="terms" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <AdminTermsManager />
-          </TabsContent>
-
-          <TabsContent value="technicals" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <AdminTechnicalsManager />
+          <TabsContent value="system" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AdminSystemSettings />
           </TabsContent>
         </Tabs>
       </main >
-
-
     </div >
   );
 };

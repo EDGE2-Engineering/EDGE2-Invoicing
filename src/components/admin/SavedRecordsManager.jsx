@@ -461,7 +461,7 @@ const SavedRecordsManager = () => {
                     {/* Document # + other details */}
                     <td className="py-2 px-4 text-sm text-gray-600">
                       <div className="font-semibold text-gray-900 flex items-center gap-2">
-                        <span className="font-semibold text-black font-bold text-md bg-gray-200 p-1 rounded">{record.quote_number}</span>
+                        <span className="font-semibold font-mono text-black text-md bg-gray-200 p-1 rounded">{record.quote_number}</span>
                         {/* <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${record.document_type === 'Tax Invoice'
                           ? 'bg-blue-100 text-blue-800'
                           : record.document_type === 'Proforma Invoice'

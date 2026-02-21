@@ -10,6 +10,8 @@ drop table if exists public.client_service_prices cascade;
 drop table if exists public.client_test_prices cascade;
 drop table if exists public.app_users cascade;
 drop table if exists public.saved_records cascade;
+drop table if exists public.material_samples cascade;
+drop table if exists public.material_inward_register cascade;
 DROP TABLE IF EXISTS public.unit_types CASCADE;
 
 -- Keeping site_content and blogs if they are used by other parts of the app, 
@@ -645,3 +647,72 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
 'Coarse Aggregate'
 );
+
+-- -----------------------------------------------------------------------------
+-- 14. Table: material_inward_register
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE public.material_inward_register (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_order_no VARCHAR(30) UNIQUE,
+    client_id TEXT NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
+    status VARCHAR(30) NOT NULL DEFAULT 'RECEIVED' CHECK (status IN (
+        'RECEIVED',
+        'UIN_GENERATED',
+        'SENT_TO_DEPARTMENT',
+        'UNDER_TESTING',
+        'TEST_COMPLETED',
+        'REPORT_GENERATED',
+        'UNDER_REVIEW',
+        'SIGNED',
+        'PAYMENT_PENDING',
+        'PAYMENT_RECEIVED',
+        'REPORT_RELEASED',
+        'COMPLETED'
+    )),
+    created_by UUID NOT NULL REFERENCES public.app_users(id) ON DELETE CASCADE,
+    updated_by UUID REFERENCES public.app_users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE public.material_inward_register ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Material inward register is viewable by everyone"
+  ON public.material_inward_register FOR SELECT
+  USING ( true );
+
+CREATE POLICY "Allow public management of material inward register"
+  ON public.material_inward_register FOR ALL
+  USING ( true )
+  WITH CHECK ( true );
+
+-- -----------------------------------------------------------------------------
+-- 15. Table: material_samples
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE public.material_samples (
+    id BIGSERIAL PRIMARY KEY,
+    inward_id UUID NOT NULL REFERENCES public.material_inward_register(id) ON DELETE CASCADE,
+    sample_code VARCHAR(50) NOT NULL,
+    sample_description TEXT,
+    quantity DECIMAL(12,3),
+    status VARCHAR(30) DEFAULT 'RECEIVED',
+    received_date DATE NOT NULL,
+    received_time TIME,
+    received_by UUID NOT NULL REFERENCES public.app_users(id) ON DELETE CASCADE,
+    expected_test_days INT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE public.material_samples ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Material samples are viewable by everyone"
+  ON public.material_samples FOR SELECT
+  USING ( true );
+
+CREATE POLICY "Allow public management of material samples"
+  ON public.material_samples FOR ALL
+  USING ( true )
+  WITH CHECK ( true );
