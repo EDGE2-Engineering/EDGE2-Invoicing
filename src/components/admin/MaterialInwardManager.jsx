@@ -78,7 +78,8 @@ const MaterialInwardManager = () => {
                 .select(`
           *,
           clients(client_name),
-          app_users!material_inward_register_created_by_fkey(full_name)
+          app_users!material_inward_register_created_by_fkey(full_name),
+          material_samples(received_date)
         `);
 
             if (isStandard()) {
@@ -677,7 +678,8 @@ const MaterialInwardManager = () => {
                         <thead className="bg-gray-50 border-b">
                             <tr>
                                 <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Job Order #</th>
-                                <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Date</th>
+                                <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Created Date</th>
+                                <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Received Date</th>
                                 <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Client</th>
                                 <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Status</th>
                                 <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Created By</th>
@@ -687,16 +689,19 @@ const MaterialInwardManager = () => {
                         <tbody>
                             {paginatedRecords.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="py-10 text-center text-gray-500">No records found.</td>
+                                    <td colSpan="7" className="py-10 text-center text-gray-500">No records found.</td>
                                 </tr>
                             ) : (
                                 paginatedRecords.map((record) => (
                                     <tr key={record.id} className="border-b hover:bg-gray-50 transition-colors">
                                         <td className="py-3 px-4">
-                                            <span className="font-semibold font-mono text-black text-md bg-gray-200 p-1 rounded">{record.job_order_no}</span>
+                                            <span className="font-semibold font-mono text-black text-md bg-gray-200 p-1 rounded text-sm">{record.job_order_no}</span>
                                         </td>
                                         <td className="py-3 px-4 text-sm text-gray-600">
                                             {format(new Date(record.created_at), 'dd MMM yyyy')}
+                                        </td>
+                                        <td className="py-3 px-4 text-sm text-gray-600">
+                                            {record.material_samples?.[0]?.received_date ? format(new Date(record.material_samples[0].received_date), 'dd MMM yyyy') : '-'}
                                         </td>
                                         <td className="py-3 px-4 text-sm text-gray-600">
                                             {record.clients?.client_name || '-'}
