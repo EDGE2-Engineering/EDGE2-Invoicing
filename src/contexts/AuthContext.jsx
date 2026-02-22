@@ -49,6 +49,7 @@ const AuthProvider = ({ children }) => {
                 id: data.id,
                 username: data.username,
                 fullName: data.full_name,
+                department: data.department,
                 role: data.role
             };
 

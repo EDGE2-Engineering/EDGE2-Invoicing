@@ -42,17 +42,33 @@ const AdminUsersManager = () => {
     const [editingUser, setEditingUser] = useState(null);
     const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
     const [userToToggle, setUserToToggle] = useState(null);
+    const [departments, setDepartments] = useState([]);
     const [formData, setFormData] = useState({
         username: '',
         password: '',
         full_name: '',
+        department: '',
         role: 'standard'
     });
     const { toast } = useToast();
 
     useEffect(() => {
         fetchUsers();
+        fetchDepartments();
     }, []);
+
+    const fetchDepartments = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('departments')
+                .select('name')
+                .order('name');
+            if (error) throw error;
+            setDepartments(data || []);
+        } catch (error) {
+            console.error('Error fetching departments:', error);
+        }
+    };
 
     const fetchUsers = async () => {
         try {
@@ -84,7 +100,7 @@ const AdminUsersManager = () => {
 
     const handleNewUser = () => {
         setEditingUser(null);
-        setFormData({ username: '', password: '', full_name: '', role: 'standard' });
+        setFormData({ username: '', password: '', full_name: '', department: '', role: 'standard' });
         setIsDialogOpen(true);
     };
 
@@ -94,6 +110,7 @@ const AdminUsersManager = () => {
             username: user.username,
             password: user.password,
             full_name: user.full_name || '',
+            department: user.department || '',
             role: user.role
         });
         setIsDialogOpen(true);
@@ -168,6 +185,7 @@ const AdminUsersManager = () => {
                 username: formData.username,
                 password: formData.password,
                 full_name: formData.full_name,
+                department: formData.department,
                 role: formData.role,
                 updated_at: new Date().toISOString()
             };
@@ -196,6 +214,7 @@ const AdminUsersManager = () => {
                 const message = `${emoji} *User ${action}*\n\n` +
                     `Username: \`${formData.username}\`\n` +
                     `Full Name: \`${formData.full_name}\`\n` +
+                    `Department: \`${formData.department}\`\n` +
                     `Role: \`${formData.role}\`\n` +
                     `${action} By: \`${currentUser.fullName}\``;
                 await sendTelegramNotification(message);
@@ -240,6 +259,7 @@ const AdminUsersManager = () => {
                         <tr>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600 w-[200px]">Username</th>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Full Name</th>
+                            <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Department</th>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Role</th>
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Status</th>
                             <th className="text-right py-3 px-4 font-semibold text-sm text-gray-600">Actions</th>
@@ -260,6 +280,7 @@ const AdminUsersManager = () => {
                                     </div>
                                 </td>
                                 <td className="py-3 px-4 text-sm">{user.full_name || '-'}</td>
+                                <td className="py-3 px-4 text-sm">{user.department || '-'}</td>
                                 <td className="py-3 px-4 text-sm">
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'super_admin' ? 'bg-red-100 text-red-800' :
                                         user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
@@ -332,6 +353,27 @@ const AdminUsersManager = () => {
                                 value={formData.full_name}
                                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                             />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="department">Department</Label>
+                            <Select
+                                value={formData.department}
+                                onValueChange={(val) => setFormData({ ...formData, department: val })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select department" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {departments.map((dept) => (
+                                        <SelectItem key={dept.name} value={dept.name}>
+                                            {dept.name}
+                                        </SelectItem>
+                                    ))}
+                                    {departments.length === 0 && (
+                                        <SelectItem value="" disabled>No departments found</SelectItem>
+                                    )}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="role">Role</Label>

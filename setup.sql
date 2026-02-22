@@ -375,6 +375,7 @@ create table if not exists public.app_users (
   username text unique not null,
   password text not null,
   full_name text,
+  department text,
   role text not null check (role in ('super_admin', 'admin', 'standard')),
   is_active boolean default true,
   created_at timestamp with time zone default now(),
@@ -518,6 +519,33 @@ create policy "Allow public management of terms and conditions"
   on public.terms_and_conditions for all
   using ( true )
   with check ( true );
+
+-- -----------------------------------------------------------------------------
+-- 13.5. Table: departments
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE public.departments (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    created_at timestamp with time zone default now()
+);
+
+alter table public.departments enable row level security;
+
+create policy "Departments are viewable by everyone"
+  on public.departments for select
+  using ( true );
+
+create policy "Allow public management of departments"
+  on public.departments for all
+  using ( true )
+  with check ( true );
+
+INSERT INTO public.departments (name) VALUES
+    ('Sales'),
+    ('Engineering'),
+    ('HR'),
+    ('Logistics');
 
 INSERT INTO public.terms_and_conditions (text, type) VALUES
 (
