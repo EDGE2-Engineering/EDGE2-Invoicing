@@ -36,3 +36,6 @@ export const TG_NOTIFIER_CONFIG = {
     BOT_TOKEN: import.meta.env.VITE_TG_BOT_TOKEN,
     CHAT_ID: import.meta.env.VITE_TG_CHAT_ID
 };
+
+export const enableInfoDiagramZoom = false;
+

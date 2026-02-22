@@ -177,6 +177,19 @@ const NewQuotationPage = () => {
         discount
     }), [quoteDetails, items, documentType, discount]);
 
+    // Compute aggregated T&C and Technicals from items, merging with legacy manually selected ones if present
+    const derivedTcTypes = useMemo(() => {
+        const itemTcTypes = items.flatMap(item => item.tcList || []);
+        const legacyTcTypes = quoteDetails.selectedTcTypes || [];
+        return [...new Set([...itemTcTypes, ...legacyTcTypes])];
+    }, [items, quoteDetails.selectedTcTypes]);
+
+    const derivedTechTypes = useMemo(() => {
+        const itemTechTypes = items.flatMap(item => item.techList || []);
+        const legacyTechTypes = quoteDetails.selectedTechTypes || [];
+        return [...new Set([...itemTechTypes, ...legacyTechTypes])];
+    }, [items, quoteDetails.selectedTechTypes]);
+
     // Navigation guard for unsaved changes (Browser back/forward/links)
     const isDirty = useMemo(() => {
         if (!lastSavedData) return false;
@@ -567,6 +580,8 @@ const NewQuotationPage = () => {
                 qty: Number(qty),
                 total: Number(finalPrice) * Number(qty),
                 hsnCode: itemData.hsnCode || '',
+                tcList: itemData.tcList || itemData.tc_list || [],
+                techList: itemData.techList || itemData.tech_list || [],
                 // Include new service fields if it's a service
                 ...(newItemType === 'service' && itemData ? {
                     methodOfSampling: itemData.methodOfSampling || itemData.method_of_sampling || 'NA',
@@ -666,7 +681,7 @@ const NewQuotationPage = () => {
     };
 
     const paginateTerms = () => {
-        if (!quoteDetails.selectedTcTypes || quoteDetails.selectedTcTypes.length === 0) {
+        if (!derivedTcTypes || derivedTcTypes.length === 0) {
             return [{
                 items: [],
                 pageNumber: 1,
@@ -675,7 +690,7 @@ const NewQuotationPage = () => {
         }
 
         const pages = [];
-        const totalTypes = quoteDetails.selectedTcTypes.length;
+        const totalTypes = derivedTcTypes.length;
         let currentTypeIndex = 0;
 
         // Logic: Pagination is based on number of T&C Types (groups), not individual lines.
@@ -684,7 +699,7 @@ const NewQuotationPage = () => {
 
         // --- First Page ---
         const firstPageLimit = TC_ITEMS_PER_FIRST_PAGE;
-        const firstPageTypes = quoteDetails.selectedTcTypes.slice(0, firstPageLimit);
+        const firstPageTypes = derivedTcTypes.slice(0, firstPageLimit);
         const firstPageItems = [];
 
         firstPageTypes.forEach(type => {
@@ -715,7 +730,7 @@ const NewQuotationPage = () => {
         // --- Continuation Pages ---
         while (currentTypeIndex < totalTypes) {
             const contLimit = TC_ITEMS_PER_CONTINUATION_PAGE;
-            const pageTypes = quoteDetails.selectedTcTypes.slice(currentTypeIndex, currentTypeIndex + contLimit);
+            const pageTypes = derivedTcTypes.slice(currentTypeIndex, currentTypeIndex + contLimit);
             const pageItems = [];
 
             pageTypes.forEach(type => {
@@ -749,17 +764,17 @@ const NewQuotationPage = () => {
     };
 
     const paginateTechnicals = () => {
-        if (!quoteDetails.selectedTechTypes || quoteDetails.selectedTechTypes.length === 0) {
+        if (!derivedTechTypes || derivedTechTypes.length === 0) {
             return [];
         }
 
         const pages = [];
-        const totalTypes = quoteDetails.selectedTechTypes.length;
+        const totalTypes = derivedTechTypes.length;
         let currentTypeIndex = 0;
 
         // --- First Page ---
         const firstPageLimit = TECH_ITEMS_PER_FIRST_PAGE;
-        const firstPageTypes = quoteDetails.selectedTechTypes.slice(0, firstPageLimit);
+        const firstPageTypes = derivedTechTypes.slice(0, firstPageLimit);
         const firstPageItems = [];
 
         firstPageTypes.forEach(type => {
@@ -788,7 +803,7 @@ const NewQuotationPage = () => {
         // --- Continuation Pages ---
         while (currentTypeIndex < totalTypes) {
             const contLimit = TECH_ITEMS_PER_CONTINUATION_PAGE;
-            const pageTypes = quoteDetails.selectedTechTypes.slice(currentTypeIndex, currentTypeIndex + contLimit);
+            const pageTypes = derivedTechTypes.slice(currentTypeIndex, currentTypeIndex + contLimit);
             const pageItems = [];
 
             pageTypes.forEach(type => {
@@ -1251,125 +1266,6 @@ const NewQuotationPage = () => {
                                 <Button onClick={handleAddItem} className="w-full" disabled={!selectedItemId}>
                                     Add Item
                                 </Button>
-                            </div>
-                        </div>
-
-                        {/* Terms & Conditions Selection Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h2 className="text-lg font-semibold mb-4 flex items-center">
-                                <FileText className="w-5 h-5 mr-2 text-primary" />
-                                Terms & Conditions
-                            </h2>
-                            <div className="space-y-4">
-                                <Label>Select T&C Types</Label>
-                                <ReactSelect
-                                    isMulti
-                                    options={[...new Set(terms.map(t => t.type))].filter(Boolean).sort().map(type => ({
-                                        value: type,
-                                        label: type
-                                    }))}
-                                    value={quoteDetails.selectedTcTypes?.map(type => ({ value: type, label: type })) || []}
-                                    onChange={(selectedOptions) => {
-                                        setQuoteDetails({
-                                            ...quoteDetails,
-                                            selectedTcTypes: selectedOptions ? selectedOptions.map(opt => opt.value) : []
-                                        });
-                                    }}
-                                    placeholder="Select T&C types..."
-                                    className="mt-1 text-sm"
-                                    classNamePrefix="react-select"
-                                    styles={{
-                                        control: (base) => ({
-                                            ...base,
-                                            borderColor: '#e5e7eb',
-                                            borderRadius: '0.75rem',
-                                            paddingTop: '2px',
-                                            paddingBottom: '2px',
-                                            boxShadow: 'none',
-                                            '&:hover': {
-                                                borderColor: '#3b82f6'
-                                            }
-                                        }),
-                                        multiValue: (base) => ({
-                                            ...base,
-                                            backgroundColor: '#eff6ff',
-                                            borderRadius: '0.375rem',
-                                        }),
-                                        multiValueLabel: (base) => ({
-                                            ...base,
-                                            color: '#1e40af',
-                                        }),
-                                        multiValueRemove: (base) => ({
-                                            ...base,
-                                            color: '#1e40af',
-                                            ':hover': {
-                                                backgroundColor: '#dbeafe',
-                                                color: '#1e3a8a',
-                                            },
-                                        }),
-                                    }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Technicals Selection Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mt-4">
-                            <h2 className="text-lg font-semibold mb-4 flex items-center">
-                                <Axe className="w-5 h-5 mr-2 text-primary" />
-                                Technicals
-                            </h2>
-                            <div className="space-y-4">
-                                <Label>Select Technical Types</Label>
-                                <ReactSelect
-                                    isMulti
-                                    options={[...new Set(technicals.map(t => t.type))].filter(Boolean).sort().map(type => ({
-                                        value: type,
-                                        label: type
-                                    }))}
-                                    value={quoteDetails.selectedTechTypes?.map(type => ({ value: type, label: type })) || []}
-                                    onChange={(selectedOptions) => {
-                                        setQuoteDetails({
-                                            ...quoteDetails,
-                                            selectedTechTypes: selectedOptions ? selectedOptions.map(opt => opt.value) : []
-                                        });
-                                    }}
-                                    placeholder="Select Technical types..."
-                                    className="mt-1 text-sm"
-                                    classNamePrefix="react-select"
-                                    styles={{
-                                        control: (base) => ({
-                                            ...base,
-                                            borderColor: '#e5e7eb',
-                                            borderRadius: '0.75rem',
-                                            paddingTop: '2px',
-                                            paddingBottom: '2px',
-                                            boxShadow: 'none',
-                                            '&:hover': {
-                                                borderColor: '#3b82f6'
-                                            }
-                                        }),
-                                        multiValue: (base) => ({
-                                            ...base,
-                                            backgroundColor: '#f0fdf4',
-                                            borderRadius: '0.375rem',
-                                        }),
-                                        multiValueLabel: (base) => ({
-                                            ...base,
-                                            color: '#166534',
-                                        }),
-                                        multiValueRemove: (base) => ({
-                                            ...base,
-                                            color: '#166534',
-                                            ':hover': {
-                                                backgroundColor: '#dcfce7',
-                                                color: '#14532d',
-                                            },
-                                        }),
-                                    }}
-                                />
-                                <p className="text-xs text-gray-500">
-                                    Selected technicals will be displayed in the preview grouped by type.
-                                </p>
                             </div>
                         </div>
                     </div>
@@ -1917,29 +1813,27 @@ const NewQuotationPage = () => {
                         </div>
                     </div>
                 </div>
+
+                <AlertDialog open={blocker.state === 'blocked'} onOpenChange={(open) => !open && blocker.reset()}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center text-amber-600">Unsaved Changes</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                You have unsaved changes in your document. Leaving this page will discard all details added. Are you sure you want to leave?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => blocker.reset()}>Stay on Page</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => blocker.proceed()}
+                                className="bg-amber-600 hover:bg-amber-700 text-white"
+                            >
+                                Leave and Discard
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
-
-
-
-            <AlertDialog open={blocker.state === 'blocked'} onOpenChange={(open) => !open && blocker.reset()}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center text-amber-600">Unsaved Changes</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            You have unsaved changes in your document. Leaving this page will discard all details added. Are you sure you want to leave?
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => blocker.reset()}>Stay on Page</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => blocker.proceed()}
-                            className="bg-amber-600 hover:bg-amber-700 text-white"
-                        >
-                            Leave and Discard
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
 };

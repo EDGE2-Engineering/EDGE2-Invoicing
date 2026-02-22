@@ -22,6 +22,8 @@ const TestsProvider = ({ children }) => {
             numDays: Number(t.num_days || t.numDays) || 0,
             price: Number(t.price) || 0,
             hsnCode: t.hsn_code || t.hsnCode || '',
+            tcList: t.tc_list || t.tcList || [],
+            techList: t.tech_list || t.techList || [],
             createdAt: t.created_at || new Date().toISOString()
         };
     }, []);
@@ -34,7 +36,9 @@ const TestsProvider = ({ children }) => {
         test_method_specification: t.testMethodSpecification,
         num_days: t.numDays,
         price: t.price,
-        hsn_code: t.hsnCode || t.hsn_code || ''
+        hsn_code: t.hsnCode || t.hsn_code || '',
+        tc_list: t.tcList || t.tc_list || [],
+        tech_list: t.techList || t.tech_list || []
     }), []);
 
     const fetchTests = useCallback(async () => {

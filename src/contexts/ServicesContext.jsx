@@ -23,6 +23,8 @@ const ServicesProvider = ({ children }) => {
             numBHs: Number(s.num_bhs ?? s.numBHs ?? 0) || 0,
             measure: s.measure || s.measureType || 'NA',
             hsnCode: s.hsn_code || s.hsnCode || '',
+            tcList: s.tc_list || s.tcList || [],
+            techList: s.tech_list || s.techList || [],
             createdAt: s.created_at || new Date().toISOString()
         };
     }, []);
@@ -36,7 +38,9 @@ const ServicesProvider = ({ children }) => {
         method_of_sampling: s.methodOfSampling || s.method_of_sampling || 'NA',
         num_bhs: typeof s.numBHs === 'number' ? s.numBHs : Number(s.num_bhs ?? 0),
         measure: s.measure || 'NA',
-        hsn_code: s.hsnCode || s.hsn_code || ''
+        hsn_code: s.hsnCode || s.hsn_code || '',
+        tc_list: s.tcList || s.tc_list || [],
+        tech_list: s.techList || s.tech_list || []
     }), []);
 
     const fetchServices = useCallback(async () => {

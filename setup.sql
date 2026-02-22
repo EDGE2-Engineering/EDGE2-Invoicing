@@ -30,6 +30,8 @@ create table public.services (
   num_bhs numeric default 0,
   measure text default 'NA',
   hsn_code text default '',
+  tc_list text[] default '{}',
+  tech_list text[] default '{}',
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -57,6 +59,8 @@ create table public.tests (
   num_days numeric default 0,
   price numeric default 0,
   hsn_code text default '',
+  tc_list text[] default '{}',
+  tech_list text[] default '{}',
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

@@ -11,6 +11,7 @@ import AdminSettingsManager from './AdminSettingsManager';
 import AdminTermsManager from './AdminTermsManager';
 import AdminTechnicalsManager from './AdminTechnicalsManager';
 import AdminDepartmentsManager from './AdminDepartmentsManager';
+import { enableInfoDiagramZoom } from '../../data/config';
 
 const AdminSystemSettings = () => {
     return (
@@ -170,7 +171,7 @@ const AdminSystemSettings = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-inner overflow-hidden relative group min-h-[600px] min-w-[600px]">
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-inner overflow-hidden relative group">
                                 <TransformWrapper
                                     initialScale={1}
                                     initialPositionX={0}
@@ -178,38 +179,41 @@ const AdminSystemSettings = () => {
                                     centerOnInit={true}
                                     minScale={0.5}
                                     maxScale={3}
+                                    disabled={!enableInfoDiagramZoom}
                                 >
                                     {({ zoomIn, zoomOut, resetTransform }) => (
                                         <>
-                                            <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur shadow-sm border border-gray-200 hover:bg-white"
-                                                    onClick={() => zoomIn()}
-                                                    title="Zoom In"
-                                                >
-                                                    <ZoomIn className="w-5 h-5 text-gray-600" />
-                                                </Button>
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur shadow-sm border border-gray-200 hover:bg-white"
-                                                    onClick={() => zoomOut()}
-                                                    title="Zoom Out"
-                                                >
-                                                    <ZoomOut className="w-5 h-5 text-gray-600" />
-                                                </Button>
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur shadow-sm border border-gray-200 hover:bg-white"
-                                                    onClick={() => resetTransform()}
-                                                    title="Reset View"
-                                                >
-                                                    <RotateCcw className="w-5 h-5 text-gray-600" />
-                                                </Button>
-                                            </div>
+                                            {enableInfoDiagramZoom && (
+                                                <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="icon"
+                                                        className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur shadow-sm border border-gray-200 hover:bg-white"
+                                                        onClick={() => zoomIn()}
+                                                        title="Zoom In"
+                                                    >
+                                                        <ZoomIn className="w-5 h-5 text-gray-600" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="icon"
+                                                        className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur shadow-sm border border-gray-200 hover:bg-white"
+                                                        onClick={() => zoomOut()}
+                                                        title="Zoom Out"
+                                                    >
+                                                        <ZoomOut className="w-5 h-5 text-gray-600" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="icon"
+                                                        className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur shadow-sm border border-gray-200 hover:bg-white"
+                                                        onClick={() => resetTransform()}
+                                                        title="Reset View"
+                                                    >
+                                                        <RotateCcw className="w-5 h-5 text-gray-600" />
+                                                    </Button>
+                                                </div>
+                                            )}
                                             <div className="flex justify-center w-full">
                                                 <TransformComponent
                                                     wrapperProps={{
@@ -227,7 +231,7 @@ const AdminSystemSettings = () => {
                                                         }
                                                     }}
                                                 >
-                                                    <div className="p-8">
+                                                    <div className="p-2 w-full min-h-[1200px] min-w-[1200px]">
                                                         <MermaidDiagram>
                                                             {`
                                                                 flowchart TD
@@ -256,9 +260,11 @@ const AdminSystemSettings = () => {
                                         </>
                                     )}
                                 </TransformWrapper>
-                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-900/50 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-[10px] font-medium tracking-wider uppercase pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Drag to Pan • use buttons to zoom
-                                </div>
+                                {enableInfoDiagramZoom && (
+                                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-900/50 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-[10px] font-medium tracking-wider uppercase pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                                        Drag to Pan • use buttons to zoom
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

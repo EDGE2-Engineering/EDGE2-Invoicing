@@ -6,6 +6,8 @@ import { useServices } from '@/contexts/ServicesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUnitTypes } from '@/contexts/UnitTypesContext';
 import { useHSNCodes } from '@/contexts/HSNCodesContext';
+import { useTermsAndConditions } from '@/contexts/TermsAndConditionsContext';
+import { useTechnicals } from '@/contexts/TechnicalsContext';
 import { sendTelegramNotification } from '@/lib/notifier';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,11 +31,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import ReactSelect from 'react-select';
 
 const AdminServicesManager = () => {
     const { services, updateService, addService, deleteService, setServices } = useServices();
     const { unitTypes } = useUnitTypes();
     const { hsnCodes } = useHSNCodes();
+    const { terms } = useTermsAndConditions();
+    const { technicals } = useTechnicals();
     const { user } = useAuth();
     const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
@@ -111,7 +116,9 @@ const AdminServicesManager = () => {
             methodOfSampling: 'NA',
             numBHs: 0,
             measure: 'NA',
-            hsnCode: ''
+            hsnCode: '',
+            tcList: [],
+            techList: []
         });
         setIsAddingNew(true);
     };
@@ -355,6 +362,70 @@ const AdminServicesManager = () => {
                                 ))}
                             </SelectContent>
                         </Select>
+                    </div>
+
+                    <div className="space-y-2 md:col-span-1">
+                        <Label>Terms and Conditions</Label>
+                        <ReactSelect
+                            isMulti
+                            name="tcList"
+                            options={[...new Set(terms.map(t => t.type))].map(type => ({ value: type, label: type }))}
+                            className="basic-multi-select"
+                            classNamePrefix="select"
+                            placeholder="Select Terms and Conditions..."
+                            value={
+                                editingService?.tcList?.map(type => ({
+                                    value: type,
+                                    label: type
+                                })) || []
+                            }
+                            onChange={(selectedOptions) => {
+                                handleChange('tcList', selectedOptions.map(option => option.value));
+                            }}
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    minHeight: '40px',
+                                    borderRadius: '0.5rem',
+                                    borderColor: '#e5e7eb',
+                                    '&:hover': {
+                                        borderColor: '#6366f1' // primary color approx
+                                    }
+                                })
+                            }}
+                        />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-1">
+                        <Label>Technicals</Label>
+                        <ReactSelect
+                            isMulti
+                            name="techList"
+                            options={[...new Set(technicals.map(t => t.type))].map(type => ({ value: type, label: type }))}
+                            className="basic-multi-select"
+                            classNamePrefix="select"
+                            placeholder="Select Technical Lists..."
+                            value={
+                                editingService?.techList?.map(type => ({
+                                    value: type,
+                                    label: type
+                                })) || []
+                            }
+                            onChange={(selectedOptions) => {
+                                handleChange('techList', selectedOptions.map(option => option.value));
+                            }}
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    minHeight: '40px',
+                                    borderRadius: '0.5rem',
+                                    borderColor: '#e5e7eb',
+                                    '&:hover': {
+                                        borderColor: '#6366f1'
+                                    }
+                                })
+                            }}
+                        />
                     </div>
                 </div>
             </div>
