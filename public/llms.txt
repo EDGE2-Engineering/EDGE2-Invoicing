@@ -1,9 +1,4 @@
 ## Pages
-- [| EDGE2 Easy Billing](/about): Learn about EDGE2 Easy Billing
-- [| EDGE2 Easy Billing](/contact): Contact EDGE2 Easy Billing for samples and orders. Call us or visit directly.
-- [| EDGE2 Easy Billing](/productdetail): No description available
-- [Admin Login | EDGE2 Easy Billing](/admin): No description available
-- [Blog | EDGE2 Easy Billing](/blog): Stay updated with the latest news, healthy tips, and organic living insights from EDGE2 Easy Billing.
-- [Blog Not Found | EDGE2 Easy Billing](/blogdetail): No description available
-- [EDGE2 Easy Billing | Pure & Organic Products](/home): Shop for premium organic Ghee, Honey, Oils and more from EDGE2 Easy Billing. 100% pure and chemical-free.
-- [Your Cart | EDGE2 Easy Billing](/cart): No description available
+- [| EDGE2 Easy Billing](/servicedetail): No description available
+- [| EDGE2 Easy Billing](/testdetail): No description available
+- [Reset Password | EDGE2 Easy Billing](/admin): No description available
