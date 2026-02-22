@@ -8,7 +8,6 @@ import AdminSettingsManager from './AdminSettingsManager';
 import AdminTermsManager from './AdminTermsManager';
 import AdminTechnicalsManager from './AdminTechnicalsManager';
 import AdminDepartmentsManager from './AdminDepartmentsManager';
-import AdminReportsManager from './AdminReportsManager';
 
 const AdminSystemSettings = () => {
     return (
@@ -41,12 +40,7 @@ const AdminSystemSettings = () => {
                         >
                             <Axe className="w-4 h-4" /> Technicals
                         </TabsTrigger>
-                        <TabsTrigger
-                            value="reports"
-                            className="px-2 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
-                        >
-                            <ClipboardList className="w-4 h-4" /> Reports
-                        </TabsTrigger>
+
                         <TabsTrigger
                             value="payment_settings"
                             className="px-2 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
@@ -82,9 +76,6 @@ const AdminSystemSettings = () => {
                     <AdminTechnicalsManager />
                 </TabsContent>
 
-                <TabsContent value="reports" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <AdminReportsManager />
-                </TabsContent>
 
                 <TabsContent value="departments" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <AdminDepartmentsManager />

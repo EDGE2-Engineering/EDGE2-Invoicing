@@ -14,6 +14,7 @@ import AdminClientPricingManager from '@/components/admin/AdminClientPricingMana
 import AdminUsersManager from '@/components/admin/AdminUsersManager.jsx';
 import SavedRecordsManager from '@/components/admin/SavedRecordsManager.jsx';
 import AdminSystemSettings from '@/components/admin/AdminSystemSettings.jsx';
+import AdminReportsManager from '@/components/admin/AdminReportsManager.jsx';
 import MaterialInwardManager from '@/components/admin/MaterialInwardManager';
 
 import AdminLogin from '@/components/admin/AdminLogin';
@@ -35,7 +36,7 @@ const AdminPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const allowedTabs = ['saved_records', 'inward_register'];
+    const allowedTabs = ['saved_records', 'inward_register', 'reports'];
     if (isStandard() && !allowedTabs.includes(mainTab)) {
       navigate('/settings/saved_records');
     }
@@ -107,6 +108,7 @@ const AdminPage = () => {
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none appearance-none"
             >
               {!isStandard() && <option value="inward_register">Inward Register</option>}
+              {!isStandard() && <option value="reports">Reports</option>}
               <option value="saved_records">Saved Records</option>
               {!isStandard() && <option value="services">Services</option>}
               {!isStandard() && <option value="tests">Tests</option>}
@@ -132,6 +134,15 @@ const AdminPage = () => {
                   className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
                 >
                   <Package className="w-4 h-4" /> Inward
+                </TabsTrigger>
+              )}
+              {!isStandard() && (
+                <TabsTrigger
+                  value="reports"
+                  title="Reports Management"
+                  className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                >
+                  <FileText className="w-4 h-4" /> Reports
                 </TabsTrigger>
               )}
               <TabsTrigger
@@ -212,6 +223,10 @@ const AdminPage = () => {
 
           <TabsContent value="inward_register" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <MaterialInwardManager />
+          </TabsContent>
+
+          <TabsContent value="reports" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AdminReportsManager />
           </TabsContent>
 
           <TabsContent value="users" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">

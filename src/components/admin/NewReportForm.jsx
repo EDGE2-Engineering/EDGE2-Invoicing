@@ -1727,104 +1727,74 @@ const NewReportForm = ({ editReport, onCancel, onSuccess }) => {
     };
 
     return (
-        <div className="w-full h-full bg-[#F5F1ED] flex flex-col">
-            <div className="flex justify-between items-center p-4 bg-white border-b">
-                <Button variant="outline" onClick={onCancel}><X className="w-4 h-4 mr-2" /> Cancel</Button>
-                <h2 className="text-xl font-bold">Report Form</h2>
-                <div className="flex gap-2">
-                    <Button onClick={fillWithRandomData} variant="secondary">Sample Data</Button>
-                    <Button onClick={clearForm} variant="destructive">Clear Form</Button>
+        <div className="w-full space-y-6">
+            {/* Unified Top Header matching AdminReportsManager style */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-xl border border-gray-100 shadow-sm gap-4">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="icon" onClick={onCancel} title="Cancel and go back">
+                        <X className="w-5 h-5 text-gray-400" />
+                    </Button>
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900">
+                            {editReport?.id ? 'Edit Report' : 'Create New Report'}
+                        </h2>
+                        <p className="text-xs text-gray-500 font-mono">{formData.reportId || 'New'}</p>
+                    </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                    {user?.role === 'super_admin' && (
+                        <Button
+                            type="button"
+                            onClick={fillWithRandomData}
+                            variant="outline"
+                            className="border-green-300 text-green-600 hover:bg-green-50"
+                        >
+                            <Zap className="w-4 h-4 mr-2" /> Sample Data
+                        </Button>
+                    )}
+                    <Button
+                        type="button"
+                        onClick={clearForm}
+                        variant="outline"
+                        className="border-red-300 text-red-600 hover:bg-red-50"
+                    >
+                        <Trash2 className="w-4 h-4 mr-2" /> Clear Form
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={handlePreview}
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary/5"
+                    >
+                        <Eye className="w-4 h-4 mr-2" /> Preview Report
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={handleSaveOnly}
+                        disabled={isSaving}
+                        className="bg-primary hover:bg-primary-dark text-white"
+                    >
+                        {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                        Save Report
+                    </Button>
+                    {/* Hidden Actual Submit */}
+                    <Button
+                        type="submit"
+                        form="report-form"
+                        disabled={isSaving}
+                        className="hidden"
+                    >
+                        Generate Report
+                    </Button>
                 </div>
             </div>
 
-            <main className="flex-grow container mx-auto px-1 py-8">
-                <div className="flex justify-between items-center mb-2">
-                    <h1 className="text-xl font-bold text-gray-900">Create New Report</h1>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate('/admin')}
-                        className="text-gray-500 hover:text-primary transition-colors flex items-center gap-2"
-                    >
-                        <Settings className="w-4 h-4" />
-                        Settings
-                    </Button>
-                </div>
-
-                <Card className="shadow-lg border-gray-200">
-                    <CardHeader className="bg-gray-50/50 border-b border-gray-100">
-                        <div className="flex items-start justify-between">
-                            {/* Left side */}
-                            <div>
-                                <CardTitle className="text-xl text-primary">
-                                    Report Details
-                                </CardTitle>
-                                <CardDescription>
-                                    All fields are required for accurate report generation.
-                                </CardDescription>
-                            </div>
-
-                            {/* Right side */}
-                            <div className="flex items-center space-x-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="lg"
-                                    onClick={fillWithRandomData}
-                                    className="border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 transition-colors"
-                                >
-                                    <Zap className="w-4 h-4 mr-2" />
-                                    Random Sample Input
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="lg"
-                                    onClick={clearForm}
-                                    className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-colors"
-                                >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Clear
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="lg"
-                                    onClick={handlePreview}
-                                    className="border-primary text-primary hover:bg-primary hover:text-white transition-colors"
-                                >
-                                    <Eye className="w-4 h-4 mr-2" />
-                                    Preview Report
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="lg"
-                                    onClick={handleSaveOnly}
-                                    disabled={isSaving}
-                                    className="border-primary text-primary hover:bg-primary/5 transition-colors"
-                                >
-                                    {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                                    Save Report
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    form="report-form"
-                                    size="lg"
-                                    disabled={isSaving}
-                                    className="hidden bg-primary hover:bg-primary-dark text-white min-w-[150px]"
-                                >
-                                    {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileCheck className="w-4 h-4 mr-2" />}
-                                    Generate Report
-                                </Button>
-                            </div>
-                        </div>
-                    </CardHeader>
-
-                    <CardContent className="p-2">
+            <main className="w-full">
+                <Card className="shadow-sm border-gray-200">
+                    <CardContent className="p-2 sm:p-6">
                         <form id="report-form" onSubmit={handleSubmit} className="space-y-8">
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                <TabsList className="grid w-full grid-cols-8 mb-8">
+                                <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-8 h-auto gap-2 p-1">
                                     <TabsTrigger value="basic" className="flex items-center gap-1 relative">
                                         <MapPin className="w-4 h-4" />
                                         <span className="hidden sm:inline">Basic Info</span>

@@ -79,6 +79,9 @@ const SavedRecordsManager = () => {
         query = query.eq('created_by', user.id);
       }
 
+      // Hide 'Report' type documents as they are now managed in their own tab
+      query = query.neq('document_type', 'Report');
+
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
