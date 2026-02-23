@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { sendTelegramNotification } from '@/lib/notifier';
 import { format } from 'date-fns';
 import {
     AlertDialog,
@@ -42,6 +43,7 @@ const MaterialInwardManager = () => {
     const [sortOrder, setSortOrder] = useState('desc');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [appUsers, setAppUsers] = useState([]);
     const { toast } = useToast();
     const navigate = useNavigate();
     const { user, isStandard } = useAuth();
@@ -67,6 +69,20 @@ const MaterialInwardManager = () => {
             setClients(data || []);
         } catch (error) {
             console.error('Error fetching clients:', error);
+        }
+    };
+
+    const fetchUsers = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('app_users')
+                .select('id, full_name')
+                .eq('is_active', true)
+                .order('full_name');
+            if (error) throw error;
+            setAppUsers(data || []);
+        } catch (error) {
+            console.error('Error fetching users:', error);
         }
     };
 
@@ -105,11 +121,13 @@ const MaterialInwardManager = () => {
     useEffect(() => {
         fetchRecords();
         fetchClients();
+        fetchUsers();
     }, []);
 
     const handleAddNew = () => {
         setEditingRecord({
             job_order_no: '',
+            po_wo_number: '',
             client_id: '',
             samples: [
                 {
@@ -118,6 +136,7 @@ const MaterialInwardManager = () => {
                     quantity: '',
                     received_date: format(new Date(), 'yyyy-MM-dd'),
                     received_time: format(new Date(), 'HH:mm'),
+                    received_by: user.id,
                     expected_test_days: 7
                 }
             ]
@@ -139,7 +158,8 @@ const MaterialInwardManager = () => {
                 ...record,
                 samples: samples.map(s => ({
                     ...s,
-                    received_date: format(new Date(s.received_date), 'yyyy-MM-dd')
+                    received_date: format(new Date(s.received_date), 'yyyy-MM-dd'),
+                    received_by: s.received_by || user.id
                 })) || []
             });
             setIsAddingNew(false);
@@ -162,6 +182,7 @@ const MaterialInwardManager = () => {
                     quantity: '',
                     received_date: format(new Date(), 'yyyy-MM-dd'),
                     received_time: format(new Date(), 'HH:mm'),
+                    received_by: user.id,
                     expected_test_days: 7
                 }
             ]
@@ -199,6 +220,7 @@ const MaterialInwardManager = () => {
                     .from('material_inward_register')
                     .insert({
                         job_order_no: editingRecord.job_order_no || `JO-${Date.now()}`,
+                        po_wo_number: editingRecord.po_wo_number,
                         client_id: editingRecord.client_id,
                         created_by: user.id,
                         status: 'RECEIVED'
@@ -214,6 +236,7 @@ const MaterialInwardManager = () => {
                     .from('material_inward_register')
                     .update({
                         job_order_no: editingRecord.job_order_no,
+                        po_wo_number: editingRecord.po_wo_number,
                         client_id: editingRecord.client_id,
                         status: editingRecord.status,
                         updated_by: user.id,
@@ -240,7 +263,7 @@ const MaterialInwardManager = () => {
                 quantity: parseFloat(sample.quantity) || 0,
                 received_date: sample.received_date,
                 received_time: sample.received_time,
-                received_by: user.id,
+                received_by: sample.received_by,
                 expected_test_days: parseInt(sample.expected_test_days) || 7
             }));
 
@@ -254,6 +277,14 @@ const MaterialInwardManager = () => {
                 title: "Success",
                 description: `Material Inward Record ${isAddingNew ? 'created' : 'updated'} successfully!`
             });
+
+            // Telegram Notification
+            const clientName = clients.find(c => c.id === editingRecord.client_id)?.client_name || 'Unknown Client';
+            const action = isAddingNew ? 'New Entry' : 'Entry Updated';
+            const emoji = isAddingNew ? '📥' : '✏️';
+            const message = `${emoji} *Material Inward ${action}*\n\nJob OrderNo: \`${editingRecord.job_order_no || inwardId}\`\nClient: \`${clientName}\`\nSamples: \`${editingRecord.samples.length}\`\nBy: \`${user?.fullName || 'Unknown'}\``;
+            sendTelegramNotification(message);
+
             setEditingRecord(null);
             setIsAddingNew(false);
             fetchRecords();
@@ -285,6 +316,11 @@ const MaterialInwardManager = () => {
             if (error) throw error;
 
             toast({ title: "Record Deleted", description: "The inward record has been removed.", variant: "destructive" });
+
+            // Telegram Notification
+            const message = `🗑️ *Material Inward Deleted*\n\nJob Order No: \`${deleteConfirmation.jobOrderNo}\`\nBy: \`${user?.fullName || 'Unknown'}\``;
+            sendTelegramNotification(message);
+
             fetchRecords();
         } catch (error) {
             console.error('Error deleting record:', error);
@@ -301,6 +337,7 @@ const MaterialInwardManager = () => {
 
     const filteredRecords = records.filter(r => {
         const matchesSearch = (r.job_order_no?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (r.po_wo_number?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
             (r.clients?.client_name?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
         if (!matchesSearch) return false;
@@ -407,7 +444,16 @@ const MaterialInwardManager = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="po_wo_number">PO/WO Number</Label>
+                        <Input
+                            id="po_wo_number"
+                            placeholder="e.g. PO/2026/001"
+                            value={editingRecord.po_wo_number}
+                            onChange={(e) => setEditingRecord(prev => ({ ...prev, po_wo_number: e.target.value }))}
+                        />
+                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="client">Client *</Label>
                         <Select
@@ -491,7 +537,7 @@ const MaterialInwardManager = () => {
                                         />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                     <div className="space-y-1">
                                         <Label className="text-xs">Quantity</Label>
                                         <Input
@@ -521,6 +567,22 @@ const MaterialInwardManager = () => {
                                         />
                                     </div>
                                     <div className="space-y-1">
+                                        <Label className="text-xs">Received By</Label>
+                                        <Select
+                                            value={sample.received_by}
+                                            onValueChange={(value) => handleSampleChange(index, 'received_by', value)}
+                                        >
+                                            <SelectTrigger className="h-9 text-sm">
+                                                <SelectValue placeholder="User" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {appUsers.map(u => (
+                                                    <SelectItem key={u.id} value={u.id}>{u.full_name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-1">
                                         <Label className="text-xs">Test Days</Label>
                                         <Input
                                             type="number"
@@ -546,7 +608,7 @@ const MaterialInwardManager = () => {
                     <div className="relative flex-1">
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <Input
-                            placeholder="Search by Job Order # or Client..."
+                            placeholder="Search by Job Order #, PO/WO # or Client..."
                             className="pl-12 h-12 text-sm bg-gray-50/30 border-gray-200 rounded-xl focus:ring-primary focus:border-primary transition-all shadow-sm"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -678,6 +740,7 @@ const MaterialInwardManager = () => {
                         <thead className="bg-gray-50 border-b">
                             <tr>
                                 <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Job Order #</th>
+                                <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">PO/WO #</th>
                                 <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Created Date</th>
                                 <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Received Date</th>
                                 <th className="text-left py-3 px-4 font-semibold text-sm text-gray-600">Client</th>
@@ -689,13 +752,16 @@ const MaterialInwardManager = () => {
                         <tbody>
                             {paginatedRecords.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="py-10 text-center text-gray-500">No records found.</td>
+                                    <td colSpan="8" className="py-10 text-center text-gray-500">No records found.</td>
                                 </tr>
                             ) : (
                                 paginatedRecords.map((record) => (
                                     <tr key={record.id} className="border-b hover:bg-gray-50 transition-colors">
                                         <td className="py-3 px-4">
                                             <span className="font-semibold font-mono text-black text-md bg-gray-200 p-1 rounded text-sm">{record.job_order_no}</span>
+                                        </td>
+                                        <td className="py-3 px-4 text-sm text-gray-600">
+                                            {record.po_wo_number || '-'}
                                         </td>
                                         <td className="py-3 px-4 text-sm text-gray-600">
                                             {format(new Date(record.created_at), 'dd MMM yyyy')}

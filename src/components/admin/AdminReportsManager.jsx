@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { sendTelegramNotification } from '@/lib/notifier';
 import { format } from 'date-fns';
 import {
     AlertDialog,
@@ -85,6 +86,11 @@ const AdminReportsManager = () => {
 
             if (error) throw error;
             toast({ title: "Record Deleted", variant: "destructive" });
+
+            // Telegram Notification
+            const message = `🗑️ *Report Deleted*\n\nReport No: \`${deleteConfirmation.reportNumber}\`\nDeleted By: \`${user?.fullName || 'Unknown'}\``;
+            sendTelegramNotification(message);
+
             fetchReports();
         } catch (error) {
             console.error('Error deleting report:', error);

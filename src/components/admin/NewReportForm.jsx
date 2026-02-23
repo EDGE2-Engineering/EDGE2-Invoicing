@@ -31,6 +31,7 @@ import ReportPreview from '@/components/ReportPreview';
 import reportTemplateHtml from '@/templates/report-template.html?raw'
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/customSupabaseClient';
+import { sendTelegramNotification } from '@/lib/notifier';
 
 
 const soilTypes = [
@@ -1703,6 +1704,12 @@ const NewReportForm = ({ editReport, onCancel, onSuccess }) => {
                 description: isGenerating ? "Report saved and PDF generated successfully." : "The report data has been successfully saved to the database.",
                 className: "bg-green-50 border-green-200 text-green-900",
             });
+
+            // Telegram Notification
+            const action = (existingRecord || formData.id) ? 'Updated' : 'Created';
+            const emoji = (existingRecord || formData.id) ? '✏️' : '📄';
+            const message = `${emoji} *Report ${action}*\n\nReport No: \`${formData.reportId}\`\nClient: \`${formData.client}\`\nBy: \`${user?.fullName || 'Unknown'}\``;
+            sendTelegramNotification(message);
 
             if (onSuccess) onSuccess();
 
