@@ -43,7 +43,7 @@ const Navbar = ({ isDirty = false, isSaving = false }) => {
   };
 
   const navItems = [
-    { path: '/settings/inward_register', label: 'Inward', icon: Package, roles: ['admin', 'standard'] },
+    { path: '/settings/material-inward', label: 'Inward', icon: Package, roles: ['admin', 'standard'] },
     { path: '/settings/reports', label: 'Reports', icon: FileText, roles: ['admin', 'standard'] },
     { path: '/settings/accounts', label: 'Accounts', icon: Database, roles: ['admin', 'standard'] },
     { path: '/settings/clients', label: 'Settings', icon: Settings, roles: ['admin', 'standard'] }
@@ -57,7 +57,7 @@ const Navbar = ({ isDirty = false, isSaving = false }) => {
   const isActive = (path) => {
     if (path === '/settings/clients') { // Changed from /settings/services to /settings/clients
       // Highlight settings only for explicitly settings tabs, not for Inward/Reports/Accounts
-      const isManagementTab = location.pathname.includes('/inward_register') ||
+      const isManagementTab = location.pathname.includes('/material-inward') ||
         location.pathname.includes('/reports') ||
         location.pathname.includes('/accounts');
 

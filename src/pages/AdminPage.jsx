@@ -37,7 +37,7 @@ const AdminPage = () => {
 
     // No longer redirect standard users away from settings
     // useEffect(() => {
-    //   const allowedTabs = ['accounts', 'inward_register', 'reports'];
+    //   const allowedTabs = ['accounts', 'material-inward', 'reports'];
     //   if (isStandard() && !allowedTabs.includes(mainTab)) {
     //     navigate('/settings/accounts');
     //   }
@@ -161,7 +161,7 @@ const AdminPage = () => {
                         <AccountsManager />
                     </TabsContent>
 
-                    <TabsContent value="inward_register" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <TabsContent value="material-inward" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
                         <MaterialInwardManager />
                     </TabsContent>
 
