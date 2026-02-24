@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/components/ui/use-toast';
 import { UserCog, Lock, Save, Loader2, ShieldCheck, Eye, EyeOff, Database, Download, Upload, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/customSupabaseClient';
+import { getSiteContent } from '@/data/config';
 
 const PasswordField = ({ id, label, value, onChange, show, setShow, placeholder, icon: Icon, required = false }) => (
     <div className="space-y-2">

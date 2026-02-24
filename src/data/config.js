@@ -1,11 +1,11 @@
 
 export const initialSiteContent = {
     global: {
-        siteName: "Easy Billing",
+        siteName: "Easy LIMS",
         contactPhone: "+919999999999",
         contactEmail: "edge2@gmail.com",
-        address: "EDGE2 - Easy Billing, Karnataka",
-        footerAbout: "EDGE2 - Easy Billing"
+        address: "EDGE2 - Easy LIMS, Karnataka",
+        footerAbout: "EDGE2 - Easy LIMS"
     },
     pagination: {
         // Very conservative - first page has header, client details, totals, bank details, payment terms

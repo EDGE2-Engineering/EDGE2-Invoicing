@@ -43,7 +43,7 @@ export const getNextDocNumber = async (supabaseClient, docType) => {
     try {
         // Fetch all matching records for this type + year/month, sorted desc
         const { data, error } = await supabaseClient
-            .from('saved_records')
+            .from('accounts')
             .select('quote_number')
             .eq('document_type', docType)
             .like('quote_number', `${prefix}%`)

@@ -34,7 +34,7 @@ const AuthProvider = ({ children }) => {
     const login = useCallback(async (username, password) => {
         try {
             const { data, error } = await supabase
-                .from('app_users')
+                .from('users')
                 .select('*')
                 .eq('username', username)
                 .eq('password', password)

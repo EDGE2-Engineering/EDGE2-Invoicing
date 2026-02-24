@@ -2,10 +2,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ClipboardCheck } from 'lucide-react';
-import { initialSiteContent } from '@/data/config';
+import { getSiteContent } from '@/data/config';
 
 const Footer = () => {
-  const content = initialSiteContent;
+  const content = getSiteContent();
 
   return (
     <footer className="bg-gray-900 text-white py-4 border-t border-gray-800">
@@ -14,7 +14,7 @@ const Footer = () => {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <ClipboardCheck className="w-8 h-8" />
-              <span className="text-xl font-bold">{content.global?.siteName || "EDGE2 Easy Billing"}</span>
+              <span className="text-xl font-bold">{content.global?.siteName || "Easy Billing"}</span>
             </div>
             <p className="text-gray-400 mb-4 text-sm leading-relaxed">
               {content.global?.footerAbout}

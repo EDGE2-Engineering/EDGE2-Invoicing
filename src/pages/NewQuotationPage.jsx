@@ -321,7 +321,7 @@ const NewQuotationPage = () => {
         const loadFromSupabase = async (id) => {
             try {
                 const { data, error } = await supabase
-                    .from('saved_records')
+                    .from('accounts')
                     .select('*')
                     .eq('id', id)
                     .single();
@@ -414,14 +414,14 @@ const NewQuotationPage = () => {
             if (savedRecordId && !isTypeChanged) {
                 // Update existing – keep the same doc number
                 const { error: updateError } = await supabase
-                    .from('saved_records')
+                    .from('accounts')
                     .update(recordData)
                     .eq('id', savedRecordId);
                 error = updateError;
             } else {
                 // Create new (Clone if isTypeChanged)
                 const { data, error: insertError } = await supabase
-                    .from('saved_records')
+                    .from('accounts')
                     .insert([recordData])
                     .select()
                     .single();

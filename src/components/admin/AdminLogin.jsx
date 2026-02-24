@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Lock, User, AlertCircle, Loader2, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getSiteContent } from '@/data/config';
 
 const AdminLogin = ({ onLoginSuccess }) => {
   const { login } = useAuth();
+  const content = getSiteContent();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -43,8 +45,8 @@ const AdminLogin = ({ onLoginSuccess }) => {
               className="h-16 w-auto object-contain"
             />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">Easy Billing</h1>
-          <p className="text-gray-500 mt-2 text-sm">Sign in to with your username and password</p>
+          <h1 className="text-xl font-bold text-gray-900">{content.global?.siteName || "Easy Billing"}</h1>
+          <p className="text-gray-500 mt-2 text-sm">Sign in with your username and password</p>
         </div>
 
         {/* Form */}

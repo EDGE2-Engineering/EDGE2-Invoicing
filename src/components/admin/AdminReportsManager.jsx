@@ -40,9 +40,8 @@ const AdminReportsManager = () => {
         setLoading(true);
         try {
             const { data, error } = await supabase
-                .from('saved_records')
-                .select('*, app_users(full_name)')
-                .eq('document_type', 'Report')
+                .from('reports')
+                .select('*, users(full_name)')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -73,14 +72,14 @@ const AdminReportsManager = () => {
         setDeleteConfirmation({
             isOpen: true,
             reportId: report.id,
-            reportNumber: report.quote_number
+            reportNumber: report.report_number
         });
     };
 
     const confirmDelete = async () => {
         try {
             const { error } = await supabase
-                .from('saved_records')
+                .from('reports')
                 .delete()
                 .eq('id', deleteConfirmation.reportId);
 
@@ -121,7 +120,7 @@ const AdminReportsManager = () => {
     }
 
     const filteredReports = reports.filter(r =>
-        (r.quote_number?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (r.report_number?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (r.client_name?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
 
@@ -171,18 +170,18 @@ const AdminReportsManager = () => {
                             filteredReports.map((report) => (
                                 <tr key={report.id} className="hover:bg-gray-50/80 transition-colors">
                                     <td className="py-4 px-6">
-                                        <span className="font-mono font-semibold text-gray-900">{report.quote_number}</span>
+                                        <span className="font-mono font-semibold text-gray-900">{report.report_number}</span>
                                     </td>
                                     <td className="py-4 px-6 text-sm text-gray-700">{report.client_name || '-'}</td>
-                                    <td className="py-4 px-6 text-sm text-gray-700">{report.app_users?.full_name || '-'}</td>
+                                    <td className="py-4 px-6 text-sm text-gray-700">{report.users?.full_name || '-'}</td>
                                     <td className="py-4 px-6 text-sm text-gray-500">
                                         {format(new Date(report.created_at), 'dd MMM yyyy')}
                                     </td>
-                                    <td className="py-4 px-6 text-right space-x-2">
-                                        <Button variant="ghost" size="icon" title="Edit Report" onClick={() => handleEdit(report)}>
+                                    <td className="py-3 px-2 text-right space-x-0">
+                                        <Button variant="ghost" className="px-2" size="icon" title="Edit Report" onClick={() => handleEdit(report)}>
                                             <FileText className="w-4 h-4 text-blue-600" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" title="Delete" onClick={() => handleDeleteClick(report)}>
+                                        <Button variant="ghost" className="px-2" size="icon" title="Delete" onClick={() => handleDeleteClick(report)}>
                                             <Trash2 className="w-4 h-4 text-red-500" />
                                         </Button>
                                     </td>

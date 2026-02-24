@@ -8,10 +8,12 @@ import { Helmet } from 'react-helmet-async';
 import { useServices } from '@/contexts/ServicesContext';
 import Rupee from '../components/Rupee';
 import { useAuth } from '@/contexts/AuthContext';
+import { getSiteContent } from '@/data/config';
 
 
 const ServiceDetailPage = () => {
     const { user, loading, isStandard } = useAuth();
+    const siteName = getSiteContent().global?.siteName || "Easy Billing";
     const navigate = useNavigate();
     const { id } = useParams();
     const { services } = useServices();
@@ -52,7 +54,7 @@ const ServiceDetailPage = () => {
     return (
         <>
             <Helmet>
-                <title>{service.serviceType} | EDGE2 Easy Billing</title>
+                <title>{service.serviceType} | EDGE2 {siteName}</title>
                 <meta name="description" content={`Service: ${service.serviceType}`} />
             </Helmet>
 

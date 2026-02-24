@@ -21,7 +21,7 @@ import DeviceRestriction from '@/components/DeviceRestriction';
 const router = createHashRouter([
   {
     path: "/",
-    element: <Navigate to="/settings/services" replace />,
+    element: <Navigate to="/settings/accounts" replace />,
   },
   {
     path: "/settings/:tab?",

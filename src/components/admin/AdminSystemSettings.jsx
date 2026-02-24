@@ -3,7 +3,7 @@ import React from 'react';
 import { MermaidDiagram } from '@lightenna/react-mermaid-diagram';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Ruler, Hash, CreditCard, FileText, Axe, Building2, Info, CheckCircle2, ChevronRight, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Ruler, Hash, CreditCard, FileText, Axe, Building2, Info, CheckCircle2, ChevronRight, ZoomIn, ZoomOut, RotateCcw, HandHeart, TestTube } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import AdminUnitTypesManager from './AdminUnitTypesManager';
 import AdminHSNCodesManager from './AdminHSNCodesManager';
@@ -11,14 +11,29 @@ import AdminSettingsManager from './AdminSettingsManager';
 import AdminTermsManager from './AdminTermsManager';
 import AdminTechnicalsManager from './AdminTechnicalsManager';
 import AdminDepartmentsManager from './AdminDepartmentsManager';
-import { enableInfoDiagramZoom } from '../../data/config';
+import AdminServicesManager from './AdminServicesManager';
+import AdminTestsManager from './AdminTestsManager';
+import { enableInfoDiagramZoom, getSiteContent } from '../../data/config';
 
 const AdminSystemSettings = () => {
+    const siteName = getSiteContent().global?.siteName || "Easy Billing";
     return (
         <div className="space-y-4">
-            <Tabs defaultValue="unit_types" className="w-full">
+            <Tabs defaultValue="services" className="w-full">
                 <div className="flex justify-center mb-6">
                     <TabsList className="bg-white p-1 border border-gray-200 rounded-xl shadow-sm h-auto inline-flex flex-wrap justify-center">
+                        <TabsTrigger
+                            value="services"
+                            className="px-2 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+                        >
+                            <HandHeart className="w-4 h-4" /> Services
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="tests"
+                            className="px-2 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+                        >
+                            <TestTube className="w-4 h-4" /> Tests
+                        </TabsTrigger>
                         <TabsTrigger
                             value="unit_types"
                             className="px-2 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
@@ -66,6 +81,14 @@ const AdminSystemSettings = () => {
                     </TabsList>
                 </div>
 
+                <TabsContent value="services" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <AdminServicesManager />
+                </TabsContent>
+
+                <TabsContent value="tests" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <AdminTestsManager />
+                </TabsContent>
+
                 <TabsContent value="unit_types" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <AdminUnitTypesManager />
                 </TabsContent>
@@ -97,7 +120,7 @@ const AdminSystemSettings = () => {
                             <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-2">
                                 <Info className="w-6 h-6 text-primary" /> System Information & Help
                             </h2>
-                            <p className="text-gray-500">Learn how to use the EDGE2 Easy Billing & Inward Management System effectively.</p>
+                            <p className="text-gray-500">Learn how to use the EDGE2 {siteName} & Inward Management System effectively.</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

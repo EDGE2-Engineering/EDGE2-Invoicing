@@ -74,7 +74,7 @@ const AdminUsersManager = () => {
         try {
             setLoading(true);
             const { data, error } = await supabase
-                .from('app_users')
+                .from('users')
                 .select('*')
                 .order('username');
 
@@ -143,7 +143,7 @@ const AdminUsersManager = () => {
         try {
             const newStatus = !userToToggle.is_active;
             const { error } = await supabase
-                .from('app_users')
+                .from('users')
                 .update({ is_active: newStatus, updated_at: new Date().toISOString() })
                 .eq('id', userToToggle.id);
 
@@ -192,7 +192,7 @@ const AdminUsersManager = () => {
 
             if (editingUser) {
                 const { error } = await supabase
-                    .from('app_users')
+                    .from('users')
                     .update(userData)
                     .eq('id', editingUser.id);
 
@@ -200,7 +200,7 @@ const AdminUsersManager = () => {
                 toast({ title: 'User Updated', description: 'User details updated successfully.' });
             } else {
                 const { error } = await supabase
-                    .from('app_users')
+                    .from('users')
                     .insert([userData]);
 
                 if (error) throw error;

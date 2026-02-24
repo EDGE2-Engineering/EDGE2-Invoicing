@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, ExternalLink, FileText, Loader2, AlertCircle, ArrowUpDown, SortAsc, SortDesc, Calendar } from 'lucide-react';
+import { Search, Trash2, ExternalLink, FileText, Loader2, AlertCircle, ArrowUpDown, SortAsc, SortDesc, Calendar, Plus } from 'lucide-react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,8 +28,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const SavedRecordsManager = () => {
-  const [records, setRecords] = useState([]);
+const AccountsManager = () => {
+  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [fromDate, setFromDate] = useState('');
@@ -68,12 +68,12 @@ const SavedRecordsManager = () => {
     }
   };
 
-  const fetchRecords = async () => {
+  const fetchAccounts = async () => {
     setLoading(true);
     try {
       let query = supabase
-        .from('saved_records')
-        .select('*, app_users(full_name)');
+        .from('accounts')
+        .select('*, users(full_name)');
 
       if (isStandard()) {
         query = query.eq('created_by', user.id);
@@ -85,12 +85,12 @@ const SavedRecordsManager = () => {
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRecords(data || []);
+      setAccounts(data || []);
     } catch (error) {
-      console.error('Error fetching records:', error);
+      console.error('Error fetching accounts:', error);
       toast({
         title: "Error",
-        description: "Failed to load saved records. " + error.message,
+        description: "Failed to load accounts. " + error.message,
         variant: "destructive"
       });
     } finally {
@@ -99,7 +99,7 @@ const SavedRecordsManager = () => {
   };
 
   useEffect(() => {
-    fetchRecords();
+    fetchAccounts();
   }, []);
 
   const handleDeleteClick = (record) => {
@@ -115,17 +115,17 @@ const SavedRecordsManager = () => {
 
     try {
       const { error } = await supabase
-        .from('saved_records')
+        .from('accounts')
         .delete()
         .eq('id', deleteConfirmation.recordId);
 
       if (error) throw error;
 
-      toast({ title: "Record Deleted", description: "The record has been removed.", variant: "destructive" });
-      fetchRecords();
+      toast({ title: "Account Deleted", description: "The account record has been removed.", variant: "destructive" });
+      fetchAccounts();
     } catch (error) {
-      console.error('Error deleting record:', error);
-      toast({ title: "Error", description: "Failed to delete record.", variant: "destructive" });
+      console.error('Error deleting account:', error);
+      toast({ title: "Error", description: "Failed to delete account.", variant: "destructive" });
     } finally {
       setDeleteConfirmation({ isOpen: false, recordId: null, quoteNumber: '' });
     }
@@ -135,17 +135,17 @@ const SavedRecordsManager = () => {
     navigate(`/doc/${recordId}`);
   };
 
-  const uniqueUsers = Array.from(new Set(records
-    .map(r => r.app_users?.full_name)
+  const uniqueUsers = Array.from(new Set(accounts
+    .map(r => r.users?.full_name)
     .filter(Boolean)))
     .sort();
 
-  const uniqueClients = Array.from(new Set(records
+  const uniqueClients = Array.from(new Set(accounts
     .map(r => r.client_name)
     .filter(Boolean)))
     .sort();
 
-  const filteredRecords = records.filter(r => {
+  const filteredAccounts = accounts.filter(r => {
     const matchesSearch = (r.quote_number?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (r.client_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (r.document_type?.toLowerCase() || '').includes(searchTerm.toLowerCase());
@@ -156,7 +156,7 @@ const SavedRecordsManager = () => {
     if (filterDocType !== 'all' && r.document_type !== filterDocType) return false;
 
     // User Filter
-    if (filterUser !== 'all' && r.app_users?.full_name !== filterUser) return false;
+    if (filterUser !== 'all' && r.users?.full_name !== filterUser) return false;
 
     // Client Filter
     if (filterClient !== 'all' && r.client_name !== filterClient) return false;
@@ -181,7 +181,7 @@ const SavedRecordsManager = () => {
     return true;
   });
 
-  const sortedRecords = [...filteredRecords].sort((a, b) => {
+  const sortedAccounts = [...filteredAccounts].sort((a, b) => {
     let valA, valB;
     switch (sortField) {
       case 'total':
@@ -193,8 +193,8 @@ const SavedRecordsManager = () => {
         valB = (b.client_name || '').toLowerCase();
         break;
       case 'user':
-        valA = (a.app_users?.full_name || '').toLowerCase();
-        valB = (b.app_users?.full_name || '').toLowerCase();
+        valA = (a.users?.full_name || '').toLowerCase();
+        valB = (b.users?.full_name || '').toLowerCase();
         break;
       case 'date':
         valA = new Date(a.created_at).getTime();
@@ -210,10 +210,10 @@ const SavedRecordsManager = () => {
   });
 
   // Pagination calculations
-  const totalPages = Math.ceil(sortedRecords.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedAccounts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedRecords = sortedRecords.slice(startIndex, endIndex);
+  const paginatedAccounts = sortedAccounts.slice(startIndex, endIndex);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -232,11 +232,11 @@ const SavedRecordsManager = () => {
     setCurrentPage(1);
   };
 
-  if (loading && records.length === 0) {
+  if (loading && accounts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-        <p className="text-gray-500">Loading saved records...</p>
+        <p className="text-gray-500">Loading accounts...</p>
       </div>
     );
   }
@@ -260,7 +260,7 @@ const SavedRecordsManager = () => {
           <div className="flex items-center gap-2 px-6 h-12 bg-primary/5 rounded-xl border border-primary/10 whitespace-nowrap">
             <FileText className="w-4 h-4 text-primary/60" />
             <span className="text-sm font-semibold text-gray-700">
-              {sortedRecords.length} <span className="text-gray-400 font-normal">records found</span>
+              {sortedAccounts.length} <span className="text-gray-400 font-normal">accounts found</span>
             </span>
           </div>
         </div>
@@ -390,25 +390,32 @@ const SavedRecordsManager = () => {
 
           </div>
 
-          {/* Reset Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={resetFilters}
-            disabled={
-              !searchTerm &&
-              !fromDate &&
-              !toDate &&
-              filterDocType === "all" &&
-              filterUser === "all" &&
-              filterClient === "all" &&
-              sortField === "date" &&
-              sortOrder === "desc"
-            }
-            className="text-red-900 bg-red-50 hover:bg-red-500 hover:text-white h-9 text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2 whitespace-nowrap"
-          >
-            Reset All
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetFilters}
+              disabled={
+                !searchTerm &&
+                !fromDate &&
+                !toDate &&
+                filterDocType === "all" &&
+                filterUser === "all" &&
+                filterClient === "all" &&
+                sortField === "date" &&
+                sortOrder === "desc"
+              }
+              className="text-red-900 bg-red-50 hover:bg-red-500 hover:text-white h-9 text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2 whitespace-nowrap"
+            >
+              Reset All
+            </Button>
+            <Button
+              onClick={() => navigate('/doc/new', { state: { forceReset: Date.now() } })}
+              className="bg-primary hover:bg-primary-dark text-white h-10 px-4 rounded-xl shadow-sm text-xs font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Create Invoice / Quotation
+            </Button>
+          </div>
         </div>
 
       </div>
@@ -432,7 +439,7 @@ const SavedRecordsManager = () => {
             </SelectContent>
           </Select>
           <span className="text-sm text-gray-600">
-            Showing {sortedRecords.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, sortedRecords.length)} of {sortedRecords.length}
+            Showing {sortedAccounts.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, sortedAccounts.length)} of {sortedAccounts.length}
           </span>
         </div>
       </div>
@@ -452,14 +459,14 @@ const SavedRecordsManager = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedRecords.length === 0 ? (
+              {paginatedAccounts.length === 0 ? (
                 <tr>
                   <td colSpan="2" className="py-10 text-center text-gray-500">
-                    No records found.
+                    No accounts found.
                   </td>
                 </tr>
               ) : (
-                paginatedRecords.map((record) => (
+                paginatedAccounts.map((record) => (
                   <tr key={record.id} className="border-b hover:bg-gray-50 transition-colors">
                     {/* Document # + other details */}
                     <td className="py-2 px-4 text-sm text-gray-600">
@@ -506,7 +513,7 @@ const SavedRecordsManager = () => {
                     </td>
 
                     <td className="justify-left items-center">
-                      <span className="text-black font-regular text-sm"> {record.app_users?.full_name || '-'}
+                      <span className="text-black font-regular text-sm"> {record.users?.full_name || '-'}
                       </span>
                     </td>
 
@@ -591,7 +598,7 @@ const SavedRecordsManager = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center text-red-600">
               <AlertCircle className="w-5 h-5 mr-2" />
-              Delete Saved Record?
+              Delete Account?
             </AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete <span className="font-semibold text-gray-900">{deleteConfirmation.quoteNumber}</span>?
@@ -610,4 +617,4 @@ const SavedRecordsManager = () => {
   );
 };
 
-export default SavedRecordsManager;
+export default AccountsManager;

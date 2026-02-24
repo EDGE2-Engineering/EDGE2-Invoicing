@@ -1,5 +1,5 @@
 -- -----------------------------------------------------------------------------
--- 0. Cleanup existing objects
+-- Cleanup existing objects
 -- -----------------------------------------------------------------------------
 drop table if exists public.products cascade;
 drop table if exists public.services cascade;
@@ -8,18 +8,22 @@ drop table if exists public.clients cascade;
 drop table if exists public.app_settings cascade;
 drop table if exists public.client_service_prices cascade;
 drop table if exists public.client_test_prices cascade;
-drop table if exists public.app_users cascade;
-drop table if exists public.saved_records cascade;
+drop table if exists public.users cascade;
+drop table if exists public.accounts cascade;
 drop table if exists public.material_samples cascade;
 drop table if exists public.material_inward_register cascade;
-DROP TABLE IF EXISTS public.unit_types CASCADE;
+drop table if exists public.reports cascade;
+drop table if exists public.unit_types cascade;
+drop table if exists public.service_unit_types cascade;
+drop table if exists public.hsn_sac_codes cascade;
+drop table if exists public.terms_and_conditions cascade;
+drop table if exists public.departments cascade;
 
--- Keeping site_content and blogs if they are used by other parts of the app, 
--- but ensuring services/tests are clean.
+-- ================================
+-- TABLE CREATION
+-- ================================
 
--- -----------------------------------------------------------------------------
--- 1. Table: services
--- -----------------------------------------------------------------------------
+-- 1. services
 create table public.services (
   id text primary key,
   service_type text not null,
@@ -36,25 +40,12 @@ create table public.services (
   updated_at timestamptz default now()
 );
 
-alter table public.services enable row level security;
-
-create policy "Services are viewable by everyone"
-  on public.services for select
-  using ( true );
-
-create policy "Allow public management of services"
-  on public.services for all
-  using ( true )
-  with check ( true );
-
--- -----------------------------------------------------------------------------
--- 2. Table: tests
--- -----------------------------------------------------------------------------
+-- 2. tests
 create table public.tests (
   id text primary key,
   test_type text not null,
   materials text,
-  "group" text, -- "group" is a reserved keyword, so quote it
+  "group" text,
   test_method_specification text,
   num_days numeric default 0,
   price numeric default 0,
@@ -65,72 +56,227 @@ create table public.tests (
   updated_at timestamptz default now()
 );
 
-alter table public.tests enable row level security;
-
-create policy "Tests are viewable by everyone"
-  on public.tests for select
-  using ( true );
-
-create policy "Allow public management of tests"
-  on public.tests for all
-  using ( true )
-  with check ( true );
-
-
--- -----------------------------------------------------------------------------
--- 3. Table: clients
--- -----------------------------------------------------------------------------
-
-create table if not exists public.clients (
+-- 3. clients
+create table public.clients (
   id text primary key,
   client_name text not null,
   client_address text default '',
   contacts jsonb default '[]'::jsonb,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now()
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
+-- 4. users
+create table public.users (
+  id uuid primary key default gen_random_uuid(),
+  username text unique not null,
+  password text not null,
+  full_name text,
+  department text,
+  role text not null check (role in ('super_admin', 'admin', 'standard')),
+  is_active boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
 
-alter table public.clients enable row level security;
-
-create policy "Clients are viewable by everyone"
-  on public.clients for select
-  using ( true );
-
-create policy "Allow public management of clients"
-  on public.clients for all
-  using ( true )
-  with check ( true );
-
-
--- -----------------------------------------------------------------------------
--- 4. Table: app_settings
--- -----------------------------------------------------------------------------
-
-create table if not exists public.app_settings (
+-- 5. app_settings
+create table public.app_settings (
   setting_key text primary key,
   setting_value text not null,
   description text,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now()
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
+-- 6. service_unit_types
+create table public.service_unit_types (
+  id serial primary key,
+  unit_type text not null
+);
+
+-- 7. hsn_sac_codes
+create table public.hsn_sac_codes (
+  id serial primary key,
+  code text not null,
+  description text not null
+);
+
+-- 8. terms_and_conditions
+create table public.terms_and_conditions (
+  id serial primary key,
+  text text not null,
+  type text not null,
+  hsn_code text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 9. departments
+create table public.departments (
+  id serial primary key,
+  name text unique not null,
+  created_at timestamptz default now()
+);
+
+-- 10. client_service_prices
+create table public.client_service_prices (
+  client_id text references public.clients(id) on delete cascade,
+  service_id text references public.services(id) on delete cascade,
+  price numeric not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  primary key (client_id, service_id)
+);
+
+-- 11. client_test_prices
+create table public.client_test_prices (
+  client_id text references public.clients(id) on delete cascade,
+  test_id text references public.tests(id) on delete cascade,
+  price numeric not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  primary key (client_id, test_id)
+);
+
+-- 12. accounts
+create table public.accounts (
+  id uuid primary key default gen_random_uuid(),
+  quote_number text unique not null,
+  document_type text not null,
+  client_name text,
+  payment_date date,
+  payment_mode text,
+  bank_details text,
+  content jsonb not null,
+  created_by uuid references public.users(id),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 13. material_inward_register
+create table public.material_inward_register (
+  id uuid primary key default gen_random_uuid(),
+  job_order_no varchar(30) unique,
+  client_id text not null references public.clients(id) on delete cascade,
+  status varchar(30) not null default 'RECEIVED' check (status in (
+    'RECEIVED',
+    'UIN_GENERATED',
+    'SENT_TO_DEPARTMENT',
+    'UNDER_TESTING',
+    'TEST_COMPLETED',
+    'REPORT_GENERATED',
+    'UNDER_REVIEW',
+    'SIGNED',
+    'PAYMENT_PENDING',
+    'PAYMENT_RECEIVED',
+    'REPORT_RELEASED',
+    'COMPLETED'
+  )),
+  po_wo_number varchar(50),
+  created_by uuid not null references public.users(id) on delete cascade,
+  updated_by uuid references public.users(id) on delete cascade,
+  created_at timestamptz default current_timestamp,
+  updated_at timestamptz default current_timestamp
+);
+
+-- 14. material_samples
+create table public.material_samples (
+  id bigserial primary key,
+  inward_id uuid not null references public.material_inward_register(id) on delete cascade,
+  sample_code varchar(50) not null,
+  sample_description text,
+  quantity decimal(12,3),
+  status varchar(30) default 'RECEIVED',
+  received_date date not null,
+  received_time time,
+  received_by uuid not null references public.users(id) on delete cascade,
+  expected_test_days int,
+  created_at timestamptz default current_timestamp,
+  updated_at timestamptz default current_timestamp
+);
+
+-- 15. reports
+create table public.reports (
+  id uuid primary key default gen_random_uuid(),
+  report_number text unique not null,
+  client_name text,
+  content jsonb not null,
+  created_by uuid references public.users(id),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+
+-- ================================
+-- RLS SETUP FOR ALL TABLES
+-- ================================
+
+alter table public.services enable row level security;
+create policy "Services are viewable by everyone" on public.services for select using ( true );
+create policy "Allow public management of services" on public.services for all using ( true ) with check ( true );
+
+alter table public.tests enable row level security;
+create policy "Tests are viewable by everyone" on public.tests for select using ( true );
+create policy "Allow public management of tests" on public.tests for all using ( true ) with check ( true );
+
+alter table public.clients enable row level security;
+create policy "Clients are viewable by everyone" on public.clients for select using ( true );
+create policy "Allow public management of clients" on public.clients for all using ( true ) with check ( true );
+
 alter table public.app_settings enable row level security;
+create policy "Settings are viewable by everyone" on public.app_settings for select using ( true );
+create policy "Allow public management of settings" on public.app_settings for all using ( true ) with check ( true );
 
-create policy "Settings are viewable by everyone"
-  on public.app_settings for select
-  using ( true );
+alter table public.client_service_prices enable row level security;
+create policy "Client service prices are viewable by everyone" on public.client_service_prices for select using ( true );
+create policy "Allow public management of client service prices" on public.client_service_prices for all using ( true ) with check ( true );
 
-create policy "Allow public management of settings"
-  on public.app_settings for all
-  using ( true )
-  with check ( true );
+alter table public.client_test_prices enable row level security;
+create policy "Client test prices are viewable by everyone" on public.client_test_prices for select using ( true );
+create policy "Allow public management of client test prices" on public.client_test_prices for all using ( true ) with check ( true );
+
+alter table public.users enable row level security;
+create policy "Users are viewable by everyone" on public.users for select using ( true );
+create policy "Allow public management of users" on public.users for all using ( true ) with check ( true );
+
+alter table public.accounts enable row level security;
+create policy "Accounts are viewable by everyone" on public.accounts for select using ( true );
+create policy "Allow public management of accounts" on public.accounts for all using ( true ) with check ( true );
+
+alter table public.service_unit_types enable row level security;
+create policy "Service unit types are viewable by everyone" on public.service_unit_types for select using ( true );
+create policy "Allow public management of service unit types" on public.service_unit_types for all using ( true ) with check ( true );
+
+alter table public.hsn_sac_codes enable row level security;
+create policy "HSN/SAC codes are viewable by everyone" on public.hsn_sac_codes for select using ( true );
+create policy "Allow public management of HSN/SAC codes" on public.hsn_sac_codes for all using ( true ) with check ( true );
+
+alter table public.terms_and_conditions enable row level security;
+create policy "Terms and conditions are viewable by everyone" on public.terms_and_conditions for select using ( true );
+create policy "Allow public management of terms and conditions" on public.terms_and_conditions for all using ( true ) with check ( true );
+
+alter table public.departments enable row level security;
+create policy "Departments are viewable by everyone" on public.departments for select using ( true );
+create policy "Allow public management of departments" on public.departments for all using ( true ) with check ( true );
+
+alter table public.material_inward_register enable row level security;
+create policy "Material inward register is viewable by everyone" on public.material_inward_register for select using ( true );
+create policy "Allow public management of material inward register" on public.material_inward_register for all using ( true ) with check ( true );
+
+alter table public.material_samples enable row level security;
+create policy "Material samples are viewable by everyone" on public.material_samples for select using ( true );
+create policy "Allow public management of material samples" on public.material_samples for all using ( true ) with check ( true );
+
+alter table public.reports enable row level security;
+create policy "Reports are viewable by everyone" on public.reports for select using ( true );
+create policy "Allow public management of reports" on public.reports for all using ( true ) with check ( true );
+---
 
 -- -----------------------------------------------------------------------------
--- 5. Insert sample data
+-- 2. Data Insertion (Sample Data & Configurations)
 -- -----------------------------------------------------------------------------
 
--- Sample Services
+-- 2.1 Sample Services
 insert into public.services (id, service_type, unit, price, qty, hsn_code) values
 ('S1','Mobilization of rig equipment & personnel with all other necessary accessories for carrying out investigations at site and demobilization after completion (Per Rig Per Site Location) including other incidental expenses.','LS',25000,1,'998311'),
 ('S2','Drilling and Handling (Shifting) Charges from one bore hole to another bore hole.','LS',2000,22,'998312'),
@@ -177,9 +323,7 @@ insert into public.services (id, service_type, unit, price, qty, hsn_code) value
 ('S43','Field California Bearing Ratio (CBR) Test','Per Point',10000,3,'998364'),
 ('S44','Dynamic Cone Penetration Test (DCPT)','Per Point',10000,3,'998365'),
 ('S45','Submission of Geotechnical Investigation report along with recommendations of type and depth of foundations, precautionary measures and recommendations.','LS',25000,1,'998371'),
-('S46','Medical, safety and Labour Accommodation and food including any to and fro travel expenses.','LS',25000,1,'998399');
-
-insert into public.services (id, service_type, unit, price, qty, hsn_code) values
+('S46','Medical, safety and Labour Accommodation and food including any to and fro travel expenses.','LS',25000,1,'998399'),
 ('S47','Transportation and Mobilization of Hand operated Auger Equipments, SPT Equipments, UDS setup, men to Project Site and withdrawing of the same after completion of all field investigations works.','LS',30000,1,'998372'),
 ('S48','Boring 150/100mm dia bore holes up to 6.0 m depth in all type of strata or N value >50, whichever is met earlier, including conducting Standard Penetration Test at every 1.00 / 1.50m interval or change of strata whichever are earlier, collecting Undisturbed and disturbed soil samples.','Per Borehole',22000,5,'998373'),
 ('S49','Conducting the following Laboratory Tests (as per IS codes)','LS',15000,1,'998374'),
@@ -188,9 +332,7 @@ insert into public.services (id, service_type, unit, price, qty, hsn_code) value
 ('S52','Laboratory Test – Determination of Particle Size analysis (Grain size & Hydrometer Method) as per IS 2720 (Part 4):1985','Included',0,1,'998377'),
 ('S53','Laboratory Test – Determination of Liquid limit and Plastic limit as per IS 2720 (Part 5):1985','Included',0,1,'998378'),
 ('S54','Laboratory Test – Conducting Direct Shear Tests as per IS 2720 (Part 13):1986','Included',0,1,'998379'),
-('S55','Submission of Technical Report with relevant locations regarding SBC of Soil, Type and Depth of Foundations and Improvements to Foundation soil if any.','LS',10000,1,'998381');
-
-insert into public.services (id, service_type, unit, price, qty, hsn_code) values
+('S55','Submission of Technical Report with relevant locations regarding SBC of Soil, Type and Depth of Foundations and Improvements to Foundation soil if any.','LS',10000,1,'998381'),
 ('S56','Mobilization of rig equipment & personnel with all other necessary accessories for carrying out investigations at site and demobilization after completion (Per Rig Per Site Location) including other incidental expenses.','LS',25000,1,'998382'),
 ('S57','Drilling and Handling (Shifting) Charges from one bore hole to another bore hole.','LS',2000,22,'998383'),
 ('S58','Boring/ Drilling 100/150mm dia boreholes in all kinds of soil/ refusal strata/ Weathered Rock/ Soft rock using NX size TC bit / 1.0 m in Hard rock using Diamond bit and taking necessary soil/ rock samples upto a depth of 10 m.','Per Meter',3000,184,'998384'),
@@ -221,11 +363,10 @@ insert into public.services (id, service_type, unit, price, qty, hsn_code) value
 ('S83','Laboratory Tests on Rock Sample - Deformability Test','Per Bore hole/ Per sample',500,10,'997324'),
 ('S84','Submission of Geotechnical Investigation report along with recommendations of type and depth of foundations, precautionary measures and recommendations.','LS',5000,1,'997325');
 
--- Sample Tests
+-- 2.2 Sample Tests
 insert into public.tests 
 (id, test_type, materials, "group", test_method_specification, num_days, price, hsn_code) 
 values
--- Coarse Aggregate
 ('T1','Sieve Analysis','Aggregate (Coarse)','Physical','IS 2386 (Part 1)',2,450,'996311'),
 ('T2','Elongation Index','Aggregate (Coarse)','Physical','IS 2386 (Part 1)',2,300,'996312'),
 ('T3','Flakiness Index','Aggregate (Coarse)','Physical','IS 2386 (Part 1)',2,300,'996313'),
@@ -243,8 +384,6 @@ values
 ('T15','Chloride','Aggregate (Coarse)','Chemical','EN 1744-1',6,700,'996327'),
 ('T16','Sulphate','Aggregate (Coarse)','Chemical','EN 1744-1',6,700,'996328'),
 ('T17','Soundness (Sodium Sulphate)','Aggregate (Coarse)','Chemical','IS 2386 (Part 5)',6,2500,'996331'),
-
--- Fine Aggregate
 ('T18','Sieve Analysis','Aggregate (Fine)','Physical','IS 2386 (Part 1)',2,450,'996332'),
 ('T19','Particle Finer Than 75 Micron','Aggregate (Fine)','Physical','IS 2386 (Part 2)',2,450,'996333'),
 ('T20','Bulk Density (Loose & Rodded)','Aggregate (Fine)','Physical','IS 2386 (Part 3)',2,500,'996334'),
@@ -256,302 +395,56 @@ values
 ('T26','Chloride','Aggregate (Fine)','Chemical','EN 1744-1',6,700,'996342'),
 ('T27','Sulphate','Aggregate (Fine)','Chemical','EN 1744-1',6,700,'996343'),
 ('T28','Soundness (Sodium Sulphate)','Aggregate (Fine)','Chemical','IS 2386 (Part 5)',6,2500,'996344'),
-
--- Building Bricks
 ('T29','Compressive Strength','Building Bricks','Physical','IS 3495 (Part 1)',8,250,'996351'),
 ('T30','Dimensions','Building Bricks','Physical','IS 1077',2,300,'996352'),
 ('T31','Efflorescence','Building Bricks','Physical','IS 3495 (Part 3)',8,250,'996353'),
 ('T32','Water Absorption','Building Bricks','Physical','IS 3495 (Part 2)',4,350,'996354'),
-
--- Concrete Blocks
 ('T33','Dimensions','Concrete Blocks','Physical','IS 2185 (Part 1)',2,250,'996361'),
 ('T34','Block Density','Concrete Blocks','Physical','IS 2185 (Part 1)',3,300,'996362'),
 ('T35','Drying Shrinkage','Concrete Blocks','Physical','IS 2185 (Part 1)',15,2000,'996363'),
 ('T36','Moisture Movement','Concrete Blocks','Physical','IS 2185 (Part 1)',15,2000,'996364'),
 ('T37','Water Absorption','Concrete Blocks','Physical','IS 2185 (Part 1)',4,400,'996365'),
 ('T38','Compressive Strength','Concrete Blocks','Physical','IS 2185 (Part 1)',3,350,'996366'),
-
--- Paver Blocks
 ('T39','Compressive Strength','Paver Blocks','Physical','IS 15658',7,350,'996371'),
 ('T40','Abrasion Resistance','Paver Blocks','Physical','IS 15658',7,600,'996372'),
 ('T41','Flexural Strength','Paver Blocks','Physical','IS 15658',7,350,'996373'),
 ('T42','Tensile Splitting Strength','Paver Blocks','Physical','IS 15658',7,450,'996374'),
 ('T43','Water Absorption','Paver Blocks','Physical','IS 15658',7,400,'996375');
 
--- Sample Clients
+-- 2.3 Sample Clients
 insert into public.clients (id, client_name, client_address, contacts) values
-(
-  'C1',
-  'Indus Towers Ltd.',
-  'No.12, Subramanya Arcade, ''D'' Block, 7th Floor, Bannerghatta Road, Bengaluru.',
-  '[
-    {
-      "contact_person": "",
-      "contact_email": "indus@email.com",
-      "contact_phone": "123",
-      "is_primary": true
-    }
-  ]'::jsonb
-),
-(
-  'C2',
-  'Reliance Jio Infocomm Ltd.',
-  'Bengaluru, Karnataka',
-  '[
-    {
-      "contact_person": "",
-      "contact_email": "jio@email.com",
-      "contact_phone": "456",
-      "is_primary": true
-    }
-  ]'::jsonb
-),
-(
-  'C3',
-  'ATC Telecom Infrastructure Pvt. Ltd.',
-  'HM Tower, 1st Floor, Magrath Road Junction, Brigade Road, Ashok Nagar, Bengaluru - 560001, Karnataka, INDIA',
-  '[
-    {
-      "contact_person": "",
-      "contact_email": "atc@email.com",
-      "contact_phone": "789",
-      "is_primary": true
-    }
-  ]'::jsonb
-);
+('C1','Indus Towers Ltd.','No.12, Subramanya Arcade, ''D'' Block, 7th Floor, Bannerghatta Road, Bengaluru.','[{"contact_person": "", "contact_email": "indus@email.com", "contact_phone": "123", "is_primary": true}]'::jsonb),
+('C2','Reliance Jio Infocomm Ltd.','Bengaluru, Karnataka','[{"contact_person": "", "contact_email": "jio@email.com", "contact_phone": "456", "is_primary": true}]'::jsonb),
+('C3','ATC Telecom Infrastructure Pvt. Ltd.','HM Tower, 1st Floor, Magrath Road Junction, Brigade Road, Ashok Nagar, Bengaluru - 560001, Karnataka, INDIA','[{"contact_person": "", "contact_email": "atc@email.com", "contact_phone": "789", "is_primary": true}]'::jsonb);
 
--- -----------------------------------------------------------------------------
--- 6. Table: client_service_prices
--- -----------------------------------------------------------------------------
-
-create table if not exists public.client_service_prices (
-  client_id text references public.clients(id) on delete cascade,
-  service_id text references public.services(id) on delete cascade,
-  price numeric not null,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now(),
-  primary key (client_id, service_id)
-);
-
-alter table public.client_service_prices enable row level security;
-
-create policy "Client service prices are viewable by everyone"
-  on public.client_service_prices for select
-  using ( true );
-
-create policy "Allow public management of client service prices"
-  on public.client_service_prices for all
-  using ( true )
-  with check ( true );
-
--- -----------------------------------------------------------------------------
--- 7. Table: client_test_prices
--- -----------------------------------------------------------------------------
-
-create table if not exists public.client_test_prices (
-  client_id text references public.clients(id) on delete cascade,
-  test_id text references public.tests(id) on delete cascade,
-  price numeric not null,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now(),
-  primary key (client_id, test_id)
-);
-
-alter table public.client_test_prices enable row level security;
-
-drop policy if exists "Client test prices are viewable by everyone" on public.client_test_prices;
-create policy "Client test prices are viewable by everyone"
-  on public.client_test_prices for select
-  using ( true );
-
-drop policy if exists "Allow public management of client test prices" on public.client_test_prices;
-create policy "Allow public management of client test prices"
-  on public.client_test_prices for all
-  using ( true )
-  with check ( true );
-
--- -----------------------------------------------------------------------------
--- 8. Table: app_users
--- -----------------------------------------------------------------------------
-
-create table if not exists public.app_users (
-  id uuid primary key default gen_random_uuid(),
-  username text unique not null,
-  password text not null,
-  full_name text,
-  department text,
-  role text not null check (role in ('super_admin', 'admin', 'standard')),
-  is_active boolean default true,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now()
-);
-
-alter table public.app_users enable row level security;
-
-drop policy if exists "Users are viewable by everyone" on public.app_users;
-create policy "Users are viewable by everyone"
-  on public.app_users for select
-  using ( true );
-
-drop policy if exists "Allow public management of users" on public.app_users;
-create policy "Allow public management of users"
-  on public.app_users for all
-  using ( true )
-  with check ( true );
-
-insert into public.app_users (username, password, full_name, role, is_active) values
+-- 2.4 Sample Users
+insert into public.users (username, password, full_name, role, is_active) values
 ('admin', 'admin123', 'Administrator', 'admin', true),
 ('user', 'user123', 'Standard User', 'standard', true),
 ('test', 'test123', 'Test User', 'standard', false)
 on conflict (username) do nothing;
 
--- -----------------------------------------------------------------------------
--- 9. Table: app_settings
--- -----------------------------------------------------------------------------
+-- 2.5 Unit Types
+INSERT INTO public.service_unit_types (unit_type) VALUES
+('Per Point'),('Per Bore hole'),('Included'),('Per Test'),('Per Location'),('Per Day'),('LS'),('Per Meter'),('Per Bore hole / Per sample');
+
+-- 2.6 HSN/SAC Codes
+INSERT INTO public.hsn_sac_codes (code, description) VALUES
+('998346', 'General testing and analysis'),
+('995432', 'Construction-related site testing services');
+
+-- 2.7 App Settings
 insert into public.app_settings (setting_key, setting_value, description) values
 ('tax_cgst', '9', 'CGST Percentage'),
 ('tax_sgst', '9', 'SGST Percentage')
 ON CONFLICT (setting_key) DO NOTHING;
 
--- -----------------------------------------------------------------------------
--- 10. Table: saved_records
--- -----------------------------------------------------------------------------
-create table if not exists public.saved_records (
-  id uuid primary key default gen_random_uuid(),
-  quote_number text unique not null,
-  document_type text not null, -- 'Tax Invoice' or 'Quotation'
-  client_name text,
-  payment_date date,
-  payment_mode text,
-  bank_details text,
-  content jsonb not null, -- Stores quoteDetails, items, discount, etc.
-  created_by uuid references public.app_users(id),
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now()
-);
-
-alter table public.saved_records enable row level security;
-
-create policy "Saved records are viewable by everyone"
-  on public.saved_records for select
-  using ( true );
-
-create policy "Allow public management of saved records"
-  on public.saved_records for all
-  using ( true )
-  with check ( true );
-
-
--- -----------------------------------------------------------------------------
--- 11. Table: service_unit_types
--- -----------------------------------------------------------------------------
-
-CREATE TABLE public.service_unit_types (
-    id SERIAL PRIMARY KEY,
-    unit_type TEXT NOT NULL
-);
-alter table public.service_unit_types enable row level security;
-
-create policy "Service unit types are viewable by everyone"
-  on public.service_unit_types for select
-  using ( true );
-
-create policy "Allow public management of service unit types"
-  on public.service_unit_types for all
-  using ( true )
-  with check ( true );
-
-INSERT INTO public.service_unit_types (unit_type) VALUES
-    ('Per Point'),
-    ('Per Bore hole'),
-    ('Included'),
-    ('Per Test'),
-    ('Per Location'),
-    ('Per Day'),
-    ('LS'),
-    ('Per Meter'),
-    ('Per Bore hole / Per sample');
-
-
--- -----------------------------------------------------------------------------
--- 12. Table: hsn_sac_codes
--- -----------------------------------------------------------------------------
-
-CREATE TABLE public.hsn_sac_codes (
-    id SERIAL PRIMARY KEY,
-    code TEXT NOT NULL,
-    description TEXT NOT NULL
-);
-
-alter table public.hsn_sac_codes enable row level security;
-
-create policy "HSN/SAC codes are viewable by everyone"
-  on public.hsn_sac_codes for select
-  using ( true );
-
-create policy "Allow public management of HSN/SAC codes"
-  on public.hsn_sac_codes for all
-  using ( true )
-  with check ( true );
-
-INSERT INTO public.hsn_sac_codes (code, description) VALUES
-    ('998346', 'General testing and analysis'),
-    ('995432', 'Construction-related site testing services');
-
-update terms_and_conditions set hsn_code = '998346' where true;
-update services set hsn_code = '995432' where true;
-
--- -----------------------------------------------------------------------------
--- 13. Table: terms_and_conditions
--- -----------------------------------------------------------------------------
-
-CREATE TABLE public.terms_and_conditions (
-    id SERIAL PRIMARY KEY,
-    text TEXT NOT NULL,
-    type TEXT NOT NULL,
-    created_at timestamp with time zone default now(),
-    updated_at timestamp with time zone default now()
-);
-
-alter table public.terms_and_conditions enable row level security;
-
-create policy "Terms and conditions are viewable by everyone"
-  on public.terms_and_conditions for select
-  using ( true );
-
-create policy "Allow public management of terms and conditions"
-  on public.terms_and_conditions for all
-  using ( true )
-  with check ( true );
-
--- -----------------------------------------------------------------------------
--- 13.5. Table: departments
--- -----------------------------------------------------------------------------
-
-CREATE TABLE public.departments (
-    id SERIAL PRIMARY KEY,
-    name TEXT UNIQUE NOT NULL,
-    created_at timestamp with time zone default now()
-);
-
-alter table public.departments enable row level security;
-
-create policy "Departments are viewable by everyone"
-  on public.departments for select
-  using ( true );
-
-create policy "Allow public management of departments"
-  on public.departments for all
-  using ( true )
-  with check ( true );
-
+-- 2.8 Departments
 INSERT INTO public.departments (name) VALUES
-    ('Sales'),
-    ('Engineering'),
-    ('HR'),
-    ('Logistics');
+('Sales'),('Engineering'),('HR'),('Logistics');
 
-INSERT INTO public.terms_and_conditions (text, type) VALUES
+-- 2.9 Terms and Conditions
+INSERT INTO public.terms_and_conditions (text, type, hsn_code) VALUES
 (
 '1. A minimum of Twenty (20) samples is required for testing. The Company reserves the right to reject or withhold testing of any samples that do not meet this minimum sample requirement.
 2. The Client must clearly mention the Brand and Type of Brick at the time of submitting samples. The Company shall not be responsible for any errors, delays, or discrepancies in test results arising due to failure to provide proper details in advance.
@@ -561,7 +454,7 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 6. Rates given above will be subject to applicable taxes.
 7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Bricks'
+'Bricks', '998346'
 ),
 (
 '1. A minimum of 20 kg of samples is required for testing. The Company reserves the right to reject or withhold testing of any quantity that does not meet this minimum sample requirement.
@@ -572,7 +465,7 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 6. Rates given above will be subject to applicable taxes.
 7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Cement & GGBS'
+'Cement & GGBS', '998346'
 ),
 (
 '1. A minimum of 30 kg of sample is required for testing. The Company reserves the right to reject or withhold testing of any sample that does not meet this minimum sample requirement.
@@ -583,7 +476,7 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 6. Rates given above will be subject to applicable taxes.
 7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Granular Sub Base (GSB)'
+'Granular Sub Base (GSB)', '998346'
 ),
 (
 '1. A minimum of Ten (10) samples is required for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
@@ -593,7 +486,7 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 5. Rates given above will be subject to applicable taxes.
 6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'AAC/ACC Block'
+'AAC/ACC Block', '998346'
 ),
 (
 '1. A minimum of 30 kg of sample is required for testing. The Company reserves the right to reject or withhold testing of any sample that does not meet this minimum sample requirement.
@@ -603,7 +496,7 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 5. Rates given above will be subject to applicable taxes.
 6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'WET MIX MACADAM (WMM)'
+'WET MIX MACADAM (WMM)', '998346'
 ),
 (
 '1. A minimum of Three (3) samples is required for each diameter for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
@@ -614,7 +507,7 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 6. Rates given above will be subject to applicable taxes.
 7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Steel Testing'
+'Steel Testing', '998346'
 ),
 (
 '1. A minimum of Fourteen (14) samples is required for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
@@ -624,7 +517,7 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 5. Rates given above will be subject to applicable taxes.
 6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Solid Block'
+'Solid Block', '998346'
 ),
 (
 '1. A minimum of Three (3) samples is required for each set for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
@@ -635,7 +528,7 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 6. Rates given above will be subject to applicable taxes.
 7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Concrete Core'
+'Concrete Core', '998346'
 ),
 (
 '1. A minimum of Three (3) samples is required for each testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
@@ -646,7 +539,7 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 6. Rates given above will be subject to applicable taxes.
 7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Paver Blocks'
+'Paver Blocks', '998346'
 ),
 (
 '1. A minimum of 10 kg of sample is required for testing. The Company reserves the right to reject or withhold testing of any sample that does not meet this minimum sample requirement.
@@ -656,18 +549,18 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 5. Rates given above will be subject to applicable taxes.
 6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Fine Aggregate'
+'Fine Aggregate', '998346'
 ),
 (
 '1. A minimum of Three (3) samples is required for each set for testing. The Company reserves the right to reject or withhold testing of any set that does not meet this minimum sample requirement.
 2. The Client must clearly mention the exact date of casting and grade of concrete at the time of submitting samples. The Company shall not be responsible for any errors, delays, or discrepancies in test results arising due to failure to provide proper details in advance.
 3. The minimum number of days required for the test is 2 days.
 4. Billing will be made based on the actual number of sets involved in testing.
-5. The above quotation is valid for 15 days from the date of submission.
+5. The above quotation into valid for 15 days from the date of submission.
 6. Rates given above will be subject to applicable taxes.
 7. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 8. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Concrete Cube / ACT Cube'
+'Concrete Cube / ACT Cube', '998346'
 ),
 (
 '1. A minimum of 30 kg of sample is required for testing. The Company reserves the right to reject or withhold testing of any sample that does not meet this minimum sample requirement.
@@ -677,75 +570,9 @@ INSERT INTO public.terms_and_conditions (text, type) VALUES
 5. Rates given above will be subject to applicable taxes.
 6. Any quantities exceeding the quantities mentioned above will be subject to additional charges.
 7. The rates quoted in this offer are valid only for the specified scope of quotation. If there is any reduction in quantity, the rates are subject to increase accordingly and the present quotation stands invalid.',
-'Coarse Aggregate'
+'Coarse Aggregate', '998346'
 );
 
--- -----------------------------------------------------------------------------
--- 14. Table: material_inward_register
--- -----------------------------------------------------------------------------
-
-CREATE TABLE public.material_inward_register (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    job_order_no VARCHAR(30) UNIQUE,
-    client_id TEXT NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
-    status VARCHAR(30) NOT NULL DEFAULT 'RECEIVED' CHECK (status IN (
-        'RECEIVED',
-        'UIN_GENERATED',
-        'SENT_TO_DEPARTMENT',
-        'UNDER_TESTING',
-        'TEST_COMPLETED',
-        'REPORT_GENERATED',
-        'UNDER_REVIEW',
-        'SIGNED',
-        'PAYMENT_PENDING',
-        'PAYMENT_RECEIVED',
-        'REPORT_RELEASED',
-        'COMPLETED'
-    )),
-    po_wo_number VARCHAR(50),
-    created_by UUID NOT NULL REFERENCES public.app_users(id) ON DELETE CASCADE,
-    updated_by UUID REFERENCES public.app_users(id) ON DELETE CASCADE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-ALTER TABLE public.material_inward_register ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Material inward register is viewable by everyone"
-  ON public.material_inward_register FOR SELECT
-  USING ( true );
-
-CREATE POLICY "Allow public management of material inward register"
-  ON public.material_inward_register FOR ALL
-  USING ( true )
-  WITH CHECK ( true );
-
--- -----------------------------------------------------------------------------
--- 15. Table: material_samples
--- -----------------------------------------------------------------------------
-
-CREATE TABLE public.material_samples (
-    id BIGSERIAL PRIMARY KEY,
-    inward_id UUID NOT NULL REFERENCES public.material_inward_register(id) ON DELETE CASCADE,
-    sample_code VARCHAR(50) NOT NULL,
-    sample_description TEXT,
-    quantity DECIMAL(12,3),
-    status VARCHAR(30) DEFAULT 'RECEIVED',
-    received_date DATE NOT NULL,
-    received_time TIME,
-    received_by UUID NOT NULL REFERENCES public.app_users(id) ON DELETE CASCADE,
-    expected_test_days INT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-ALTER TABLE public.material_samples ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Material samples are viewable by everyone"
-  ON public.material_samples FOR SELECT
-  USING ( true );
-
-CREATE POLICY "Allow public management of material samples"
-  ON public.material_samples FOR ALL
-  USING ( true )
-  WITH CHECK ( true );
+-- Final Updates
+update public.services set hsn_code = '995432' where hsn_code = '';
+update public.tests set hsn_code = '998346' where hsn_code = '';
