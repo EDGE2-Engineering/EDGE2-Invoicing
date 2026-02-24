@@ -104,10 +104,10 @@ const configWindowFetchMonkeyPatch = `
 const originalFetch = window.fetch;
 
 window.fetch = function(...args) {
-	const url = args[0] instanceof Request ? args[0].url : args[0];
+	const url = args[0] instanceof Request ? args[0].url : String(args[0]);
 
 	// Skip WebSocket URLs
-	if (url.startsWith('ws:') || url.startsWith('wss:')) {
+	if (typeof url === 'string' && (url.startsWith('ws:') || url.startsWith('wss:'))) {
 		return originalFetch.apply(this, args);
 	}
 

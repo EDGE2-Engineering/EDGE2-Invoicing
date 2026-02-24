@@ -48,6 +48,13 @@ const AdminPage = () => {
     }
   }, [tab]);
 
+  // Redirect legacy tabs to new system sub-tabs
+  useEffect(() => {
+    if (mainTab === 'services' || mainTab === 'tests') {
+      navigate('/settings/system');
+    }
+  }, [mainTab, navigate]);
+
   const handleTabChange = (value) => {
     setMainTab(value);
     navigate(`/settings/${value}`);
