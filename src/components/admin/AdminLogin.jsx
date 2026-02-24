@@ -46,7 +46,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
             />
           </div>
           <h1 className="text-xl font-bold text-gray-900">{content.global?.siteName || "Easy Billing"}</h1>
-          <p className="text-gray-500 mt-2 text-sm">Sign in to with your username and password</p>
+          <p className="text-gray-500 mt-2 text-sm">Sign in with your username and password</p>
         </div>
 
         {/* Form */}

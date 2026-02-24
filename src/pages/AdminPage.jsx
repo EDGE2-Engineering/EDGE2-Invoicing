@@ -30,7 +30,7 @@ const AdminPage = () => {
   const siteName = getSiteContent().global?.siteName || "Easy Billing";
   const { tab } = useParams();
   const navigate = useNavigate();
-  const [mainTab, setMainTab] = useState(tab || 'inward_register');
+  const [mainTab, setMainTab] = useState(tab || 'accounts');
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   const { toast } = useToast();
@@ -98,92 +98,70 @@ const AdminPage = () => {
 
       <main className="flex-grow container mx-auto px-4 py-0 relative">
         <Tabs value={mainTab} onValueChange={handleTabChange} className="w-full space-y-4">
-          {/* Mobile View: Select Dropdown */}
-          <div className="block md:hidden relative">
-            <label htmlFor="admin-tabs" className="sr-only">Select a section</label>
-            <select
-              id="admin-tabs"
-              value={mainTab}
-              onChange={(e) => handleTabChange(e.target.value)}
-              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none appearance-none"
-            >
-              {!isStandard() && <option value="inward_register">Inward Register</option>}
-              {!isStandard() && <option value="reports">Reports</option>}
-              <option value="accounts">Accounts</option>
-              {!isStandard() && <option value="clients">Clients</option>}
-              {!isStandard() && <option value="pricing">Client Pricing</option>}
-              {!isStandard() && <option value="system">System Settings</option>}
-              {!isStandard() && <option value="users">User Management</option>}
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </div>
-          </div>
+          {/* Show sub-navigation ONLY if we are in a settings-related tab */}
+          {(!['inward_register', 'reports', 'accounts'].includes(mainTab)) && (
+            <>
+              {/* Mobile View: Select Dropdown */}
+              <div className="block md:hidden relative">
+                <label htmlFor="admin-tabs" className="sr-only">Select a section</label>
+                <select
+                  id="admin-tabs"
+                  value={mainTab}
+                  onChange={(e) => handleTabChange(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none appearance-none"
+                >
+                  <option value="accounts">Accounts</option>
+                  {!isStandard() && <option value="clients">Clients</option>}
+                  {!isStandard() && <option value="pricing">Client Pricing</option>}
+                  {!isStandard() && <option value="system">System Settings</option>}
+                  {!isStandard() && <option value="users">User Management</option>}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
 
-          {/* Desktop View: Tabs List */}
-          <div className="hidden md:flex justify-center">
-            <TabsList className="bg-white p-1 border border-gray-200 rounded-xl shadow-sm h-auto inline-flex">
-              {!isStandard() && (
-                <TabsTrigger
-                  value="inward_register"
-                  title="Material Inward Register"
-                  className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                >
-                  <Package className="w-4 h-4" /> Inward
-                </TabsTrigger>
-              )}
-              {!isStandard() && (
-                <TabsTrigger
-                  value="reports"
-                  title="Reports Management"
-                  className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                >
-                  <FileText className="w-4 h-4" /> Reports
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="accounts"
-                title="Manage Accounts"
-                className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-              >
-                <Database className="w-4 h-4" /> Accounts
-              </TabsTrigger>
-              {!isStandard() && (
-                <>
-                  <TabsTrigger
-                    value="clients"
-                    title="Clients"
-                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                  >
-                    <BriefcaseBusiness className="w-4 h-4" /> Clients
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="pricing"
-                    title="Client Pricing"
-                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                  >
-                    <IndianRupee className="w-4 h-4" /> Pricing
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="system"
-                    title="System Settings"
-                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                  >
-                    <Cpu className="w-4 h-4" /> System
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="users"
-                    title="User Management"
-                    className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
-                  >
-                    <UserCog className="w-4 h-4" /> Users
-                  </TabsTrigger>
-                </>
-              )}
-            </TabsList>
-          </div>
+              {/* Desktop View: Tabs List */}
+              <div className="hidden md:flex justify-center">
+                <TabsList className="bg-white p-1 border border-gray-200 rounded-xl shadow-sm h-auto inline-flex">
+                  {!isStandard() && (
+                    <>
+                      <TabsTrigger
+                        value="clients"
+                        title="Clients"
+                        className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                      >
+                        <BriefcaseBusiness className="w-4 h-4" /> Clients
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="pricing"
+                        title="Client Pricing"
+                        className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                      >
+                        <IndianRupee className="w-4 h-4" /> Pricing
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="system"
+                        title="System Settings"
+                        className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                      >
+                        <Cpu className="w-4 h-4" /> System
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="users"
+                        title="User Management"
+                        className="px-2 py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2 data-[state=active]:p-2"
+                      >
+                        <UserCog className="w-4 h-4" /> Users
+                      </TabsTrigger>
+                    </>
+                  )}
+                </TabsList>
+              </div>
+            </>
+          )}
 
           <TabsContent value="clients" className="focus-visible:outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
             <AdminClientsManager />

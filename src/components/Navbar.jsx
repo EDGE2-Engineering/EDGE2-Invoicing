@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Lock, FileText, Settings, LogOut, User } from 'lucide-react';
+import { Menu, X, Lock, FileText, Settings, LogOut, User, Package, Database } from 'lucide-react';
 import { getSiteContent } from '@/data/config';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -43,8 +43,10 @@ const Navbar = ({ isDirty = false, isSaving = false }) => {
   };
 
   const navItems = [
-    { path: '/doc/new', label: 'Create', icon: FileText, roles: ['admin', 'standard'] },
-    { path: '/settings/services', label: 'Settings', icon: Settings, roles: ['admin', 'standard'] }
+    { path: '/settings/inward_register', label: 'Inward', icon: Package, roles: ['admin', 'standard'] },
+    { path: '/settings/reports', label: 'Reports', icon: FileText, roles: ['admin', 'standard'] },
+    { path: '/settings/accounts', label: 'Accounts', icon: Database, roles: ['admin', 'standard'] },
+    { path: '/settings/clients', label: 'Settings', icon: Settings, roles: ['admin'] }
   ].filter(item => {
     if (!item.roles) return true;
     if (item.roles.includes('admin') && isAdmin()) return true;
@@ -53,14 +55,19 @@ const Navbar = ({ isDirty = false, isSaving = false }) => {
   });
 
   const isActive = (path) => {
-    if (path === '/settings/services') {
-      return location.pathname.startsWith('/settings') ||
+    if (path === '/settings/clients') { // Changed from /settings/services to /settings/clients
+      // Highlight settings only for explicitly settings tabs, not for Inward/Reports/Accounts
+      const isManagementTab = location.pathname.includes('/inward_register') ||
+        location.pathname.includes('/reports') ||
+        location.pathname.includes('/accounts');
+
+      return (location.pathname.startsWith('/settings') && !isManagementTab) ||
         location.pathname.startsWith('/service/') ||
         location.pathname.startsWith('/test/');
     }
-    const searchParams = new URLSearchParams(location.search);
-    const isCreatePage = location.pathname === '/doc' && !searchParams.get('id');
-    return location.pathname.startsWith(path) || (path === '/doc/new' && isCreatePage);
+
+    // For other management tabs (Inward, Reports, Accounts), use precise matching
+    return location.pathname === path;
   };
 
   return (
@@ -90,7 +97,7 @@ const Navbar = ({ isDirty = false, isSaving = false }) => {
                   key={item.path}
                   to={item.path}
                   state={item.path === '/doc/new' ? { forceReset: Date.now() } : undefined}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-semibold ${isActive(item.path)
+                  className={`flex items-center space-x-2 px-2 py-2 rounded-xl transition-all text-xs font-semibold ${isActive(item.path)
                     ? 'bg-primary text-white shadow-sm'
                     : 'text-gray-600 hover:text-primary hover:bg-gray-300'
                     }`}

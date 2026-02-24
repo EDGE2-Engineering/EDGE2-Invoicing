@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, ExternalLink, FileText, Loader2, AlertCircle, ArrowUpDown, SortAsc, SortDesc, Calendar } from 'lucide-react';
+import { Search, Trash2, ExternalLink, FileText, Loader2, AlertCircle, ArrowUpDown, SortAsc, SortDesc, Calendar, Plus } from 'lucide-react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -390,25 +390,32 @@ const AccountsManager = () => {
 
           </div>
 
-          {/* Reset Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={resetFilters}
-            disabled={
-              !searchTerm &&
-              !fromDate &&
-              !toDate &&
-              filterDocType === "all" &&
-              filterUser === "all" &&
-              filterClient === "all" &&
-              sortField === "date" &&
-              sortOrder === "desc"
-            }
-            className="text-red-900 bg-red-50 hover:bg-red-500 hover:text-white h-9 text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2 whitespace-nowrap"
-          >
-            Reset All
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetFilters}
+              disabled={
+                !searchTerm &&
+                !fromDate &&
+                !toDate &&
+                filterDocType === "all" &&
+                filterUser === "all" &&
+                filterClient === "all" &&
+                sortField === "date" &&
+                sortOrder === "desc"
+              }
+              className="text-red-900 bg-red-50 hover:bg-red-500 hover:text-white h-9 text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2 whitespace-nowrap"
+            >
+              Reset All
+            </Button>
+            <Button
+              onClick={() => navigate('/doc/new', { state: { forceReset: Date.now() } })}
+              className="bg-primary hover:bg-primary-dark text-white h-10 px-4 rounded-xl shadow-sm text-xs font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Create Invoice / Quotation
+            </Button>
+          </div>
         </div>
 
       </div>
