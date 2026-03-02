@@ -1742,8 +1742,8 @@ const NewReportForm = ({ editReport, onCancel, onSuccess }) => {
                 report_number: formData.reportId,
                 client_name: formData.client,
                 content: formData,
-                created_by: existingRecord?.created_by || (user.username || user.name),
-                updated_by: user.username || user.name,
+                created_by: existingRecord?.created_by || (user.id || user.username || user.name),
+                updated_by: user.id || user.username || user.name,
                 updated_at: new Date().toISOString()
             };
 

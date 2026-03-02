@@ -182,7 +182,10 @@ const AdminReportsManager = () => {
                                     </td>
                                     <td className="py-4 px-6 text-sm text-gray-700">{report.client_name || report.client || '-'}</td>
                                     <td className="py-4 px-6 text-sm text-gray-700">
-                                        {appUsers.find(u => u.username === report.created_by)?.full_name || report.created_by || '-'}
+                                        {(() => {
+                                            const u = appUsers.find(u => u.id === report.created_by || u.sub === report.created_by || u.username === report.created_by || u.email === report.created_by);
+                                            return u ? (u.full_name || u.fullName || u.name) : (report.created_by || '-');
+                                        })()}
                                     </td>
                                     <td className="py-4 px-6 text-sm text-gray-500">
                                         {format(new Date(report.created_at || report.updated_at), 'dd MMM yyyy')}

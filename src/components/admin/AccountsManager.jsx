@@ -41,6 +41,7 @@ const AccountsManager = () => {
   const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [appUsers, setAppUsers] = useState([]);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { settings } = useSettings();
@@ -95,9 +96,20 @@ const AccountsManager = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    if (!idToken) return;
+    try {
+      const data = await dynamoGenericApi.listByType('user', idToken);
+      setAppUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   useEffect(() => {
     if (idToken) {
       fetchAccounts();
+      fetchUsers();
     }
   }, [idToken]);
 
@@ -128,8 +140,11 @@ const AccountsManager = () => {
     navigate(`/ doc / ${recordId} `);
   };
 
-  const uniqueUsers = Array.from(new Set(accounts
-    .map(r => r.users?.full_name)
+  const uniqueUsersInList = Array.from(new Set(accounts
+    .map(r => {
+      const u = appUsers.find(u => u.id === r.created_by || u.sub === r.created_by || u.username === r.created_by || u.email === r.created_by);
+      return u ? (u.full_name || u.fullName || u.name) : r.created_by;
+    })
     .filter(Boolean)))
     .sort();
 
@@ -149,7 +164,9 @@ const AccountsManager = () => {
     if (filterDocType !== 'all' && r.document_type !== filterDocType) return false;
 
     // User Filter
-    if (filterUser !== 'all' && r.users?.full_name !== filterUser) return false;
+    const uMatch = appUsers.find(u => u.id === r.created_by || u.sub === r.created_by || u.username === r.created_by || u.email === r.created_by);
+    const userName = uMatch ? (uMatch.full_name || uMatch.fullName || uMatch.name) : r.created_by;
+    if (filterUser !== 'all' && userName !== filterUser) return false;
 
     // Client Filter
     if (filterClient !== 'all' && r.client_name !== filterClient) return false;
@@ -186,8 +203,10 @@ const AccountsManager = () => {
         valB = (b.client_name || '').toLowerCase();
         break;
       case 'user':
-        valA = (a.users?.full_name || '').toLowerCase();
-        valB = (b.users?.full_name || '').toLowerCase();
+        const uA = appUsers.find(u => u.id === a.created_by || u.sub === a.created_by || u.username === a.created_by || u.email === a.created_by);
+        const uB = appUsers.find(u => u.id === b.created_by || u.sub === b.created_by || u.username === b.created_by || u.email === b.created_by);
+        valA = (uA ? (uA.full_name || uA.fullName || uA.name) : (a.created_by || '')).toLowerCase();
+        valB = (uB ? (uB.full_name || uB.fullName || uB.name) : (b.created_by || '')).toLowerCase();
         break;
       case 'date':
         valA = new Date(a.created_at).getTime();
@@ -315,7 +334,7 @@ const AccountsManager = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Users</SelectItem>
-                        {uniqueUsers.map(user => (
+                        {uniqueUsersInList.map(user => (
                           <SelectItem key={user} value={user}>
                             {user}
                           </SelectItem>
@@ -507,7 +526,11 @@ const AccountsManager = () => {
                     </td>
 
                     <td className="justify-left items-center">
-                      <span className="text-black font-regular text-sm"> {record.users?.full_name || '-'}
+                      <span className="text-black font-regular text-sm">
+                        {(() => {
+                          const u = appUsers.find(u => u.id === record.created_by || u.sub === record.created_by || u.username === record.created_by || u.email === record.created_by);
+                          return u ? (u.full_name || u.fullName || u.name) : (record.created_by || '-');
+                        })()}
                       </span>
                     </td>
 

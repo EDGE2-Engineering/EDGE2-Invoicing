@@ -4,6 +4,7 @@ import { useAuth as useOidcAuth } from "react-oidc-context";
 import { cognitoAuth } from '@/lib/cognitoAuth';
 import { sendTelegramNotification } from '@/lib/notifier';
 import { cognitoConfig } from '@/config';
+import { dynamoGenericApi } from '@/lib/dynamoGenericApi';
 
 
 const AuthContext = createContext();
@@ -25,6 +26,8 @@ const AuthProvider = ({ children }) => {
                 id: userData.id,
                 username: userData.username,
                 full_name: userData.full_name,
+                fullName: userData.full_name,
+                name: userData.full_name,
                 email: userData.email,
                 role: userData.role,
                 is_active: true
